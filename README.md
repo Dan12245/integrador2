@@ -4,13 +4,20 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
 
 ## Get started
 
-1. Install dependencies
+1. Clone project
 
    ```bash
+   git clone https://github.com/Dan12245/integrador2.git
+   ```
+
+2. Install dependencies 
+
+   ```bash
+   cd integrador2
    npm install
    ```
 
-2. Start the app
+3. Start the app
 
    ```bash
    npx expo start
