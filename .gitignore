@@ -1,0 +1,38 @@
+# ==========================================
+# 1. DEPENDENCIES
+# ==========================================
+node_modules/
+**/node_modules/
+
+# ==========================================
+# 2. ENVIRONMENT VARIABLES (Critical Security)
+# ==========================================
+# Never commit your Supabase API keys to GitHub
+.env
+.env.*
+*.local
+
+# ==========================================
+# 3. EXPO & MOBILE ARTIFACTS
+# ==========================================
+.expo/
+apps/mobile/.expo/
+apps/mobile/dist/
+apps/mobile/web-build/
+# Ignore native folders until you explicitly run 'npx expo prebuild'
+apps/mobile/android/
+apps/mobile/ios/
+
+# ==========================================
+# 4. HONO & CLOUDFLARE ARTIFACTS
+# ==========================================
+.wrangler/
+apps/api/.wrangler/
+apps/api/dist/
+
+# ==========================================
+# 5. OS & EDITOR FILES
+# ==========================================
+.DS_Store
+.vscode/
+*.log
