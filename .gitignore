@@ -16,6 +16,7 @@ node_modules/
 # 3. EXPO & MOBILE ARTIFACTS
 # ==========================================
 .expo/
+.expo
 apps/mobile/.expo/
 apps/mobile/dist/
 apps/mobile/web-build/
