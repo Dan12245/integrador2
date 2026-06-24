@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useRouter } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { appStyles } from "../styles/styles";
 import Avatar from "./Avatar";
@@ -16,6 +17,7 @@ export default function Account({
   const [website, setWebsite] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const styles = appStyles;
+  const router = useRouter();
 
   useEffect(() => {
     if (userId) getProfile();
@@ -129,6 +131,15 @@ export default function Account({
           <Text style={styles.buttonText}>
             {loading ? "Loading ..." : "Update"}
           </Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.verticallySpaced}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => router.push("/consumptions" as any)}
+        >
+          <Text style={styles.buttonText}>Go to Consumptions</Text>
         </TouchableOpacity>
       </View>
 
