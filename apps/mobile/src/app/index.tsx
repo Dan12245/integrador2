@@ -4,11 +4,13 @@ import { useRouter } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { Session } from "@supabase/supabase-js";
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
+import { usePostHog } from "posthog-react-native";
 
 export default function LandingScreen() {
     const [session, setSession] = useState<Session | null>(null);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
+    const posthog = usePostHog();
 
     // Reanimated state
     const scale = useSharedValue(1);
@@ -77,7 +79,10 @@ export default function LandingScreen() {
                 <TouchableOpacity
                     testID="get_started"
                     className="bg-indigo-600 py-5 rounded-xl items-center"
-                    onPress={() => router.push("/login" as any)}
+                    onPress={() => {
+                        posthog.capture("get_started_tapped");
+                        router.push("/login" as any);
+                    }}
                 >
                     <Text className="text-white text-base font-semibold">Get Started</Text>
                 </TouchableOpacity>

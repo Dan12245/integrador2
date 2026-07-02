@@ -2,12 +2,14 @@ import React, { useState } from "react";
 import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { supabase } from "../lib/supabase";
 import { useRouter } from "expo-router";
+import { usePostHog } from "posthog-react-native";
 
 export default function SignInForm() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const router = useRouter();
+    const posthog = usePostHog();
 
     async function signInWithEmail() {
         if (!email || !password) {
@@ -22,6 +24,13 @@ export default function SignInForm() {
 
         if (error) {
             Alert.alert("Error", error.message);
+            posthog.capture("sign_in_failed", { error_message: error.message });
+        } else {
+            posthog.identify(email, {
+                $set: { email },
+                $set_once: { first_sign_in_date: new Date().toISOString() },
+            });
+            posthog.capture("user_signed_in");
         }
         setLoading(false);
     }
@@ -77,11 +86,14 @@ export default function SignInForm() {
 
                 <TouchableOpacity
                     testID="sign_up_redirect"
-                    onPress={() => router.push("/register" as any)}
+                    onPress={() => {
+                        posthog.capture("sign_up_redirect_tapped");
+                        router.push("/register" as any);
+                    }}
                     className="w-full py-2 items-center"
                 >
                     <Text className="text-indigo-600 font-medium">
-                        Don't have an account? Sign Up
+                        Don&apos;t have an account? Sign Up
                     </Text>
                 </TouchableOpacity>
             </View>

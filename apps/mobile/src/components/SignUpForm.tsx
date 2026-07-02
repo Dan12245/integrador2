@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { useRouter } from 'expo-router';
+import { usePostHog } from 'posthog-react-native';
 
 export default function SignUpForm() {
   const [email, setEmail] = useState('');
@@ -9,6 +10,7 @@ export default function SignUpForm() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const posthog = usePostHog();
 
   async function signUpWithEmail() {
     if (!email || !password) {
@@ -27,7 +29,13 @@ export default function SignUpForm() {
 
     if (error) {
       Alert.alert("Error", error.message);
+      posthog.capture("registration_failed", { error_message: error.message });
     } else {
+      posthog.identify(email, {
+        $set: { email },
+        $set_once: { registration_date: new Date().toISOString() },
+      });
+      posthog.capture("user_registered");
       Alert.alert("Success", "Check your inbox for email verification!");
       router.push("/login" as any);
     }
@@ -95,7 +103,10 @@ export default function SignUpForm() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => router.push("/login" as any)}
+          onPress={() => {
+            posthog.capture("sign_in_redirect_tapped");
+            router.push("/login" as any);
+          }}
           className="w-full py-2 items-center"
         >
           <Text className="text-indigo-600 font-medium">

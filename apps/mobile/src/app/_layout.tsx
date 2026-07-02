@@ -4,6 +4,8 @@ import { Stack, useRouter, useSegments } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { Session, AuthChangeEvent } from "@supabase/supabase-js";
 import { ActivityIndicator, View } from "react-native";
+import { PostHogProvider } from "posthog-react-native";
+import { posthog } from "../lib/posthog";
 
 export default function RootLayout() {
   const [session, setSession] = useState<Session | null>(null);
@@ -55,10 +57,19 @@ export default function RootLayout() {
 
   // 3. Render layouts
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="index" />
-      <Stack.Screen name="(auth)" />
-      <Stack.Screen name="(app)" />
-    </Stack>
+    <PostHogProvider
+      client={posthog}
+      autocapture={{
+        captureScreens: false,
+        captureTouches: true,
+        propsToCapture: ["testID"],
+      }}
+    >
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(app)" />
+      </Stack>
+    </PostHogProvider>
   );
 }

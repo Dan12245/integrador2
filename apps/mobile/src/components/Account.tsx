@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { appStyles } from "../styles/styles";
 import Avatar from "./Avatar";
+import { usePostHog } from "posthog-react-native";
 
 export default function Account({
   userId,
@@ -18,6 +19,7 @@ export default function Account({
   const [avatarUrl, setAvatarUrl] = useState("");
   const styles = appStyles;
   const router = useRouter();
+  const posthog = usePostHog();
 
   useEffect(() => {
     if (userId) getProfile();
@@ -75,6 +77,10 @@ export default function Account({
       if (error) {
         throw error;
       }
+      posthog.capture("profile_updated", {
+        has_username: !!username,
+        has_website: !!website,
+      });
     } catch (error: any) {
       Alert.alert(error.message);
     } finally {
@@ -146,7 +152,11 @@ export default function Account({
       <View style={styles.verticallySpaced}>
         <TouchableOpacity
           style={styles.button}
-          onPress={() => supabase.auth.signOut()}
+          onPress={() => {
+              posthog.capture("user_signed_out");
+              posthog.reset();
+              supabase.auth.signOut();
+            }}
         >
           <Text style={styles.buttonText}>Sign Out</Text>
         </TouchableOpacity>
