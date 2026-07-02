@@ -6,7 +6,7 @@ const data = [
   { month: "Mar", revenue: 58 },
   { month: "Apr", revenue: 134 },
   { month: "May", revenue: 95 },
-  { month: "Jun", revenue: 176 }
+  { month: "Jun", revenue: 177 }
 ];
 
 export function ConsumptionsChart() {
