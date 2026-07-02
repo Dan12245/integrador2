@@ -1,6 +1,6 @@
 import "../../global.css";
 import { useEffect, useState } from "react";
-import { Stack, useRouter, useSegments } from "expo-router";
+import { Stack, useRouter, useSegments, usePathname } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { Session, AuthChangeEvent } from "@supabase/supabase-js";
 import { ActivityIndicator, View } from "react-native";
@@ -12,6 +12,13 @@ export default function RootLayout() {
   const [loading, setLoading] = useState(true);
   const segments = useSegments();
   const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (pathname && posthog) {
+      posthog.screen(pathname);
+    }
+  }, [pathname]);
 
   // 1. Listen to auth state changes
   useEffect(() => {
