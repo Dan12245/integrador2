@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { supabase } from "../lib/supabase";
 import { useRouter } from "expo-router";
-import { usePostHog } from "posthog-react-native";
+import { usePostHog } from "../lib/posthog";
 
 export default function SignInForm() {
     const [email, setEmail] = useState("");

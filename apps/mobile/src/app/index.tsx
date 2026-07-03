@@ -4,7 +4,7 @@ import { useRouter } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { Session } from "@supabase/supabase-js";
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
-import { usePostHog } from "posthog-react-native";
+import { usePostHog } from "../lib/posthog";
 
 export default function LandingScreen() {
     const [session, setSession] = useState<Session | null>(null);

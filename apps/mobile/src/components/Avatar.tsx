@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 import { View, Alert, Image, Text, TouchableOpacity } from 'react-native'
 import * as ImagePicker from 'expo-image-picker'
 import { appStyles } from '../styles/styles'
-import { usePostHog } from 'posthog-react-native'
+import { usePostHog } from '../lib/posthog'
 
 interface Props {
   size: number
@@ -104,6 +104,7 @@ export default function Avatar({ url, size = 150, onUpload }: Props) {
       )}
       <View>
         <TouchableOpacity
+          testID="avatar_upload_button"
           style={[styles.button, uploading && styles.buttonDisabled]}
           onPress={uploadAvatar}
           disabled={uploading}

@@ -4,8 +4,7 @@ import { Stack, useRouter, useSegments, usePathname } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { Session, AuthChangeEvent } from "@supabase/supabase-js";
 import { ActivityIndicator, View } from "react-native";
-import { PostHogProvider } from "posthog-react-native";
-import { posthog } from "../lib/posthog";
+import { posthog, PostHogProvider } from "../lib/posthog";
 
 export default function RootLayout() {
   const [session, setSession] = useState<Session | null>(null);
@@ -16,7 +15,11 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (pathname && posthog) {
-      posthog.screen(pathname);
+      if (typeof posthog.screen === "function") {
+        posthog.screen(pathname);
+      } else if (typeof posthog.capture === "function") {
+        posthog.capture("$pageview", { $current_url: pathname });
+      }
     }
   }, [pathname]);
 
