@@ -37,3 +37,12 @@ apps/api/dist/
 .DS_Store
 .vscode/
 *.log
+
+# ==========================================
+# 6. PYTHON / SELENIUM ARTIFACTS
+# ==========================================
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/

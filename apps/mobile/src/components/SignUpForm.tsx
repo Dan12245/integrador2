@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { useRouter } from 'expo-router';
+import { usePostHog } from "../lib/posthog";
 
 export default function SignUpForm() {
   const [email, setEmail] = useState('');
@@ -9,6 +10,7 @@ export default function SignUpForm() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const posthog = usePostHog();
 
   async function signUpWithEmail() {
     if (!email || !password) {
@@ -27,7 +29,13 @@ export default function SignUpForm() {
 
     if (error) {
       Alert.alert("Error", error.message);
+      posthog.capture("registration_failed", { error_message: error.message });
     } else {
+      posthog.identify(email, {
+        $set: { email },
+        $set_once: { registration_date: new Date().toISOString() },
+      });
+      posthog.capture("user_registered");
       Alert.alert("Success", "Check your inbox for email verification!");
       router.push("/login" as any);
     }
@@ -49,6 +57,7 @@ export default function SignUpForm() {
         <View>
           <Text className="text-sm font-semibold text-gray-700 mb-2">Email Address</Text>
           <TextInput
+            testID="signup_email_field"
             onChangeText={(text) => setEmail(text)}
             value={email}
             placeholder="you@example.com"
@@ -61,6 +70,7 @@ export default function SignUpForm() {
         <View>
           <Text className="text-sm font-semibold text-gray-700 mb-2">Password</Text>
           <TextInput
+            testID="signup_password_field"
             onChangeText={(text) => setPassword(text)}
             value={password}
             secureTextEntry={true}
@@ -73,6 +83,7 @@ export default function SignUpForm() {
         <View>
           <Text className="text-sm font-semibold text-gray-700 mb-2">Confirm Password</Text>
           <TextInput
+            testID="signup_confirm_password_field"
             onChangeText={(text) => setConfirmPassword(text)}
             value={confirmPassword}
             secureTextEntry={true}
@@ -85,6 +96,7 @@ export default function SignUpForm() {
 
       <View className="flex flex-col gap-4">
         <TouchableOpacity
+          testID="signup_submit_button"
           className={`w-full bg-indigo-600 py-4 rounded-xl items-center justify-center shadow-lg shadow-indigo-600/30 ${loading ? 'opacity-50' : ''}`}
           onPress={signUpWithEmail}
           disabled={loading}
@@ -95,7 +107,11 @@ export default function SignUpForm() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => router.push("/login" as any)}
+          testID="signin_redirect_button"
+          onPress={() => {
+            posthog.capture("sign_in_redirect_tapped");
+            router.push("/login" as any);
+          }}
           className="w-full py-2 items-center"
         >
           <Text className="text-indigo-600 font-medium">

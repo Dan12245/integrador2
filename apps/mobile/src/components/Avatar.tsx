@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { View, Alert, Image, Text, TouchableOpacity } from 'react-native'
 import * as ImagePicker from 'expo-image-picker'
 import { appStyles } from '../styles/styles'
+import { usePostHog } from '../lib/posthog'
 
 interface Props {
   size: number
@@ -15,6 +16,7 @@ export default function Avatar({ url, size = 150, onUpload }: Props) {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const avatarSize = { height: size, width: size }
   const styles = appStyles
+  const posthog = usePostHog()
 
   useEffect(() => {
     if (url) downloadImage(url)
@@ -76,6 +78,7 @@ export default function Avatar({ url, size = 150, onUpload }: Props) {
         throw uploadError
       }
 
+      posthog.capture("avatar_uploaded", { file_extension: fileExt })
       onUpload(data.path)
     } catch (error: any) {
       if (error) {
@@ -101,6 +104,7 @@ export default function Avatar({ url, size = 150, onUpload }: Props) {
       )}
       <View>
         <TouchableOpacity
+          testID="avatar_upload_button"
           style={[styles.button, uploading && styles.buttonDisabled]}
           onPress={uploadAvatar}
           disabled={uploading}

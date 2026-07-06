@@ -42,11 +42,19 @@
           }
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "608cd75c-5ab1-450f-b12d-8e1e7c25f478"
+      }
+    },
+    "owner": "alexanderm00n"
   }
 }

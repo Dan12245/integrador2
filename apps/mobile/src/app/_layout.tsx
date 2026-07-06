@@ -1,15 +1,27 @@
 import "../../global.css";
 import { useEffect, useState } from "react";
-import { Stack, useRouter, useSegments } from "expo-router";
+import { Stack, useRouter, useSegments, usePathname } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { Session, AuthChangeEvent } from "@supabase/supabase-js";
 import { ActivityIndicator, View } from "react-native";
+import { posthog, PostHogProvider } from "../lib/posthog";
 
 export default function RootLayout() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const segments = useSegments();
   const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (pathname && posthog) {
+      if (typeof posthog.screen === "function") {
+        posthog.screen(pathname);
+      } else if (typeof posthog.capture === "function") {
+        posthog.capture("$pageview", { $current_url: pathname });
+      }
+    }
+  }, [pathname]);
 
   // 1. Listen to auth state changes
   useEffect(() => {
@@ -55,10 +67,19 @@ export default function RootLayout() {
 
   // 3. Render layouts
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="index" />
-      <Stack.Screen name="(auth)" />
-      <Stack.Screen name="(app)" />
-    </Stack>
+    <PostHogProvider
+      client={posthog}
+      autocapture={{
+        captureScreens: false,
+        captureTouches: false,
+        propsToCapture: ["testID"],
+      }}
+    >
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(app)" />
+      </Stack>
+    </PostHogProvider>
   );
 }
