@@ -1,7 +1,15 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, useWindowDimensions } from "react-native";
+import { View, Text, Pressable, useWindowDimensions } from "react-native";
 import { BarChart } from "react-native-chart-kit/v2";
 import { Feather, Ionicons } from "@expo/vector-icons";
+
+const shadowStyle = {
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 1 },
+  shadowOpacity: 0.05,
+  shadowRadius: 2,
+  elevation: 2,
+};
 
 const data = [
   { month: "Jan", revenue: 52 },
@@ -48,7 +56,7 @@ export default function ConsumptionsDashboard() {
 
   // Pre-define components for cards to avoid duplication and keep layout logic clean
   const CardTotalPeriod = (
-    <View className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex-1 min-w-0">
+    <View className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex-1 min-w-0">
       <View className="flex-row justify-between items-start mb-3">
         <Text className="text-gray-400 text-[10px] font-bold uppercase tracking-wider">Total period</Text>
         <Ionicons name="water" size={18} color="#3B82F6" />
@@ -111,24 +119,24 @@ export default function ConsumptionsDashboard() {
           <Text className="text-gray-900 text-xs font-bold">Reports</Text>
         </View>
         <View className="flex-row bg-gray-100 p-0.5 rounded-lg">
-          <TouchableOpacity 
+          <Pressable 
             onPress={() => setReportType("Monthly")}
-            className={`px-2 py-0.5 rounded-md ${reportType === "Monthly" ? "bg-white shadow-sm" : ""}`}
+            className={`px-2 py-0.5 rounded-md ${reportType === "Monthly" ? "bg-white" : ""}`} style={reportType === "Monthly" ? shadowStyle : undefined}
           >
             <Text className={`text-[10px] font-bold ${reportType === "Monthly" ? "text-gray-900" : "text-gray-400"}`}>Mo</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
+          </Pressable>
+          <Pressable 
             onPress={() => setReportType("Yearly")}
-            className={`px-2 py-0.5 rounded-md ${reportType === "Yearly" ? "bg-white shadow-sm" : ""}`}
+            className={`px-2 py-0.5 rounded-md ${reportType === "Yearly" ? "bg-white" : ""}`} style={reportType === "Yearly" ? shadowStyle : undefined}
           >
             <Text className={`text-[10px] font-bold ${reportType === "Yearly" ? "text-gray-900" : "text-gray-400"}`}>Yr</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </View>
-      <TouchableOpacity className="bg-slate-900 py-2.5 rounded-xl flex-row justify-center items-center gap-1.5 mt-auto active:bg-slate-800">
+      <Pressable className="bg-slate-900 py-2.5 rounded-xl flex-row justify-center items-center gap-1.5 mt-auto active:bg-slate-800">
         <Feather name="download" size={13} color="white" />
         <Text className="text-white text-[10px] font-bold">PDF</Text>
-      </TouchableOpacity>
+      </Pressable>
     </View>
   );
 
@@ -140,24 +148,24 @@ export default function ConsumptionsDashboard() {
           <Text className="text-gray-900 text-sm font-bold">Reports</Text>
         </View>
         <View className="flex-row bg-gray-100 p-0.5 rounded-lg">
-          <TouchableOpacity 
+          <Pressable 
             onPress={() => setReportType("Monthly")}
-            className={`px-3 py-1.5 rounded-md ${reportType === "Monthly" ? "bg-white shadow-sm" : ""}`}
+            className={`px-3 py-1.5 rounded-md ${reportType === "Monthly" ? "bg-white" : ""}`} style={reportType === "Monthly" ? shadowStyle : undefined}
           >
             <Text className={`text-xs font-bold ${reportType === "Monthly" ? "text-gray-900" : "text-gray-400"}`}>Monthly</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
+          </Pressable>
+          <Pressable 
             onPress={() => setReportType("Yearly")}
-            className={`px-3 py-1.5 rounded-md ${reportType === "Yearly" ? "bg-white shadow-sm" : ""}`}
+            className={`px-3 py-1.5 rounded-md ${reportType === "Yearly" ? "bg-white" : ""}`} style={reportType === "Yearly" ? shadowStyle : undefined}
           >
             <Text className={`text-xs font-bold ${reportType === "Yearly" ? "text-gray-900" : "text-gray-400"}`}>Yearly</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </View>
-      <TouchableOpacity className="bg-slate-900 py-3.5 rounded-xl flex-row justify-center items-center gap-2 active:bg-slate-800">
+      <Pressable className="bg-slate-900 py-3.5 rounded-xl flex-row justify-center items-center gap-2 active:bg-slate-800">
         <Feather name="download" size={15} color="white" />
         <Text className="text-white text-xs font-bold">Download (.PDF)</Text>
-      </TouchableOpacity>
+      </Pressable>
     </View>
   );
 
@@ -211,28 +219,28 @@ export default function ConsumptionsDashboard() {
       {renderKPICards()}
 
       {/* Main Selected Building Card */}
-      <View className="bg-white p-5 md:p-6 rounded-3xl shadow-sm border border-gray-100 mt-6">
-        <View className="flex-row flex-wrap justify-between items-center gap-4 mb-6">
+      <View className="bg-white p-5 md:p-6 rounded-3xl shadow-sm border border-gray-100 mt-4">
+        <View className="flex-row flex-wrap justify-between items-center">
           <View>
-            <Text className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Selected Building</Text>
-            <TouchableOpacity className="flex-row items-center justify-between border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-50 min-w-[200px]">
+            <Text className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-3">Selected Building</Text>
+            <Pressable className="flex-row items-center justify-between border border-gray-200 rounded-xl px-3 py-3 bg-gray-50">
               <Text className="text-gray-900 text-sm font-semibold">{selectedBuilding}</Text>
               <Feather name="chevron-down" size={16} color="#6B7280" />
-            </TouchableOpacity>
+            </Pressable>
           </View>
 
           {/* Timeframe group */}
-          <View className="flex-row bg-gray-100 p-1 rounded-xl">
+          <View className="flex-row bg-gray-100 p-2 mt-8 rounded-xl">
             {["Week", "Month", "Year"].map((period) => (
-              <TouchableOpacity
+              <Pressable
                 key={period}
                 onPress={() => setSelectedPeriod(period)}
-                className={`px-4 py-2 rounded-lg ${selectedPeriod === period ? "bg-white shadow-sm" : ""}`}
+                className={`px-4 py-2.5 rounded-lg ${selectedPeriod === period ? "bg-white" : ""}`} style={selectedPeriod === period ? shadowStyle : undefined}
               >
                 <Text className={`text-xs font-bold ${selectedPeriod === period ? "text-gray-900" : "text-gray-400"}`}>
                   {period}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             ))}
           </View>
         </View>
@@ -244,14 +252,14 @@ export default function ConsumptionsDashboard() {
 
         {/* Buttons under chart */}
         <View className="flex-row justify-center items-center gap-3 mt-6 flex-wrap">
-          <TouchableOpacity className="bg-slate-950 px-6 py-3.5 rounded-xl flex-row items-center gap-2 shadow-sm active:bg-slate-800">
+          <Pressable className="bg-slate-950 px-6 py-3.5 rounded-xl flex-row items-center gap-2 active:bg-slate-800" style={shadowStyle}>
             <Feather name="plus" size={16} color="white" />
             <Text className="text-white text-xs font-bold">Add consumption</Text>
-          </TouchableOpacity>
-          <TouchableOpacity className="bg-sky-50 px-6 py-3.5 rounded-xl flex-row items-center gap-2 border border-sky-100 active:bg-sky-100">
+          </Pressable>
+          <Pressable className="bg-sky-50 px-6 py-3.5 rounded-xl flex-row items-center gap-2 border border-sky-100 active:bg-sky-100">
             <Feather name="edit-2" size={14} color="#0284C7" />
             <Text className="text-sky-800 text-xs font-bold">Edit records</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </View>
 

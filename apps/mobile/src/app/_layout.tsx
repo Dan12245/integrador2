@@ -71,7 +71,7 @@ export default function RootLayout() {
       client={posthog}
       autocapture={{
         captureScreens: false,
-        captureTouches: true,
+        captureTouches: false,
         propsToCapture: ["testID"],
       }}
     >
