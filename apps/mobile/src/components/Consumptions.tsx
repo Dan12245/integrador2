@@ -26,16 +26,78 @@ const data = [
   { month: "Dec", revenue: 122 },
 ];
 
-export function ConsumptionsChart({ width }: { width?: number }) {
+// Helper to generate dynamic chart data based on the real date
+const getChartData = (period: string) => {
+  const currentDate = new Date();
+  
+  if (period === "Week") {
+    // Current week (Monday to Sunday)
+    const dayOfWeek = currentDate.getDay(); // 0 (Sun) to 6 (Sat)
+    const distanceToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    const monday = new Date(currentDate);
+    monday.setDate(currentDate.getDate() + distanceToMonday);
+
+    const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    const mockValues = [15, 22, 18, 24, 20, 16, 21];
+    
+    return dayNames.map((day, idx) => {
+      const dayDate = new Date(monday);
+      dayDate.setDate(monday.getDate() + idx);
+      const isToday = dayDate.toDateString() === currentDate.toDateString();
+      return {
+        label: isToday ? `${day}` : day,
+        value: mockValues[idx],
+      };
+    });
+  }
+  
+  if (period === "Month") {
+    // Each day of the current month until the current day
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const todayDate = currentDate.getDate(); // e.g. 5
+    
+    return Array.from({ length: todayDate }, (_, i) => {
+      const dayNum = i + 1;
+      const isToday = dayNum === todayDate;
+      
+      const baseVal = 18;
+      const valVariation = Math.floor(Math.sin(dayNum * 0.7) * 8);
+      
+      return {
+        label: todayDate <= 10 
+          ? (isToday ? `${dayNum}` : `${dayNum}`)
+          : (isToday ? `${dayNum}` : (dayNum % 5 === 0 ? `${dayNum}` : "")),
+        value: Math.max(5, baseVal + valVariation),
+      };
+    });
+  }
+  
+  // Year period: months of the actual year until now
+  const currentMonth = currentDate.getMonth(); // 0 to 11
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const mockValues = [52, 86, 58, 134, 95, 177, 122, 110, 145, 160, 130, 115];
+  
+  return months.slice(0, currentMonth + 1).map((month, idx) => {
+    const isCurrent = idx === currentMonth;
+    return {
+      label: isCurrent ? `${month}` : month,
+      value: mockValues[idx],
+    };
+  });
+};
+
+export function ConsumptionsChart({ data, width }: { data: { label: string; value: number }[]; width?: number }) {
   const { width: windowWidth } = useWindowDimensions();
-  // Adjust chart width dynamically
   const chartWidth = width || Math.min(windowWidth - 64, 1100);
 
   return (
     <BarChart
       data={data}
-      xKey="month"
-      yKey="revenue"
+      xKey="label"
+      yKey="value"
+      scrollable
+      visiblePoints={7}
       width={chartWidth}
       height={260}
     />
@@ -247,7 +309,7 @@ export default function ConsumptionsDashboard() {
 
         {/* Chart container */}
         <View className="items-center justify-center py-4 w-full overflow-hidden">
-          <ConsumptionsChart width={chartWidth} />
+          <ConsumptionsChart data={getChartData(selectedPeriod)} width={chartWidth} />
         </View>
 
         {/* Buttons under chart */}
