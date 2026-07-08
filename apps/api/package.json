@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@cra2/shared": "^1.0.0",
+    "@google-cloud/vision": "^5.3.7",
     "@supabase/supabase-js": "^2.107.0",
     "hono": "^4.12.23"
   },
