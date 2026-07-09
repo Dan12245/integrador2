@@ -156,6 +156,36 @@ export default function Account({
 
       <View style={styles.verticallySpaced}>
         <TouchableOpacity
+          testID="account_userprofile_button"
+          style={styles.button}
+          onPress={() => router.push("/userProfile" as any)}
+        >
+          <Text style={styles.buttonText}>Go to User Profile</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.verticallySpaced}>
+        <TouchableOpacity
+          testID="account_mybuildings_button"
+          style={styles.button}
+          onPress={() => router.push("/myBuildings" as any)}
+        >
+          <Text style={styles.buttonText}>Go to My Buildings</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.verticallySpaced}>
+        <TouchableOpacity
+          testID="account_techsupport_button"
+          style={styles.button}
+          onPress={() => router.push("/techSupport" as any)}
+        >
+          <Text style={styles.buttonText}>Go to Tech Support</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.verticallySpaced}>
+        <TouchableOpacity
           testID="account_signout_button"
           style={styles.button}
           onPress={() => {
