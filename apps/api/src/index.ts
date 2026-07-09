@@ -1,6 +1,9 @@
 import { Hono } from 'hono'
+import { cors } from 'hono/cors'
+import ocrRouter from './routes/ocr'
 
 const app = new Hono()
+app.use('/*', cors())
 
 app.get('/', (c) => {
   return c.json({ 
@@ -9,5 +12,7 @@ app.get('/', (c) => {
     timestamp: new Date().toISOString()
   })
 })
+
+app.route('/', ocrRouter)
 
 export default app

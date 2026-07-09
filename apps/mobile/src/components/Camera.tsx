@@ -3,13 +3,16 @@ import {TouchableOpacity, Text, ActivityIndicator, Alert, Platform} from "react-
 import * as ImagePicker from "expo-image-picker";
 import { Feather } from "@expo/vector-icons";
 
-// Define default API URL based on Platform (local development)
-const DEFAULT_API_URL = Platform.OS === "android" ? "http://10.0.2.2:8787" : "http://localhost:8787";
+// Define default API URL. Priority: EXPO_PUBLIC_API_URL env var > Simulator aliases
+const DEFAULT_API_URL = process.env.EXPO_PUBLIC_API_URL || (Platform.OS === "android" ? "http://10.0.2.2:8787" : "http://localhost:8787");
 
 export interface ExtractedData {
   contract_number: string | null;
   user_type: string | null;
   consumption_reading: string | null;
+  service_date?: string | null;
+  name?: string | null;
+  address?: string | null;
   rawData?: string;
 }
 
@@ -43,8 +46,9 @@ export default function ReceiptScannerButton({
       const pickerResult = await ImagePicker.launchCameraAsync({
         mediaTypes: ['images'],
         allowsEditing: true,
-        quality: 0.8,
+        quality: 0.5,
         base64: true, // Required to get base64 string for Vision API
+        exif: false,
       });
 
       if (pickerResult.canceled || !pickerResult.assets || pickerResult.assets.length === 0) {
@@ -62,15 +66,23 @@ export default function ReceiptScannerButton({
       // 3. Send photo to OCR API endpoint
       setIsProcessing(true);
 
-      const response = await fetch(`${apiUrl}/scan-receipt`, {
+      const targetUrl = `${apiUrl}/scan-receipt`;
+      const payload = JSON.stringify({ imageBase64: base64Image });
+      console.log(`[OCR] Sending ${(payload.length / 1024).toFixed(0)}KB to ${targetUrl}`);
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+
+      const response = await fetch(targetUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          imageBase64: base64Image,
-        }),
+        body: payload,
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       const result = await response.json();
 
@@ -84,6 +96,9 @@ export default function ReceiptScannerButton({
           contract_number: result.extractedFields.contract_number,
           user_type: result.extractedFields.user_type,
           consumption_reading: result.extractedFields.consumption_reading,
+          service_date: result.extractedFields.service_date,
+          name: result.extractedFields.name,
+          address: result.extractedFields.address,
           rawData: result.rawData,
         });
       } else {
@@ -91,7 +106,7 @@ export default function ReceiptScannerButton({
       }
 
     } catch (error: any) {
-      console.error("OCR Scanner Error:", error);
+      console.error("OCR Scanner Error:", error, "| API URL:", apiUrl);
       const errorMessage = error.message || "An unknown error occurred.";
       
       if (onError) {

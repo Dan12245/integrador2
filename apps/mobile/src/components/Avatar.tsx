@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { View, Alert, Image, Text, TouchableOpacity } from 'react-native'
 import * as ImagePicker from 'expo-image-picker'
-import { appStyles } from '../styles/styles'
 import { usePostHog } from '../lib/posthog'
 
 interface Props {
@@ -15,7 +14,6 @@ export default function Avatar({ url, size = 150, onUpload }: Props) {
   const [uploading, setUploading] = useState(false)
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const avatarSize = { height: size, width: size }
-  const styles = appStyles
   const posthog = usePostHog()
 
   useEffect(() => {
@@ -92,24 +90,25 @@ export default function Avatar({ url, size = 150, onUpload }: Props) {
   }
 
   return (
-    <View style={styles.avatarContainer}>
+    <View className="items-center justify-center mt-5">
       {avatarUrl ? (
         <Image
           source={{ uri: avatarUrl }}
           accessibilityLabel="Avatar"
-          style={[avatarSize, styles.avatar, styles.image]}
+          style={avatarSize}
+          className="rounded-[5px] overflow-hidden max-w-full mb-5 object-cover pt-0"
         />
       ) : (
-        <View style={[avatarSize, styles.avatar, styles.noImage]} />
+        <View style={avatarSize} className="rounded-[5px] overflow-hidden max-w-full mb-5 bg-[#333] border border-[rgb(200,200,200)]" />
       )}
       <View>
         <TouchableOpacity
           testID="avatar_upload_button"
-          style={[styles.button, uploading && styles.buttonDisabled]}
+          className={`bg-[#2089dc] rounded p-3 items-center ${uploading ? 'opacity-50' : ''}`}
           onPress={uploadAvatar}
           disabled={uploading}
         >
-          <Text style={styles.buttonText}>{uploading ? 'Uploading ...' : 'Upload'}</Text>
+          <Text className="text-white text-base font-semibold">{uploading ? 'Uploading ...' : 'Upload'}</Text>
         </TouchableOpacity>
       </View>
     </View>
