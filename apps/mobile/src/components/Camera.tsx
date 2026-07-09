@@ -7,9 +7,9 @@ import { Feather } from "@expo/vector-icons";
 const DEFAULT_API_URL = Platform.OS === "android" ? "http://10.0.2.2:8787" : "http://localhost:8787";
 
 export interface ExtractedData {
-  numero_contrato: string | null;
-  clase_usuario: string | null;
-  lectura_consumo: string | null;
+  contract_number: string | null;
+  user_type: string | null;
+  consumption_reading: string | null;
   rawData?: string;
 }
 
@@ -81,9 +81,9 @@ export default function ReceiptScannerButton({
       // 4. Return extracted fields
       if (result.success && result.extractedFields) {
         onDataExtracted({
-          numero_contrato: result.extractedFields.numero_contrato,
-          clase_usuario: result.extractedFields.clase_usuario,
-          lectura_consumo: result.extractedFields.lectura_consumo,
+          contract_number: result.extractedFields.contract_number,
+          user_type: result.extractedFields.user_type,
+          consumption_reading: result.extractedFields.consumption_reading,
           rawData: result.rawData,
         });
       } else {

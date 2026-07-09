@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { View, ActivityIndicator, Button } from "react-native";
+import { View, ActivityIndicator, Button, ScrollView } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import Account from "../../components/Account";
 import { supabase } from "../../lib/supabase";
-import ReceiptScannerButton from "../../components/Camera";
 
 export default function Home() {
   const [userId, setUserId] = useState<string | null>(null);
@@ -33,12 +33,12 @@ export default function Home() {
   }
 
   return (
-    <View style={{ flex: 1 }}>
-      <Account key={userId} userId={userId} email={email} />
-      <ReceiptScannerButton 
-        onDataExtracted={(data) => console.log(data)}
-        onError={(error) => console.error(error)}
-      />
-    </View>
+    <SafeAreaView style={{ flex: 1 }} edges={["top", "left", "right"]}>
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+        <View style={{ flex: 1 }}>
+          <Account key={userId} userId={userId} email={email} />
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
