@@ -18,6 +18,7 @@ export default function ConsumptionsScreen() {
         <View className="p-4 md:p-8  flex-1 w-full max-w-7xl mx-auto">
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 20 }}>
             <TouchableOpacity
+              testID="consumptions-back-home-button"
               style={{ backgroundColor: "#86939e", padding: 10, borderRadius: 4 }}
               onPress={() => router.push("/home")}
             >
@@ -25,6 +26,7 @@ export default function ConsumptionsScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
+              testID="consumptions-user-profile-button"
               style={{ backgroundColor: "#2089dc", padding: 10, borderRadius: 4 }}
               onPress={() => router.push("/userProfile")}
             >
@@ -32,6 +34,7 @@ export default function ConsumptionsScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
+              testID="consumptions-my-buildings-button"
               style={{ backgroundColor: "#2089dc", padding: 10, borderRadius: 4 }}
               onPress={() => router.push("/myBuildings")}
             >
@@ -39,6 +42,7 @@ export default function ConsumptionsScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
+              testID="consumptions-tech-support-button"
               style={{ backgroundColor: "#2089dc", padding: 10, borderRadius: 4 }}
               onPress={() => router.push("/techSupport")}
             >

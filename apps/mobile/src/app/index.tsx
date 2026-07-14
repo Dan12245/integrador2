@@ -67,6 +67,7 @@ export default function LandingScreen() {
             <View className="items-center justify-center my-10">
                 <Animated.View style={animatedStyle}>
                     <TouchableOpacity
+                        testID="test-reanimated-button"
                         className="bg-indigo-600 px-6 py-4 rounded-xl items-center shadow-lg shadow-indigo-600/30"
                         onPress={handleAnimate}
                     >

@@ -13,6 +13,7 @@ export default function UserProfile() {
 
       <View className="py-1 self-stretch">
         <TouchableOpacity
+          testID="userprofile-my-buildings-button"
           className="bg-[#2089dc] rounded p-3 items-center"
           onPress={() => router.push("/myBuildings" as any)}
         >
@@ -22,6 +23,7 @@ export default function UserProfile() {
 
       <View className="py-1 self-stretch">
         <TouchableOpacity
+          testID="userprofile-tech-support-button"
           className="bg-[#2089dc] rounded p-3 items-center"
           onPress={() => router.push("/techSupport" as any)}
         >
@@ -31,6 +33,7 @@ export default function UserProfile() {
 
       <View className="py-1 self-stretch">
         <TouchableOpacity
+          testID="userprofile-consumptions-button"
           className="bg-[#2089dc] rounded p-3 items-center"
           onPress={() => router.push("/consumptions" as any)}
         >
@@ -40,6 +43,7 @@ export default function UserProfile() {
 
       <View className="py-1 self-stretch mt-5">
         <TouchableOpacity
+          testID="userprofile-back-home-button"
           className="bg-[#86939e] rounded p-3 items-center"
           onPress={() => router.push("/home" as any)}
         >

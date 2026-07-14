@@ -42,6 +42,7 @@ export default function MyBuildings() {
 
       <View className="py-1 self-stretch">
         <TouchableOpacity
+          testID="mybuildings-user-profile-button"
           className="bg-[#2089dc] rounded p-3 items-center"
           onPress={() => router.push("/userProfile" as any)}
         >
@@ -51,6 +52,7 @@ export default function MyBuildings() {
 
       <View className="py-1 self-stretch">
         <TouchableOpacity
+          testID="mybuildings-tech-support-button"
           className="bg-[#2089dc] rounded p-3 items-center"
           onPress={() => router.push("/techSupport" as any)}
         >
@@ -60,6 +62,7 @@ export default function MyBuildings() {
 
       <View className="py-1 self-stretch">
         <TouchableOpacity
+          testID="mybuildings-consumptions-button"
           className="bg-[#2089dc] rounded p-3 items-center"
           onPress={() => router.push("/consumptions" as any)}
         >
@@ -69,6 +72,7 @@ export default function MyBuildings() {
 
       <View className="py-1 self-stretch mt-5">
         <TouchableOpacity
+          testID="mybuildings-back-home-button"
           className="bg-[#86939e] rounded p-3 items-center"
           onPress={() => router.push("/home" as any)}
         >
@@ -109,6 +113,7 @@ export default function MyBuildings() {
 
         {/*Boton de prueba*/ }
         <TouchableOpacity
+          testID="mybuildings-save-building-button"
           className="bg-[#86939e] rounded p-3 items-center"
           onPress={async () => {
             if(!alias || !contractNumber || !address || !description){

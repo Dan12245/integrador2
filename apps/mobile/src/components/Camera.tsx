@@ -125,6 +125,7 @@ export default function ReceiptScannerButton({
 
     return (
         <TouchableOpacity
+            testID="scan-receipt-button"
             onPress={handleScanReceipt}
             disabled={isProcessing}
             className={`bg-blue-600 px-6 py-4 rounded-2xl flex-row justify-center items-center gap-2 shadow-md active:bg-blue-700 ${
