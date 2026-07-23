@@ -103,7 +103,7 @@ export default function ConsumptionGraph({
       <View className="flex-row flex-wrap justify-between items-center">
         <View>
           <Text className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-3">Selected Building</Text>
-          <Pressable className="flex-row items-center justify-between border border-gray-200 rounded-xl px-3 py-3 bg-gray-50">
+          <Pressable testID="select-building-button" className="flex-row items-center justify-between border border-gray-200 rounded-xl px-3 py-3 bg-gray-50">
             <Text className="text-gray-900 text-sm font-semibold">{selectedBuilding}</Text>
             <Feather name="chevron-down" size={16} color="#6B7280" />
           </Pressable>
@@ -113,6 +113,7 @@ export default function ConsumptionGraph({
         <View className="flex-row bg-gray-100 p-2 mt-8 rounded-xl">
           {["Week", "Month", "Year"].map((period) => (
             <Pressable
+              testID={`select-period-${period.toLowerCase()}-button`}
               key={period}
               onPress={() => setSelectedPeriod(period)}
               className={`px-4 py-2.5 rounded-lg ${selectedPeriod === period ? "bg-white" : ""}`}
@@ -132,11 +133,11 @@ export default function ConsumptionGraph({
 
       {/* Buttons under chart */}
       <View className="flex-row justify-center items-center gap-3 mt-6 flex-wrap">
-        <Pressable className="bg-slate-950 px-6 py-3.5 rounded-xl flex-row items-center gap-2 active:bg-slate-800">
+        <Pressable testID="add-consumption-button" className="bg-slate-950 px-6 py-3.5 rounded-xl flex-row items-center gap-2 active:bg-slate-800">
           <Feather name="plus" size={16} color="white" />
           <Text className="text-white text-xs font-bold">Add consumption</Text>
         </Pressable>
-        <Pressable className="bg-sky-50 px-6 py-3.5 rounded-xl flex-row items-center gap-2 border border-sky-100 active:bg-sky-100">
+        <Pressable testID="edit-records-button" className="bg-sky-50 px-6 py-3.5 rounded-xl flex-row items-center gap-2 border border-sky-100 active:bg-sky-100">
           <Feather name="edit-2" size={14} color="#0284C7" />
           <Text className="text-sky-800 text-xs font-bold">Edit records</Text>
         </Pressable>
