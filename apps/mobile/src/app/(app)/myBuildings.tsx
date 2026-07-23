@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import ReceiptScannerButton, { ExtractedData } from "../../components/Camera";
 //aca nomas añadimos la funcion para meter edificios nuevos, de momento solo se hace con datos fijosm ando chambeando en cambiarlo
@@ -117,15 +117,31 @@ export default function MyBuildings() {
           className="bg-[#86939e] rounded p-3 items-center"
           onPress={async () => {
             if(!alias || !contractNumber || !address || !description){
-               Alert.alert("Failed","Complete all the fields")
+              if (Platform.OS=="web") {
+                window.alert("Failed\nComplete all the fields")
+              }else{
+                Alert.alert("Failed","Complete all the fields")
+              }
               return;
             }
             const answer = await addBuilding(alias, contractNumber, address, description)
             if(!answer){
-              Alert.alert("Failed","The building couldn't be stored correctly")
+              if (Platform.OS=="web") {
+                window.alert("Failed\nThe building couldn't be stored correctly")
+              }else{
+                Alert.alert("Failed","The building couldn't be stored correctly")
+              }
               return;
             }
+            if (Platform.OS == "web") {
+
+              window.alert('Success.\nThe building was stored correctly')
+
+            }else{
+
             Alert.alert("Success","The building was stored correctly")
+
+            }
             setAlias("");
             setAddress("");
             setContractNumber("");
