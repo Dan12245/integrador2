@@ -3,12 +3,15 @@ import { Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { useRouter } from 'expo-router';
 import { usePostHog } from "../lib/posthog";
+import { performGoogleSignIn } from "../lib/auth";
+import GoogleIcon from "./GoogleIcon";
 
 export default function SignUpForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const router = useRouter();
   const posthog = usePostHog();
 
@@ -42,6 +45,28 @@ export default function SignUpForm() {
     setLoading(false);
   }
 
+  async function handleGoogleSignUp() {
+    setGoogleLoading(true);
+    posthog.capture("google_sign_up_initiated");
+    try {
+      const sessionData = await performGoogleSignIn();
+      if (sessionData?.user?.email) {
+        posthog.identify(sessionData.user.email, {
+          $set: { email: sessionData.user.email },
+          $set_once: { registration_date: new Date().toISOString() },
+        });
+      }
+      posthog.capture("user_registered_google");
+    } catch (error: any) {
+      if (error?.message && !error.message.includes("cancel")) {
+        Alert.alert("Google Sign-Up Error", error.message);
+      }
+      posthog.capture("google_sign_up_failed", { error_message: error?.message });
+    } finally {
+      setGoogleLoading(false);
+    }
+  }
+
   return (
     <View className="flex-1 justify-center p-6 bg-white">
       <View className="mb-8">
@@ -51,6 +76,26 @@ export default function SignUpForm() {
         <Text className="text-gray-500">
           Sign up to get started
         </Text>
+      </View>
+
+      <TouchableOpacity
+        testID="google_sign_up_button"
+        className={`w-full flex-row items-center justify-center bg-white border border-gray-300 py-3.5 px-4 rounded-xl mb-6 shadow-sm active:bg-gray-50 ${googleLoading ? 'opacity-50' : ''}`}
+        onPress={handleGoogleSignUp}
+        disabled={googleLoading || loading}
+      >
+        <GoogleIcon size={20} style={{ marginRight: 12 }} />
+        <Text className="text-gray-800 text-base font-semibold">
+          {googleLoading ? "Connecting to Google..." : "Sign Up with Google"}
+        </Text>
+      </TouchableOpacity>
+
+      <View className="flex-row items-center mb-6">
+        <View className="flex-1 h-px bg-gray-200" />
+        <Text className="mx-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+          Or sign up with email
+        </Text>
+        <View className="flex-1 h-px bg-gray-200" />
       </View>
 
       <View className="flex flex-col gap-4 mb-8">
@@ -99,7 +144,7 @@ export default function SignUpForm() {
           testID="signup_submit_button"
           className={`w-full bg-indigo-600 py-4 rounded-xl items-center justify-center shadow-lg shadow-indigo-600/30 ${loading ? 'opacity-50' : ''}`}
           onPress={signUpWithEmail}
-          disabled={loading}
+          disabled={loading || googleLoading}
         >
           <Text className="text-white text-base font-semibold">
             {loading ? "Creating account..." : "Sign Up"}
@@ -122,3 +167,4 @@ export default function SignUpForm() {
     </View>
   );
 }
+
