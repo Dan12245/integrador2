@@ -50,6 +50,9 @@ export default function SignInForm() {
                 });
             }
             posthog.capture("user_signed_in_google");
+            if (sessionData?.session) {
+                router.replace("/home" as any);
+            }
         } catch (error: any) {
             if (error?.message && !error.message.includes("cancel")) {
                 Alert.alert("Google Sign-In Error", error.message);
@@ -61,7 +64,7 @@ export default function SignInForm() {
     }
 
     return (
-        <View className="flex-1 justify-center p-6 bg-white">
+        <View className="flex-1 justify-center p-6 bg-white w-full max-w-md self-center">
             <View className="mb-8">
                 <Text className="text-3xl font-extrabold text-gray-900 tracking-tight mb-2">
                     Welcome to CRA
@@ -71,14 +74,16 @@ export default function SignInForm() {
 
             <TouchableOpacity
                 testID="google_sign_in_button"
-                className={`w-full flex-row items-center justify-center bg-white border border-gray-300 py-3.5 px-4 rounded-xl mb-6 shadow-sm active:bg-gray-50 ${googleLoading ? "opacity-50" : ""}`}
+                className={`w-full bg-white border border-gray-300 py-3.5 px-4 rounded-xl mb-6 shadow-sm active:bg-gray-50 ${googleLoading ? "opacity-50" : ""}`}
                 onPress={handleGoogleSignIn}
                 disabled={googleLoading || loading}
             >
-                <GoogleIcon size={20} style={{ marginRight: 12 }} />
-                <Text className="text-gray-800 text-base font-semibold">
-                    {googleLoading ? "Connecting to Google..." : "Continue with Google"}
-                </Text>
+                <View className="flex-row items-center justify-center w-full">
+                    <GoogleIcon size={20} style={{ marginRight: 12 }} />
+                    <Text className="text-gray-800 text-base font-semibold">
+                        {googleLoading ? "Connecting to Google..." : "Continue with Google"}
+                    </Text>
+                </View>
             </TouchableOpacity>
 
             <View className="flex-row items-center mb-6">

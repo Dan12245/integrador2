@@ -57,6 +57,9 @@ export default function SignUpForm() {
         });
       }
       posthog.capture("user_registered_google");
+      if (sessionData?.session) {
+        router.replace("/home" as any);
+      }
     } catch (error: any) {
       if (error?.message && !error.message.includes("cancel")) {
         Alert.alert("Google Sign-Up Error", error.message);
@@ -68,7 +71,7 @@ export default function SignUpForm() {
   }
 
   return (
-    <View className="flex-1 justify-center p-6 bg-white">
+    <View className="flex-1 justify-center p-6 bg-white w-full max-w-md self-center">
       <View className="mb-8">
         <Text className="text-3xl font-extrabold text-gray-900 tracking-tight mb-2">
           Create Account
@@ -80,14 +83,16 @@ export default function SignUpForm() {
 
       <TouchableOpacity
         testID="google_sign_up_button"
-        className={`w-full flex-row items-center justify-center bg-white border border-gray-300 py-3.5 px-4 rounded-xl mb-6 shadow-sm active:bg-gray-50 ${googleLoading ? 'opacity-50' : ''}`}
+        className={`w-full bg-white border border-gray-300 py-3.5 px-4 rounded-xl mb-6 shadow-sm active:bg-gray-50 ${googleLoading ? 'opacity-50' : ''}`}
         onPress={handleGoogleSignUp}
         disabled={googleLoading || loading}
       >
-        <GoogleIcon size={20} style={{ marginRight: 12 }} />
-        <Text className="text-gray-800 text-base font-semibold">
-          {googleLoading ? "Connecting to Google..." : "Sign Up with Google"}
-        </Text>
+        <View className="flex-row items-center justify-center w-full">
+          <GoogleIcon size={20} style={{ marginRight: 12 }} />
+          <Text className="text-gray-800 text-base font-semibold">
+            {googleLoading ? "Connecting to Google..." : "Sign Up with Google"}
+          </Text>
+        </View>
       </TouchableOpacity>
 
       <View className="flex-row items-center mb-6">

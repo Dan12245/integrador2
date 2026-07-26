@@ -2,6 +2,8 @@ import "../../global.css";
 import { useEffect, useState } from "react";
 import { Stack, useRouter, useSegments, usePathname } from "expo-router";
 import { supabase } from "../lib/supabase";
+import { handleAuthRedirectUrl } from "../lib/auth";
+import * as Linking from "expo-linking";
 import { Session, AuthChangeEvent } from "@supabase/supabase-js";
 import { ActivityIndicator, View } from "react-native";
 import { posthog, PostHogProvider } from "../lib/posthog";
@@ -23,7 +25,30 @@ export default function RootLayout() {
     }
   }, [pathname]);
 
-  // 1. Listen to auth state changes
+  // 1. Listen to deep links for OAuth authentication redirects
+  useEffect(() => {
+    const handleDeepLink = async (event: { url: string }) => {
+      console.log("[RootLayout] Deep link received:", event.url);
+      if (event.url && (event.url.includes("code=") || event.url.includes("access_token="))) {
+        try {
+          await handleAuthRedirectUrl(event.url);
+        } catch (err) {
+          console.error("[RootLayout] Deep link auth error:", err);
+        }
+      }
+    };
+
+    Linking.getInitialURL().then((url) => {
+      if (url && (url.includes("code=") || url.includes("access_token="))) {
+        handleDeepLink({ url });
+      }
+    });
+
+    const subscription = Linking.addEventListener("url", handleDeepLink);
+    return () => subscription.remove();
+  }, []);
+
+  // 2. Listen to auth state changes
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -31,6 +56,7 @@ export default function RootLayout() {
     });
 
     const { data: authListener } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
+      console.log("[RootLayout] onAuthStateChange event:", _event, "User:", session?.user?.email);
       setSession(session);
       setLoading(false);
     });
@@ -40,19 +66,18 @@ export default function RootLayout() {
     };
   }, []);
 
-  // 2. Protect routes reactively
+  // 3. Protect routes reactively
   useEffect(() => {
     if (loading) return;
 
-    // Check if the user is currently in the "(auth)" group or "(app)" group
+    // Check if the user is currently in the "(app)" group
     const inAppGroup = (segments[0] as string) === "(app)";
-    const inAuthGroup = (segments[0] as string) === "(auth)";
 
     if (!session && inAppGroup) {
       // If NOT logged in, and trying to access protected screens, redirect to login
       router.replace("/login" as any);
-    } else if (session && inAuthGroup) {
-      // If logged in, and trying to access auth screens, redirect to home
+    } else if (session && !inAppGroup) {
+      // If logged in, and NOT in app group (e.g. on auth or landing screens), redirect to home
       router.replace("/home" as any);
     }
   }, [session, loading, segments]);

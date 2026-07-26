@@ -3,7 +3,7 @@ import SignInForm from "../../components/SignInForm";
 
 export default function Login() {
   return (
-    <View className="flex-1 items-center justify-center bg-white">
+    <View className="flex-1 justify-center bg-white">
       <SignInForm />
     </View>
   );
