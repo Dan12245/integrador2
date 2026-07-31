@@ -1,51 +1,67 @@
 import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import FeedbackForm from "../../components/FeedbackForm";
 
 export default function TechSupport() {
-  const router = useRouter();
+    const router = useRouter();
 
-  return (
-    <View className="mt-10 p-3">
-      <View className="py-1 self-stretch items-center mb-5">
-        <Text className="text-2xl font-bold text-[#333]">techSupport</Text>
-      </View>
+    return (
+        <SafeAreaView className="flex-1 bg-gray-50" edges={["top", "left", "right", "bottom"]}>
+            <ScrollView
+                contentContainerStyle={{ flexGrow: 1 }}
+                className="flex-1 p-4"
+                showsVerticalScrollIndicator={false}
+            >
+                <View className="max-w-3xl w-full mx-auto">
 
-      <View className="py-1 self-stretch">
-        <TouchableOpacity
-          className="bg-[#2089dc] rounded p-3 items-center"
-          onPress={() => router.push("/userProfile" as any)}
-        >
-          <Text className="text-white text-base font-semibold">Go to User Profile</Text>
-        </TouchableOpacity>
-      </View>
 
-      <View className="py-1 self-stretch">
-        <TouchableOpacity
-          className="bg-[#2089dc] rounded p-3 items-center"
-          onPress={() => router.push("/myBuildings" as any)}
-        >
-          <Text className="text-white text-base font-semibold">Go to My Buildings</Text>
-        </TouchableOpacity>
-      </View>
+                    {/* Navigation Links */}
+                    <View className="mt-6 gap-2.5">
+                        <TouchableOpacity
+                            testID="techsupport-user-profile-button"
+                            className="bg-[#2089dc] rounded-xl p-3.5 items-center"
+                            onPress={() => router.push("/userProfile" as any)}
+                        >
+                            <Text className="text-white text-base font-semibold">
+                                Go to User Profile
+                            </Text>
+                        </TouchableOpacity>
 
-      <View className="py-1 self-stretch">
-        <TouchableOpacity
-          className="bg-[#2089dc] rounded p-3 items-center"
-          onPress={() => router.push("/consumptions" as any)}
-        >
-          <Text className="text-white text-base font-semibold">Go to Consumptions</Text>
-        </TouchableOpacity>
-      </View>
+                        <TouchableOpacity
+                            testID="techsupport-my-buildings-button"
+                            className="bg-[#2089dc] rounded-xl p-3.5 items-center"
+                            onPress={() => router.push("/myBuildings" as any)}
+                        >
+                            <Text className="text-white text-base font-semibold">
+                                Go to My Buildings
+                            </Text>
+                        </TouchableOpacity>
 
-      <View className="py-1 self-stretch mt-5">
-        <TouchableOpacity
-          className="bg-[#86939e] rounded p-3 items-center"
-          onPress={() => router.push("/home" as any)}
-        >
-          <Text className="text-white text-base font-semibold">Back to Home</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+                        <TouchableOpacity
+                            testID="techsupport-consumptions-button"
+                            className="bg-[#2089dc] rounded-xl p-3.5 items-center"
+                            onPress={() => router.push("/consumptions" as any)}
+                        >
+                            <Text className="text-white text-base font-semibold">
+                                Go to Consumptions
+                            </Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            testID="techsupport-back-home-button"
+                            className="bg-[#86939e] rounded-xl p-3.5 items-center mt-2"
+                            onPress={() => router.push("/home" as any)}
+                        >
+                            <Text className="text-white text-base font-semibold">Back to Home</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Feedback Form */}
+                    <FeedbackForm />
+                </View>
+            </ScrollView>
+        </SafeAreaView>
+    );
 }

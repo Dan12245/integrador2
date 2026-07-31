@@ -1,51 +1,45 @@
-import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
-import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { View, ActivityIndicator, ScrollView } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Account from "../../components/Account";
+import { supabase } from "../../lib/supabase";
 
 export default function UserProfile() {
-  const router = useRouter();
+  const [userId, setUserId] = useState<string | null>(null);
+  const [email, setEmail] = useState<string | undefined>(undefined);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getSession().then((res) => {
+      const session = res.data.session;
+      if (session?.user) {
+        setUserId(session.user.id);
+        setEmail(session.user.email);
+      }
+      setLoading(false);
+    });
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
+
+  if (!userId) {
+    return null;
+  }
 
   return (
-    <View className="mt-10 p-3">
-      <View className="py-1 self-stretch items-center mb-5">
-        <Text className="text-2xl font-bold text-[#333]">userProfile</Text>
-      </View>
-
-      <View className="py-1 self-stretch">
-        <TouchableOpacity
-          className="bg-[#2089dc] rounded p-3 items-center"
-          onPress={() => router.push("/myBuildings" as any)}
-        >
-          <Text className="text-white text-base font-semibold">Go to My Buildings</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View className="py-1 self-stretch">
-        <TouchableOpacity
-          className="bg-[#2089dc] rounded p-3 items-center"
-          onPress={() => router.push("/techSupport" as any)}
-        >
-          <Text className="text-white text-base font-semibold">Go to Tech Support</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View className="py-1 self-stretch">
-        <TouchableOpacity
-          className="bg-[#2089dc] rounded p-3 items-center"
-          onPress={() => router.push("/consumptions" as any)}
-        >
-          <Text className="text-white text-base font-semibold">Go to Consumptions</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View className="py-1 self-stretch mt-5">
-        <TouchableOpacity
-          className="bg-[#86939e] rounded p-3 items-center"
-          onPress={() => router.push("/home" as any)}
-        >
-          <Text className="text-white text-base font-semibold">Back to Home</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+    <SafeAreaView style={{ flex: 1 }} edges={["left", "right", "bottom"]}>
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+        <View style={{ flex: 1 }}>
+          <Account key={userId} userId={userId} email={email} />
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
+

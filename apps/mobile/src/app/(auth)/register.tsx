@@ -3,7 +3,7 @@ import SignUpForm from "../../components/SignUpForm";
 
 export default function Register() {
   return (
-    <View className="flex-1 bg-white items-center justify-center">
+    <View className="flex-1 justify-center bg-white">
       <SignUpForm />
     </View>
   );
