@@ -154,11 +154,11 @@ export default function Account({
 
       <View className="py-1 self-stretch">
         <TouchableOpacity
-          testID="account_userprofile_button"
+          testID="account_home_button"
           className="bg-[#2089dc] rounded p-3 items-center"
-          onPress={() => router.push("/userProfile" as any)}
+          onPress={() => router.push("/home" as any)}
         >
-          <Text className="text-white text-base font-semibold">Go to User Profile</Text>
+          <Text className="text-white text-base font-semibold">Back to Home</Text>
         </TouchableOpacity>
       </View>
 

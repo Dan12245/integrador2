@@ -15,9 +15,7 @@ export default function TechSupport() {
                 showsVerticalScrollIndicator={false}
             >
                 <View className="max-w-3xl w-full mx-auto">
-                    <View className="py-2 items-center mb-2">
-                        <Text className="text-2xl font-bold text-[#333]">Tech Support</Text>
-                    </View>
+
 
                     {/* Navigation Links */}
                     <View className="mt-6 gap-2.5">

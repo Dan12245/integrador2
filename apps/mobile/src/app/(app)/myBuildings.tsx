@@ -17,9 +17,6 @@ export default function MyBuildings() {
 
   return (
     <ScrollView className="mt-10 p-3">
-      <View className="py-1 self-stretch items-center mb-5">
-        <Text className="text-2xl font-bold text-[#333]">myBuildings</Text>
-      </View>
 
       <View className="mb-5">
         <ReceiptScannerButton 
