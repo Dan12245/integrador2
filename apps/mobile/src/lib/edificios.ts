@@ -12,27 +12,43 @@ export const addBuilding = async (
         data: { session },
     } = await supabase.auth.getSession();
     const userId = session?.user?.id;
-
+    
     if (!userId) {
         console.log("Error: You are not loged");
         return;
     }
-
-    // Juntamos la wea para mandarla a hono y q hono se la pase a supabase
-    const TestBuilding = {
-        profile_id: userId,
-        alias: alias,
-        contract_number: contractNumber,
-        address: address,
-        description: description,
-    };
-
-    // Y le mandamos la wea a hono
+    
     try {
+        // Juntamos la wea para mandarla a hono y q hono se la pase a supabase
+        //btw, este bloque de codigo es para sacar las coordenadas exactas (espero) de los edificios
+        console.log("Looking for coordinates for:", address);
+        const geoAnswer = await fetch(`http://192.168.0.15:8787/searchBuilding?q=${encodeURIComponent(address)}`);
+        
+        if (!geoAnswer.ok) {
+            console.log("Couldn't find coordinates. Check the address.");
+            // Si no encuentra el edificio, mejor abortamos la mision para no guardar basura en la BD
+            return false; 
+        }
+
+        const geoData = await geoAnswer.json();
+        console.log("Coordinates found:", geoData.lat, geoData.long);
+
+      
+        const TestBuilding = {
+            profile_id: userId,
+            alias: alias,
+            contract_number: contractNumber,
+            address: address, // Guardamos el texto
+            description: description,
+            lat: parseFloat(geoData.lat),   
+            long: parseFloat(geoData.long) 
+        };
+
+        // Y le mandamos la wea a hono
         console.log("Package ready to be sent:", TestBuilding);
 
         // Aca tenemos q poner la ip del server, osea la pc, en este caso es la mia NO DOXXEN HIJOS DE LA LANZA CAMOTES
-        const answer = await fetch("https://api.diegokarim127.workers.dev/addBuilding", {
+        const answer = await fetch("http://192.168.0.15:8787/addBuilding", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
