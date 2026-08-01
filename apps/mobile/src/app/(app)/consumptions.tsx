@@ -8,7 +8,7 @@ import HistoricalRecords from "../../components/HistoricalRecords";
 
 export default function ConsumptionsScreen() {
   const [selectedBuilding, setSelectedBuilding] = useState("Main Complex");
-  const [selectedPeriod, setSelectedPeriod] = useState("Month");
+  const [selectedPeriod, setSelectedPeriod] = useState("Week");
   const [reportType, setReportType] = useState("Monthly");
   const router = useRouter();
 
