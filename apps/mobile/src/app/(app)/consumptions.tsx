@@ -10,6 +10,7 @@ export default function ConsumptionsScreen() {
   const [selectedBuilding, setSelectedBuilding] = useState("Main Complex");
   const [selectedPeriod, setSelectedPeriod] = useState("Week");
   const [reportType, setReportType] = useState("Monthly");
+  const [records, setRecords] = useState<Record<string, number>>({});
   const router = useRouter();
 
   return (
@@ -59,8 +60,13 @@ export default function ConsumptionsScreen() {
             setSelectedBuilding={setSelectedBuilding} 
             selectedPeriod={selectedPeriod} 
             setSelectedPeriod={setSelectedPeriod} 
+            records={records}
+            setRecords={setRecords}
           />
-          <HistoricalRecords />
+          <HistoricalRecords 
+            selectedBuilding={selectedBuilding}
+            records={records}
+          />
         </View>
       </ScrollView>
     </SafeAreaView>

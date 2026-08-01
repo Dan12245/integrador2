@@ -11,6 +11,8 @@ export interface ConsumptionGraphProps {
   setSelectedBuilding: (building: string) => void;
   selectedPeriod: string;
   setSelectedPeriod: (period: string) => void;
+  records?: Record<string, number>;
+  setRecords?: React.Dispatch<React.SetStateAction<Record<string, number>>>;
 }
 
 export default function ConsumptionGraph({
@@ -18,13 +20,17 @@ export default function ConsumptionGraph({
   setSelectedBuilding,
   selectedPeriod,
   setSelectedPeriod,
+  records: externalRecords,
+  setRecords: externalSetRecords,
 }: ConsumptionGraphProps) {
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 1024;
   const chartWidth = isLargeScreen ? Math.min(width - 96, 1150) : width - 64;
 
-  // Building-keyed consumption records (zero default)
-  const [records, setRecords] = useState<Record<string, number>>({});
+  // Building-keyed consumption records fallback
+  const [internalRecords, setInternalRecords] = useState<Record<string, number>>({});
+  const records = externalRecords !== undefined ? externalRecords : internalRecords;
+  const setRecords = externalSetRecords !== undefined ? externalSetRecords : setInternalRecords;
 
   // Modal & form states for Add Consumption
   const [isModalOpen, setIsModalOpen] = useState(false);
