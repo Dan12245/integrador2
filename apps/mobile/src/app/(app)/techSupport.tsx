@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import FeedbackForm from "../../components/FeedbackForm";
+import AIChatBubble from "../../components/AIChatBubble";
 
 export default function TechSupport() {
     const router = useRouter();
@@ -64,6 +65,10 @@ export default function TechSupport() {
                     <FeedbackForm />
                 </View>
             </ScrollView>
+
+            {/* Volatile AI Assistant Floating Chat Widget */}
+            <AIChatBubble />
         </SafeAreaView>
     );
 }
+
