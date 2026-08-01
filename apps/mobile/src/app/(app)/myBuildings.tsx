@@ -172,7 +172,7 @@ export default function MyBuildings() {
               }
               return;
             }
-            // Aquí se manda a llamar a tu función addBuilding que ya hace el fetch de Nominatim
+            // Aquí se manda a llamar a addBuilding q hace el fetch de Nominatim
             const answer = await addBuilding(alias, contractNumber, address, description)
             if(!answer){
               if (Platform.OS=="web") {
