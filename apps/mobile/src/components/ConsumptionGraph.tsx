@@ -147,7 +147,6 @@ export default function ConsumptionGraph({
           <Feather name="plus" size={16} color="white" />
           <Text className="text-white text-xs font-bold">Add consumption</Text>
         </Pressable>
-
         <Pressable
           testID="edit-records-button"
           onPress={handleOpenEditModal}
