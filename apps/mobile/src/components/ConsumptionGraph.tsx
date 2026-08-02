@@ -80,8 +80,13 @@ export default function ConsumptionGraph({
       const year = selectedDate.getFullYear();
       const month = selectedDate.getMonth();
       const daysInM = getDaysInMonth(year, month);
-      const perDay = val / daysInM;
-      for (let d = 1; d <= daysInM; d++) {
+
+      const isCurrentMonth =
+        year === todayDateObj.getFullYear() && month === todayDateObj.getMonth();
+      const daysToDistribute = isCurrentMonth ? todayDateObj.getDate() : daysInM;
+
+      const perDay = val / daysToDistribute;
+      for (let d = 1; d <= daysToDistribute; d++) {
         const key = `${selectedBuilding}:${formatDateKey(new Date(year, month, d))}`;
         updatedRecords[key] = (updatedRecords[key] || 0) + perDay;
       }

@@ -101,6 +101,15 @@ export function AddConsumptionModal({
               />
             </View>
 
+            {periodType === "Month" && (
+              <Text className="text-[11px] text-gray-500 mb-4 italic">
+                {selectedDate.getFullYear() === todayDateObj.getFullYear() &&
+                selectedDate.getMonth() === todayDateObj.getMonth()
+                  ? `Note: Distributed across days 1–${todayDateObj.getDate()} of this month.`
+                  : "Note: Distributed across all days of the selected month."}
+              </Text>
+            )}
+
             {/* Calendar Date / Month Picker */}
             <Text className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
               {periodType === "Day" ? "Select Date" : "Select Month"}
