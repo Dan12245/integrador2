@@ -3,10 +3,21 @@ import { TouchableOpacity, Text, ActivityIndicator, Alert, Platform } from "reac
 import * as ImagePicker from "expo-image-picker";
 import { Feather } from "@expo/vector-icons";
 
-// Define default API URL. Priority: EXPO_PUBLIC_API_URL env var > Simulator aliases
+import Constants from "expo-constants";
+
+// Define default API URL. Priority: EXPO_PUBLIC_API_URL env var > Metro Host IP > Simulator aliases
+const getHostIp = () => {
+    const hostUri = Constants.expoConfig?.hostUri;
+    return hostUri ? hostUri.split(":")[0] : null;
+};
+
 const DEFAULT_API_URL =
     process.env.EXPO_PUBLIC_API_URL ||
-    (Platform.OS === "android" ? "http://10.0.2.2:8787" : "http://localhost:8787");
+    (getHostIp()
+        ? `http://${getHostIp()}:8787`
+        : Platform.OS === "android"
+        ? "http://10.0.2.2:8787"
+        : "http://localhost:8787");
 
 export interface ExtractedData {
     contract_number: string | null;
