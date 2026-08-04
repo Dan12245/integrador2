@@ -27,7 +27,21 @@ export function getQueryParam(url: string, param: string): string | null {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
+let lastProcessedUrl: string | null = null;
+
 export async function handleAuthRedirectUrl(url: string) {
+  if (!url) return null;
+  if (lastProcessedUrl === url) {
+    console.log("[Auth] URL already processed, skipping duplicate handleAuthRedirectUrl.");
+    return null;
+  }
+  lastProcessedUrl = url;
+  setTimeout(() => {
+    if (lastProcessedUrl === url) {
+      lastProcessedUrl = null;
+    }
+  }, 5000);
+
   console.log("[Auth] Processing Auth Redirect URL:", url);
 
   const errorDesc = getQueryParam(url, "error_description") || getQueryParam(url, "error");
@@ -92,6 +106,9 @@ export async function performGoogleSignIn() {
       provider: "google",
       options: {
         redirectTo: redirectUrl,
+        queryParams: {
+          prompt: "select_account",
+        },
       },
     });
     if (error) throw error;
@@ -103,6 +120,9 @@ export async function performGoogleSignIn() {
     provider: "google",
     options: {
       redirectTo: redirectUrl,
+      queryParams: {
+        prompt: "select_account",
+      },
       skipBrowserRedirect: true,
     },
   });
