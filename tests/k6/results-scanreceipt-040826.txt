@@ -1,0 +1,58 @@
+[.../IntegradorII/Project/integrador2][testing][un 󰋗 4]
+[>>>>] k6 run tests/k6/api-scanreceipt-loadtest.js                                 
+
+         /\      Grafana   /‾‾/  
+    /\  /  \     |\  __   /  /   
+   /  \/    \    | |/ /  /   ‾‾\ 
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/ 
+
+
+     execution: local
+        script: tests/k6/api-scanreceipt-loadtest.js
+        output: -
+
+     scenarios: (100.00%) 1 scenario, 5 max VUs, 1m10s max duration (incl. graceful stop):
+              * default: Up to 5 looping VUs for 40s over 3 stages (gracefulRampDown: 30s, gracefulStop: 30s)
+
+
+
+  █ THRESHOLDS 
+
+    http_req_duration
+    ✓ 'p(95)<3000' p(95)=1.31s
+
+    http_req_failed
+    ✓ 'rate<0.05' rate=0.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 102     2.487567/s
+    checks_succeeded...: 100.00% 102 out of 102
+    checks_failed......: 0.00%   0 out of 102
+
+    ✓ status is 200
+    ✓ receipt processed successfully
+
+    HTTP
+    http_req_duration..............: avg=861.8ms min=502.36ms med=818.31ms max=1.77s p(90)=1.15s p(95)=1.31s
+      { expected_response:true }...: avg=861.8ms min=502.36ms med=818.31ms max=1.77s p(90)=1.15s p(95)=1.31s
+    http_req_failed................: 0.00%  0 out of 51
+    http_reqs......................: 51     1.243783/s
+
+    EXECUTION
+    iteration_duration.............: avg=1.88s   min=1.5s     med=1.83s    max=2.77s p(90)=2.16s p(95)=2.47s
+    iterations.....................: 51     1.243783/s
+    vus............................: 1      min=1       max=5
+    vus_max........................: 5      min=5       max=5
+
+    NETWORK
+    data_received..................: 116 kB 2.8 kB/s
+    data_sent......................: 7.0 MB 172 kB/s
+
+
+
+
+running (0m41.0s), 0/5 VUs, 51 complete and 0 interrupted iterations
+default ✓ [======================================] 0/5 VUs  40s
