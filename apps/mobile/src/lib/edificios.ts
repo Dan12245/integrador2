@@ -7,37 +7,37 @@ export const addBuilding = async (
     contractNumber: string,
     address: string,
     description: string,
+    lat:number,
+    long:number
 ) => {
     // Le pedimos a supabase que se traiga la sesion
     const {
         data: { session },
     } = await supabase.auth.getSession();
     const userId = session?.user?.id;
-
+    
     if (!userId) {
         console.log("Error: You are not logged in");
         return;
     }
-
-    // Juntamos la wea para mandarla a hono y q hono se la pase a supabase
-    const TestBuilding = {
-        profile_id: userId,
-        alias: alias,
-        contract_number: contractNumber,
-        address: address,
-        description: description,
-    };
-
-    const API_BASE_URL =
-        process.env.EXPO_PUBLIC_API_URL ||
-        (Platform.OS === "android" ? "http://10.0.2.2:8787" : "http://localhost:8787");
-
-    // Y le mandamos la wea a hono
+    
     try {
+        // Juntamos la wea para mandarla a hono y q hono se la pase a supabase
+        const TestBuilding = {
+            profile_id: userId,
+            alias: alias,
+            contract_number: contractNumber,
+            address: address, // Guardamos el texto
+            description: description,
+            lat: lat,   
+            long: long 
+        };
+
+        // Y le mandamos la wea a hono
         console.log("Package ready to be sent:", TestBuilding);
 
         // Aca tenemos q poner la ip del server, osea la pc, en este caso es la mia NO DOXXEN HIJOS DE LA LANZA CAMOTES
-        const answer = await fetch(`${API_BASE_URL}/addBuilding`, {
+        const answer = await fetch("http://192.168.0.15:8787/addBuilding", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

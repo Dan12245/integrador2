@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import Animated, { FadeInLeft, FadeInRight, FadeInDown } from "react-native-rean
 import AppNavbar from "../../components/AppNavbar";
 import ReceiptScannerButton, { ExtractedData } from "../../components/Camera";
 import { addBuilding } from "@/src/lib/edificios";
+import BuildingMap from "../../components/BuildingMap";
 
 interface Building {
   id: string;
@@ -96,6 +97,75 @@ export default function MyBuildings() {
     setExtractedData(null);
     setShowAddForm(false);
   };
+
+  //esta wea es para las coordenadas y q jale el mapa
+  const [coordinates, setCoordinates] = useState<{ lat: number; long: number } | null>(null); 
+
+  // Estas weas nos sirven para autocompletar busquedas
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [showingSuggestions, setShowingSuggestions] = useState(false);
+
+  // Esto es para hacer un "debounce" y evitar que la api de photon nos banee por mandarle un monton de peticiones
+  useEffect(() => {
+    if (address.trim() === "" || !showingSuggestions) {
+      setSuggestions([]);
+      return;
+    }
+
+    const delayDebounce = setTimeout(async () => {
+      try {  
+        const res = await fetch(`http://192.168.0.15:8787/autocomplete?q=${encodeURIComponent(address)}`);
+        if (!res.ok) {
+          console.log("Backend error:", res.status);
+          return; 
+        }
+        const data = await res.json();
+        console.log("Features",JSON.stringify(data, null, 2))
+        setSuggestions(data || []);
+      } catch (error) {
+        console.error("Error while searching suggestions:", error);
+      }
+    }, 500); // Espera 500ms
+    return () => clearTimeout(delayDebounce);
+  }, [address, showingSuggestions]);
+  
+    // esta wea es para cuando el usuario seleccione una opcion
+    const selectAddress = (item: any) => {
+    const { name, street, housenumber, city } = item.properties;
+    // Armamos el texto. Si tiene nombre lo ponemos, si no solo la calle y ciudad.
+    const calleConNumero = `${street || ''} ${housenumber || ''}`.trim();
+
+    // 2. Metemos todo a un arreglo y usamos un truco ninja (.filter(Boolean)) 
+    // para quitar los datos que vengan vacíos y unir el resto con comas.
+    const RealAdress = [name, calleConNumero, city].filter(Boolean).join(', ');
+        
+    setAddress(RealAdress);
+    setShowingSuggestions(false); // Ocultamos la lista para que no siga buscando
+    setSuggestions([]);
+
+    // Photon ya nos da las coordenadas en la misma sugerencia, ojo que vienen como [long, lat]
+    const [long, lat] = item.geometry.coordinates;
+    console.log("COORDS DATA:", { lat, long });
+    setCoordinates({ lat, long });
+  };
+
+  //una funcion para q el usuaio pueda seleccionar su ubi directo del mapa
+  const handleMapLocationSelect = async (lat: number, long: number) => {
+    // Actualizamos coordenadas de una vez para que el marker/mapa reaccione rápido
+    setCoordinates({ lat, long });
+
+    try {
+      const res = await fetch(`http://192.168.0.15:8787/reverseGeocode?lat=${lat}&lon=${long}`);
+      const data = await res.json();
+
+      if (data.address) {
+        setAddress(data.address);
+      }
+    } catch (error) {
+      console.error("Error al buscar la dirección desde el mapa:", error);
+    }
+  };
+  
 
   return (
     <SafeAreaView className="flex-1 bg-[#f4f6f8]" edges={["top", "left", "right", "bottom"]}>
@@ -322,7 +392,11 @@ export default function MyBuildings() {
                   className="bg-gray-50 p-3 rounded-xl border border-gray-200 text-sm text-gray-800"
                   style={{ backgroundColor: "#f8fafc" }}
                   value={address}
-                  onChangeText={setAddress}
+                  value={address} 
+                    onChangeText={(text) => {
+                      setAddress(text);
+                      setShowingSuggestions(true); // Al teclear la direccion se llama a la wea de las sugerencias
+                    }}
                   placeholder="Address"
                   placeholderTextColor="#9ca3af"
                 />

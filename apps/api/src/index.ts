@@ -20,4 +20,6 @@ app.route('/', ocrRouter)
 app.route('/addBuilding', routerBuilding)
 app.route('/', chatRouter)
 
+app.route('/',routerBuilding)
+
 export default app
