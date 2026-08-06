@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert, Platform } from "react-native";
+import  { View, Text, TouchableOpacity, ScrollView, TextInput, Alert, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import ReceiptScannerButton, { ExtractedData } from "../../components/Camera";
 import { addBuilding } from "@/src/lib/edificios";
+import BuildingMap from "../../components/BuildingMap";
 
 export default function MyBuildings() {
   const router = useRouter();
@@ -12,6 +13,9 @@ export default function MyBuildings() {
   const [address, setAddress] = useState("");
   const [contractNumber, setContractNumber] = useState("");
   const [description, setDescription] = useState("");
+
+  //esta wea es para las coordenadas y q jale el mapa
+  const [coordinates, setCoordinates] = useState<{ lat: number; long: number } | null>(null); 
 
   // Estas weas nos sirven para autocompletar busquedas
   const [suggestions, setSuggestions] = useState<any[]>([]);
@@ -25,32 +29,59 @@ export default function MyBuildings() {
     }
 
     const delayDebounce = setTimeout(async () => {
-      try {
+      try {  
         const res = await fetch(`http://192.168.0.15:8787/autocomplete?q=${encodeURIComponent(address)}`);
         if (!res.ok) {
-  console.log("El backend regresó un error:", res.status);
-  return; 
-}
+          console.log("Backend error:", res.status);
+          return; 
+        }
         const data = await res.json();
-        setSuggestions(data);
+        console.log("Features",JSON.stringify(data, null, 2))
+        setSuggestions(data || []);
       } catch (error) {
-        console.error("Error al buscar suggestions:", error);
+        console.error("Error while searching suggestions:", error);
       }
     }, 500); // Espera 500ms
-
     return () => clearTimeout(delayDebounce);
   }, [address, showingSuggestions]);
-
-  // esta wea es para cuando el usuario seleccione una opcion
-  const selectAdrress = (item: any) => {
-    const { name, street, city } = item.properties;
+  
+    // esta wea es para cuando el usuario seleccione una opcion
+    const selectAddress = (item: any) => {
+    const { name, street, housenumber, city } = item.properties;
     // Armamos el texto. Si tiene nombre lo ponemos, si no solo la calle y ciudad.
-    const RealAdress = `${name ? name + ', ' : ''}${street ? street + ', ' : ''}${city || ''}`;
-    
+    const calleConNumero = `${street || ''} ${housenumber || ''}`.trim();
+
+    // 2. Metemos todo a un arreglo y usamos un truco ninja (.filter(Boolean)) 
+    // para quitar los datos que vengan vacíos y unir el resto con comas.
+    const RealAdress = [name, calleConNumero, city].filter(Boolean).join(', ');
+        
     setAddress(RealAdress);
     setShowingSuggestions(false); // Ocultamos la lista para que no siga buscando
     setSuggestions([]);
+
+    // Photon ya nos da las coordenadas en la misma sugerencia, ojo que vienen como [long, lat]
+    const [long, lat] = item.geometry.coordinates;
+    console.log("COORDS DATA:", { lat, long });
+    setCoordinates({ lat, long });
   };
+
+  //una funcion para q el usuaio pueda seleccionar su ubi directo del mapa
+  const handleMapLocationSelect = async (lat: number, long: number) => {
+    // Actualizamos coordenadas de una vez para que el marker/mapa reaccione rápido
+    setCoordinates({ lat, long });
+
+    try {
+      const res = await fetch(`http://192.168.0.15:8787/reverseGeocode?lat=${lat}&lon=${long}`);
+      const data = await res.json();
+
+      if (data.address) {
+        setAddress(data.address);
+      }
+    } catch (error) {
+      console.error("Error al buscar la dirección desde el mapa:", error);
+    }
+  };
+  
 
   return (
     <ScrollView className="mt-10 p-3" keyboardShouldPersistTaps="handled">
@@ -77,7 +108,7 @@ export default function MyBuildings() {
         </View>
       )}
 
-      {/* ... (Botones de navegación intactos) ... */}
+      
       <View className="py-1 self-stretch">
         <TouchableOpacity testID="mybuildings-user-profile-button" className="bg-[#2089dc] rounded p-3 items-center" onPress={() => router.push("/userProfile" as any)}>
           <Text className="text-white text-base font-semibold">Go to User Profile</Text>
@@ -127,19 +158,24 @@ export default function MyBuildings() {
             value={address} 
             onChangeText={(text) => {
               setAddress(text);
-              setShowingSuggestions(true); // Al teclear, activamos la búsqueda
+              setShowingSuggestions(true); // Al teclear la direccion se llama a la wea de las sugerencias
             }}
             placeholder="Search address..."
           />
-          
-          {/* NUEVO: La lista de suggestions que se dibuja abajo del input */}
+          {/*Esta wea es para el mapa, asi q le puedes mover de este lado mi sebostian*/}
+          <BuildingMap
+            lat={coordinates?.lat ?? null}
+            long={coordinates?.long ?? null}
+            addressLabel={address}
+            onLocationSelect={handleMapLocationSelect}
+          />
           {suggestions.length > 0 && showingSuggestions && (
             <View className="bg-white border border-gray-300 rounded mt-1 shadow-sm absolute top-[100%] left-0 right-0 max-h-48 overflow-hidden z-50">
-              {suggestions.map((item, index) => (
+              {suggestions?.map((item, index) => (
                 <TouchableOpacity 
                   key={item.properties.osm_id || index} 
                   className="p-3 border-b border-gray-200"
-                  onPress={() => selectAdrress(item)}
+                  onPress={() => selectAddress(item)}
                 >
                   <Text className="font-bold text-black">{item.properties.name || item.properties.street}</Text>
                   <Text className="text-gray-500 text-sm">{item.properties.city} {item.properties.state}</Text>
@@ -159,12 +195,11 @@ export default function MyBuildings() {
       </View>
 
       <View className="py-1 self-stretch mt-5 mb-10">
-        {/* Boton de Guardar Intacto */}
         <TouchableOpacity
           testID="mybuildings-save-building-button"
           className="bg-[#86939e] rounded p-3 items-center"
           onPress={async () => {
-            if(!alias || !contractNumber || !address || !description){
+            if(!alias || !contractNumber || !address || !description || !coordinates){
               if (Platform.OS=="web") {
                 window.alert("Failed\nComplete all the fields")
               }else{
@@ -173,7 +208,7 @@ export default function MyBuildings() {
               return;
             }
             // Aquí se manda a llamar a addBuilding q hace el fetch de Nominatim
-            const answer = await addBuilding(alias, contractNumber, address, description)
+            const answer = await addBuilding(alias, contractNumber, address, description, coordinates?.lat, coordinates?.long)
             if(!answer){
               if (Platform.OS=="web") {
                 window.alert("Failed\nThe building couldn't be stored correctly")

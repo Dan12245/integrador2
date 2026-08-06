@@ -129,4 +129,40 @@ routerBuilding.get('/autocomplete', async (c) => {
   }
 })
 
+//funcion para sacar la direccion a partir de coordenadas (reverse geocoding)
+routerBuilding.get('/reverseGeocode', async (c) => {
+  const lat = c.req.query('lat')
+  const lon = c.req.query('lon')
+
+  if (!lat || !lon) {
+    return c.json({ error: 'lat y lon son requeridos' }, 400)
+  }
+
+  try {
+    //le hablamos a nomnatim para pedirle la lat y long si el usuario lo selecciona directo en el mapa en lugar de poner la wea con la ubicacion
+    const answer = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`,
+      {
+        headers: {
+          'User-Agent': `CRA/1.0 (${c.env.USER_EMAIL})`
+        }
+      }
+    )
+
+    const data = await answer.json()
+
+    if (data && data.display_name) {
+      return c.json({
+        address: data.display_name,
+        lat: parseFloat(data.lat),
+        long: parseFloat(data.lon)
+      })
+    } else {
+      return c.json({ error: 'No se encontró dirección en esa ubicación' }, 404)
+    }
+  } catch (error) {
+    return c.json({ error: 'connection problem' }, 500)
+  }
+})
+
 export default routerBuilding
