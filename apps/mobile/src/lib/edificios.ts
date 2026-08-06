@@ -1,3 +1,4 @@
+import { Double } from "react-native/Libraries/Types/CodegenTypes";
 import { supabase } from "./supabase";
 
 //aca pues obviamente añadimos el edificio no?
@@ -6,30 +7,42 @@ export const addBuilding = async (
     contractNumber: string,
     address: string,
     description: string,
-    lat:number,
-    long:number
 ) => {
     // Le pedimos a supabase que se traiga la sesion
     const {
         data: { session },
     } = await supabase.auth.getSession();
     const userId = session?.user?.id;
-    
+
     if (!userId) {
         console.log("Error: You are not loged");
         return;
     }
-    
+
     try {
         // Juntamos la wea para mandarla a hono y q hono se la pase a supabase
+        //btw, este bloque de codigo es para sacar las coordenadas exactas (espero) de los edificios
+        console.log("Looking for coordinates for:", address);
+        const geoAnswer = await fetch(`http://192.168.0.15:8787/searchBuilding?q=${encodeURIComponent(address)}`);
+        
+        if (!geoAnswer.ok) {
+            console.log("Couldn't find coordinates. Check the address.");
+            // Si no encuentra el edificio, mejor abortamos la mision para no guardar basura en la BD
+            return false; 
+        }
+
+        const geoData = await geoAnswer.json();
+        console.log("Coordinates found:", geoData.lat, geoData.long);
+
+      
         const TestBuilding = {
             profile_id: userId,
             alias: alias,
             contract_number: contractNumber,
             address: address, // Guardamos el texto
             description: description,
-            lat: lat,   
-            long: long 
+            lat: parseFloat(geoData.lat),   
+            long: parseFloat(geoData.long), 
         };
 
         // Y le mandamos la wea a hono

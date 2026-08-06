@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import ocrRouter from './routes/ocr'
 import routerBuilding from './routes/rutaEdificios'
+import chatRouter from './routes/chat'
 
 const app = new Hono()
 app.use('/*', cors())
