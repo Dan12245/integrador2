@@ -20,6 +20,14 @@ export default function AppNavbar() {
 
       {/* Nav links */}
       <View className="flex-row items-center gap-2">
+        <TouchableOpacity onPress={() => router.push("/home" as any)}>
+          <Text className={`text-sm ${isActive("/home") ? "text-white font-semibold" : "text-white/70"}`}>
+            Home
+          </Text>
+        </TouchableOpacity>
+
+        <Text className="text-white/30 mx-1">|</Text>
+
         <TouchableOpacity onPress={() => router.push("/consumptions" as any)}>
           <Text className={`text-sm ${isActive("/consumptions") ? "text-white font-semibold" : "text-white/70"}`}>
             Consumptions
