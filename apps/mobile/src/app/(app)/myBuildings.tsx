@@ -288,7 +288,29 @@ export default function MyBuildings() {
                 <View className="w-80 h-80 rounded-full bg-blue-400/20 border border-blue-400/40 items-center justify-center">
                   <View className="w-6 h-6 rounded-full bg-[#0d1b2e] border-2 border-white" />
                 </View>
-
+                {/* 
+                weas del mapa
+                 <BuildingMap
+            lat={coordinates?.lat ?? null}
+            long={coordinates?.long ?? null}
+            addressLabel={address}
+            onLocationSelect={handleMapLocationSelect}
+          />
+          {suggestions.length > 0 && showingSuggestions && (
+            <View className="bg-white border border-gray-300 rounded mt-1 shadow-sm absolute top-[100%] left-0 right-0 max-h-48 overflow-hidden z-50">
+              {suggestions?.map((item, index) => (
+                <TouchableOpacity 
+                  key={item.properties.osm_id || index} 
+                  className="p-3 border-b border-gray-200"
+                  onPress={() => selectAddress(item)}
+                >
+                  <Text className="font-bold text-black">{item.properties.name || item.properties.street}</Text>
+                  <Text className="text-gray-500 text-sm">{item.properties.city} {item.properties.state}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+                */}
                 <View className="absolute top-20 left-1/3">
                   <Text className="text-3xl">📍</Text>
                 </View>
@@ -392,7 +414,6 @@ export default function MyBuildings() {
                   className="bg-gray-50 p-3 rounded-xl border border-gray-200 text-sm text-gray-800"
                   style={{ backgroundColor: "#f8fafc" }}
                   value={address}
-                  value={address} 
                     onChangeText={(text) => {
                       setAddress(text);
                       setShowingSuggestions(true); // Al teclear la direccion se llama a la wea de las sugerencias
