@@ -1,4 +1,4 @@
-import { Double } from "react-native/Libraries/Types/CodegenTypes";
+import { Platform } from "react-native";
 import { supabase } from "./supabase";
 
 //aca pues obviamente añadimos el edificio no?
@@ -17,7 +17,7 @@ export const addBuilding = async (
     const userId = session?.user?.id;
     
     if (!userId) {
-        console.log("Error: You are not loged");
+        console.log("Error: You are not logged in");
         return;
     }
     

@@ -3,11 +3,14 @@ import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { supabase } from "../lib/supabase";
 import { useRouter } from "expo-router";
 import { usePostHog } from "../lib/posthog";
+import { performGoogleSignIn } from "../lib/auth";
+import GoogleIcon from "./GoogleIcon";
 
 export default function SignInForm() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
+    const [googleLoading, setGoogleLoading] = useState(false);
     const router = useRouter();
     const posthog = usePostHog();
 
@@ -35,13 +38,60 @@ export default function SignInForm() {
         setLoading(false);
     }
 
+    async function handleGoogleSignIn() {
+        setGoogleLoading(true);
+        posthog.capture("google_sign_in_initiated");
+        try {
+            const sessionData = await performGoogleSignIn();
+            if (sessionData?.user?.email) {
+                posthog.identify(sessionData.user.email, {
+                    $set: { email: sessionData.user.email },
+                    $set_once: { first_sign_in_date: new Date().toISOString() },
+                });
+            }
+            posthog.capture("user_signed_in_google");
+            if (sessionData?.session) {
+                router.replace("/home" as any);
+            }
+        } catch (error: any) {
+            if (error?.message && !error.message.includes("cancel")) {
+                Alert.alert("Google Sign-In Error", error.message);
+            }
+            posthog.capture("google_sign_in_failed", { error_message: error?.message });
+        } finally {
+            setGoogleLoading(false);
+        }
+    }
+
     return (
-        <View className="flex-1 justify-center p-6 bg-white">
+        <View className="flex-1 justify-center p-6 bg-white w-full max-w-md self-center">
             <View className="mb-8">
                 <Text className="text-3xl font-extrabold text-gray-900 tracking-tight mb-2">
                     Welcome to CRA
                 </Text>
                 <Text className="text-gray-500">Sign in to manage your account and profile</Text>
+            </View>
+
+            <TouchableOpacity
+                testID="google_sign_in_button"
+                className={`w-full bg-white border border-gray-300 py-3.5 px-4 rounded-xl mb-6 shadow-sm active:bg-gray-50 ${googleLoading ? "opacity-50" : ""}`}
+                onPress={handleGoogleSignIn}
+                disabled={googleLoading || loading}
+            >
+                <View className="flex-row items-center justify-center w-full">
+                    <GoogleIcon size={20} style={{ marginRight: 12 }} />
+                    <Text className="text-gray-800 text-base font-semibold">
+                        {googleLoading ? "Connecting to Google..." : "Continue with Google"}
+                    </Text>
+                </View>
+            </TouchableOpacity>
+
+            <View className="flex-row items-center mb-6">
+                <View className="flex-1 h-px bg-gray-200" />
+                <Text className="mx-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    Or continue with email
+                </Text>
+                <View className="flex-1 h-px bg-gray-200" />
             </View>
 
             <View className="flex flex-col gap-4 mb-8">
@@ -77,7 +127,7 @@ export default function SignInForm() {
                     testID="sign_in_confirmation"
                     className={`w-full bg-indigo-600 py-4 rounded-xl items-center justify-center shadow-lg shadow-indigo-600/30 ${loading ? "opacity-50" : ""}`}
                     onPress={signInWithEmail}
-                    disabled={loading}
+                    disabled={loading || googleLoading}
                 >
                     <Text className="text-white text-base font-semibold">
                         {loading ? "Signing in..." : "Sign In"}
@@ -100,3 +150,4 @@ export default function SignInForm() {
         </View>
     );
 }
+

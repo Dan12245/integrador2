@@ -2,13 +2,14 @@
   "name": "api",
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev --ip 0.0.0.0",
+    "dev": "wrangler dev --ip 0.0.0.0 --port 8787",
     "deploy": "wrangler deploy --minify",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings"
   },
   "dependencies": {
     "@cra2/shared": "^1.0.0",
     "@google-cloud/vision": "^5.3.7",
+    "@google/genai": "^2.15.0",
     "@supabase/supabase-js": "^2.107.0",
     "hono": "^4.12.23"
   },
