@@ -150,7 +150,7 @@ export default function MyBuildings() {
           onChangeText={setContractNumber}
           placeholder="Contract Number"
         />
-
+        {/*esta wea es la de las direcciones*/ }
         <Text className="text-black text-base font-semibold">Address</Text>
         <View className="relative z-50 mb-3">
           <TextInput 

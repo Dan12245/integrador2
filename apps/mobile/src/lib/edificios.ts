@@ -1,4 +1,3 @@
-import { Double } from "react-native/Libraries/Types/CodegenTypes";
 import { supabase } from "./supabase";
 
 //aca pues obviamente añadimos el edificio no?
