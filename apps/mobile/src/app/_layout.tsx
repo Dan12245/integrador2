@@ -81,12 +81,13 @@ export default function RootLayout() {
 
         // Check if the user is currently in the "(app)" group
         const inAppGroup = (segments[0] as string) === "(app)";
+        const isResetPasswordScreen = (segments[0] as string) === "(auth)" && segments[1] === "forgot-password";
 
         if (!session && inAppGroup) {
             // If NOT logged in, and trying to access protected screens, redirect to login
             router.replace("/login" as any);
-        } else if (session && !inAppGroup) {
-            // If logged in, and NOT in app group (e.g. on auth or landing screens), redirect to home
+        } else if (session && !inAppGroup && !isResetPasswordScreen) {
+            // If logged in, and NOT in app group and NOT on reset password screen, redirect to home
             router.replace("/home" as any);
         }
     }, [session, loading, segments]);

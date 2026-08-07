@@ -109,7 +109,10 @@ export default function SignInForm() {
                 </View>
 
                 <View>
-                    <Text className="text-sm font-semibold text-gray-700 mb-2">Password</Text>
+                    <View className="flex-row justify-between items-center mb-2">
+                        <Text className="text-sm font-semibold text-gray-700">Password</Text>
+                    </View>
+
                     <TextInput
                         testID="login_password_field"
                         onChangeText={(text) => setPassword(text)}
@@ -120,6 +123,18 @@ export default function SignInForm() {
                         className="w-full border border-gray-300 rounded-xl px-4 py-3 text-base text-gray-900 bg-gray-50 focus:border-indigo-600 focus:bg-white"
                     />
                 </View>
+                <TouchableOpacity
+                    testID="forgot_password_button"
+                    className=""
+                    onPress={() => {
+                        posthog.capture("forgot_password_tapped");
+                        router.push("/forgot-password" as any);
+                    }}
+                >
+                    <Text className="text-xs text-right font-semibold text-indigo-600">
+                        Forgot password?
+                    </Text>
+                </TouchableOpacity>
             </View>
 
             <View className="flex flex-col gap-4">
@@ -150,4 +165,3 @@ export default function SignInForm() {
         </View>
     );
 }
-
