@@ -44,6 +44,9 @@ export default function MyBuildings() {
   const [description, setDescription] = useState("");
   const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
+  
+  // Modo de seleccion de ubicacion: escribir la direccion, o tocar el mapa directamente
+  const [locationMode, setLocationMode] = useState<"address" | "map">("address");
 
   const filtered = buildings.filter((b) =>
     b.name.toLowerCase().includes(search.toLowerCase())
@@ -55,7 +58,7 @@ export default function MyBuildings() {
   };
 
   const handleSaveBuilding = async () => {
-    if (!alias || !contractNumber || !address || !description) {
+    if (!alias || !contractNumber || !address || !description || !coordinates) {
       if (Platform.OS === "web") {
         window.alert("Failed\nComplete all the fields");
       } else {
@@ -64,7 +67,14 @@ export default function MyBuildings() {
       return;
     }
 
-    const answer = await addBuilding(alias, contractNumber, address, description);
+    const answer = await addBuilding(
+      alias,
+      contractNumber,
+      address,
+      description,
+      coordinates.lat,
+      coordinates.long
+    );
     if (!answer) {
       if (Platform.OS === "web") {
         window.alert("Failed\nThe building couldn't be stored correctly");
@@ -95,6 +105,9 @@ export default function MyBuildings() {
     setContractNumber("");
     setDescription("");
     setExtractedData(null);
+    setCoordinates(null);
+    setSuggestions([]);
+    setLocationMode("address");
     setShowAddForm(false);
   };
 
@@ -132,18 +145,21 @@ export default function MyBuildings() {
     // esta wea es para cuando el usuario seleccione una opcion
     const selectAddress = (item: any) => {
     const { name, street, housenumber, city } = item.properties;
-    // Armamos el texto. Si tiene nombre lo ponemos, si no solo la calle y ciudad.
+
+    // armamos todo el perro texto de la direccion si tiene nombre lo ponemos, si no solo la calle y ciudad
     const calleConNumero = `${street || ''} ${housenumber || ''}`.trim();
 
-    // 2. Metemos todo a un arreglo y usamos un truco ninja (.filter(Boolean)) 
-    // para quitar los datos que vengan vacíos y unir el resto con comas.
+    // Metemos toda la wea a un arreglo y usamos un .filter(Boolean) para quitar los datos que vengan vacíos y unir el resto con comas
     const RealAdress = [name, calleConNumero, city].filter(Boolean).join(', ');
         
     setAddress(RealAdress);
-    setShowingSuggestions(false); // Ocultamos la lista para que no siga buscando
+    
+    // Ocultamos la lista para que no siga buscando
+    setShowingSuggestions(false); 
+    
     setSuggestions([]);
 
-    // Photon ya nos da las coordenadas en la misma sugerencia, ojo que vienen como [long, lat]
+    // Photon ya nos da las coordenadas en la misma sugerencia que vienen como long y lat
     const [long, lat] = item.geometry.coordinates;
     console.log("COORDS DATA:", { lat, long });
     setCoordinates({ lat, long });
@@ -283,47 +299,14 @@ export default function MyBuildings() {
                 </TouchableOpacity>
               </View>
 
-              {/* Contenido centrado del mapa */}
-              <View className="flex-1 items-center justify-center">
-                <View className="w-80 h-80 rounded-full bg-blue-400/20 border border-blue-400/40 items-center justify-center">
-                  <View className="w-6 h-6 rounded-full bg-[#0d1b2e] border-2 border-white" />
-                </View>
-                {/* 
-                weas del mapa
-                 <BuildingMap
-            lat={coordinates?.lat ?? null}
-            long={coordinates?.long ?? null}
-            addressLabel={address}
-            onLocationSelect={handleMapLocationSelect}
-          />
-          {suggestions.length > 0 && showingSuggestions && (
-            <View className="bg-white border border-gray-300 rounded mt-1 shadow-sm absolute top-[100%] left-0 right-0 max-h-48 overflow-hidden z-50">
-              {suggestions?.map((item, index) => (
-                <TouchableOpacity 
-                  key={item.properties.osm_id || index} 
-                  className="p-3 border-b border-gray-200"
-                  onPress={() => selectAddress(item)}
-                >
-                  <Text className="font-bold text-black">{item.properties.name || item.properties.street}</Text>
-                  <Text className="text-gray-500 text-sm">{item.properties.city} {item.properties.state}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-                */}
-                <View className="absolute top-20 left-1/3">
-                  <Text className="text-3xl">📍</Text>
-                </View>
-                <View className="absolute top-36 right-1/4">
-                  <Text className="text-3xl">📍</Text>
-                </View>
-                <View className="absolute bottom-28 left-1/4">
-                  <Text className="text-3xl">📍</Text>
-                </View>
-
-                <Text className="absolute bottom-4 text-gray-400 text-xs">
-                  Facility Map — integrates react-native-maps
-                </Text>
+              {/* Contenido del mapa, ahora ocupa toda la tarjeta */}
+              <View className="flex-1">
+                <BuildingMap
+                  lat={coordinates?.lat ?? null}
+                  long={coordinates?.long ?? null}
+                  addressLabel={address}
+                  onLocationSelect={handleMapLocationSelect}
+                />
               </View>
             </Animated.View>
           </View>
@@ -408,19 +391,110 @@ export default function MyBuildings() {
                 />
               </View>
 
-              <View>
-                <Text className="text-xs font-semibold text-gray-700 mb-1">Address</Text>
-                <TextInput
-                  className="bg-gray-50 p-3 rounded-xl border border-gray-200 text-sm text-gray-800"
-                  style={{ backgroundColor: "#f8fafc" }}
-                  value={address}
-                    onChangeText={(text) => {
-                      setAddress(text);
-                      setShowingSuggestions(true); // Al teclear la direccion se llama a la wea de las sugerencias
-                    }}
-                  placeholder="Address"
-                  placeholderTextColor="#9ca3af"
-                />
+              <View className="relative z-50">
+                <View className="flex-row items-center justify-between mb-1">
+                  <Text className="text-xs font-semibold text-gray-700">Address</Text>
+
+                  {/* Toggle: escribir direccion vs elegirla directo en el mapa */}
+                  <View className="flex-row bg-gray-100 rounded-lg p-0.5">
+                    <TouchableOpacity
+                      onPress={() => {
+                        setLocationMode("address");
+                        setShowingSuggestions(false);
+                      }}
+                      className="px-2.5 py-1 rounded-md"
+                      style={{
+                        backgroundColor: locationMode === "address" ? "#ffffff" : "transparent",
+                      }}
+                    >
+                      <Text
+                        className="text-[11px] font-semibold"
+                        style={{ color: locationMode === "address" ? "#0d1b2e" : "#9ca3af" }}
+                      >
+                         Type it
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setLocationMode("map");
+                        setShowingSuggestions(false);
+                        setSuggestions([]);
+                      }}
+                      className="px-2.5 py-1 rounded-md"
+                      style={{
+                        backgroundColor: locationMode === "map" ? "#ffffff" : "transparent",
+                      }}
+                    >
+                      <Text
+                        className="text-[11px] font-semibold"
+                        style={{ color: locationMode === "map" ? "#0d1b2e" : "#9ca3af" }}
+                      >
+                         Pick on map
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {locationMode === "address" ? (
+                  <>
+                    <TextInput
+                      className="bg-gray-50 p-3 rounded-xl border border-gray-200 text-sm text-gray-800"
+                      style={{ backgroundColor: "#f8fafc" }}
+                      value={address}
+                      onChangeText={(text) => {
+                        setAddress(text);
+                        setShowingSuggestions(true); // Al teclear la direccion se llama a la wea de las sugerencias
+                      }}
+                      placeholder="Address"
+                      placeholderTextColor="#9ca3af"
+                    />
+                    {suggestions.length > 0 && showingSuggestions && (
+                      <View className="bg-white border border-gray-300 rounded-xl mt-1 shadow-sm absolute top-[100%] left-0 right-0 max-h-48 overflow-hidden z-50">
+                        {suggestions?.map((item, index) => (
+                          <TouchableOpacity
+                            key={item.properties.osm_id || index}
+                            className="p-3 border-b border-gray-100"
+                            onPress={() => selectAddress(item)}
+                          >
+                            <Text className="font-bold text-black text-sm">
+                              {item.properties.name || item.properties.street}
+                            </Text>
+                            <Text className="text-gray-500 text-xs">
+                              {item.properties.city} {item.properties.state}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    )}
+                  </>
+                ) : (
+                  <View>
+                    <View
+                      style={{
+                        height: 200,
+                        borderRadius: 12,
+                        overflow: "hidden",
+                        borderWidth: 1,
+                        borderColor: "#e5e7eb",
+                      }}
+                    >
+                      <BuildingMap
+                        lat={coordinates?.lat ?? null}
+                        long={coordinates?.long ?? null}
+                        addressLabel={address}
+                        onLocationSelect={handleMapLocationSelect}
+                      />
+                    </View>
+                    <Text className="text-[11px] text-gray-400 mt-1">
+                      Tap anywhere on the map to set the location.
+                    </Text>
+                    {address ? (
+                      <Text className="text-xs text-gray-600 mt-1" numberOfLines={2}>
+                        📍 {address}
+                      </Text>
+                    ) : null}
+                  </View>
+                )}
               </View>
 
               <View>

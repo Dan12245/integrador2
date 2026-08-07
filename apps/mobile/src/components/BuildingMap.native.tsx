@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from "react";
-import MapView, { Marker, Region, MapPressEvent } from "react-native-maps";
+import MapView, { Marker, Region } from "react-native-maps";
 
 type Props = {
   lat: number | null;
@@ -27,7 +27,7 @@ export default function BuildingMap({ lat, long, addressLabel, onLocationSelect 
     }
   }, [lat, long]);
 
-  const handlePress = (event: MapPressEvent) => {
+  const handlePress = (event: any) => {
     const { latitude, longitude } = event.nativeEvent.coordinate;
     onLocationSelect?.(latitude, longitude);
   };
@@ -35,7 +35,7 @@ export default function BuildingMap({ lat, long, addressLabel, onLocationSelect 
   return (
     <MapView
       ref={mapRef}
-      style={{ width: "100%", height: 250, marginTop: 20, borderRadius: 10 }}
+      style={{ flex: 1 }}
       initialRegion={DEFAULT_REGION}
       onPress={handlePress}
     >

@@ -13,7 +13,7 @@ const routerBuilding = new Hono<{Bindings: Bindings}> ();
 
 
 //aca hacemos la ruta de la api para que se ponga a chambear la desgraciada
-routerBuilding.post('/', async (c) => {
+routerBuilding.post('/addBuilding', async (c) => {
 
     if (!c.env.SUPABASE_URL) {
     return c.json({

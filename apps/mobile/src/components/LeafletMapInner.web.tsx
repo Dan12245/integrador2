@@ -24,17 +24,14 @@ const SELECTED_ZOOM = 16;
 
 function RecenterOnChange({ lat, long }: { lat: number | null; long: number | null }) {
   const map = useMap();
-
   useEffect(() => {
     if (lat != null && long != null) {
       map.flyTo([lat, long], SELECTED_ZOOM, { duration: 0.8 });
     }
   }, [lat, long, map]);
-
   return null;
 }
 
-// Componente que escucha los clicks en el mapa
 function ClickHandler({ onLocationSelect }: { onLocationSelect?: (lat: number, long: number) => void }) {
   useMapEvents({
     click(e) {
@@ -46,7 +43,8 @@ function ClickHandler({ onLocationSelect }: { onLocationSelect?: (lat: number, l
 
 export default function BuildingMap({ lat, long, addressLabel, onLocationSelect }: Props) {
   return (
-    <div style={{ width: "100%", height: 250, marginTop: 20, borderRadius: 10, overflow: "hidden" }}>
+    // Antes: width/height fijos en px. Ahora llena al 100% del padre.
+    <div style={{ width: "100%", height: "100%" }}>
       <MapContainer center={DEFAULT_CENTER} zoom={DEFAULT_ZOOM} style={{ width: "100%", height: "100%" }}>
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
