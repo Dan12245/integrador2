@@ -1,5 +1,20 @@
 import { supabase } from "./supabase";
 
+// Esta es la forma de un edificio TAL COMO viene de la base de datos.
+// Los nombres de estos campos tienen que ser exactamente los de las
+// columnas de la tabla 'buildings' en Supabase.
+export type BuildingRecord = {
+    id: number;
+    profile_id: string;
+    alias: string;
+    contract_number: string;
+    address: string;
+    description: string;
+    created_at: string;
+    lat: number;
+    longitude: number;
+};
+
 //aca pues obviamente añadimos el edificio no?
 export const addBuilding = async (
     alias: string,
@@ -32,8 +47,8 @@ export const addBuilding = async (
             long: long,
         };
 
-        // Y le mandamos la wea a hono
-        console.log("Package ready to be sent:", TestBuilding);
+        // Y le mandamos la wea a hono la linea de aca abajo nomas es debug 
+        //console.log("Package ready to be sent:", TestBuilding);
 
         // Aca tenemos q poner la ip del server, osea la pc, en este caso es la mia NO DOXXEN HIJOS DE LA LANZA CAMOTES
         const answer = await fetch("http://192.168.0.15:8787/addBuilding", {
@@ -62,5 +77,49 @@ export const addBuilding = async (
         // Ps...todos sabemos q hace un catch no?
         console.log("Connection error", error);
         return false;
+    }
+};
+
+//aca traemos los edificios del usuario q este logueado
+export const getBuildings = async (): Promise<BuildingRecord[] | null> => {
+    // le sacamos la sesion
+    const {
+        data: { session },
+    } = await supabase.auth.getSession();
+    const userId = session?.user?.id;
+
+    if (!userId) {
+        console.log("Error: You are not loged");
+        return null;
+    }
+
+    try {
+        const answer = await fetch(
+            `http://192.168.0.15:8787/myBuildings?profile_id=${userId}`
+        );
+
+        if (!answer.ok) {
+            const answerData = await answer.json();
+            console.log(
+                "Couldn't fetch buildings, status:",
+                answer.status,
+                "Reasson: ",
+                answerData,
+            );
+            return null;
+        }
+
+        const answerData = await answer.json();
+
+        if (!answerData.ok) {
+            console.log("Backend returned an error:", answerData.message);
+            return null;
+        }
+
+        console.log("Buildings fetched correctly:", answerData.data);
+        return answerData.data as BuildingRecord[];
+    } catch (error) {
+        console.log("Connection error", error);
+        return null;
     }
 };

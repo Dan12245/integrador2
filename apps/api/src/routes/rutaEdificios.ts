@@ -98,7 +98,7 @@ routerBuilding.get('/searchBuilding', async (c) => {
       }
       return c.json(result)
     } else {
-      return c.json({ error: 'Buildin couldnt be found' }, 404)
+      return c.json({ error: 'Building couldnt be found' }, 404)
     }
   } catch (error) {
     return c.json({ error: 'connection problem' }, 500)
@@ -135,7 +135,7 @@ routerBuilding.get('/reverseGeocode', async (c) => {
   const lon = c.req.query('lon')
 
   if (!lat || !lon) {
-    return c.json({ error: 'lat y lon son requeridos' }, 400)
+    return c.json({ error: 'lat y lon are required' }, 400)
   }
 
   try {
@@ -158,11 +158,29 @@ routerBuilding.get('/reverseGeocode', async (c) => {
         long: parseFloat(data.lon)
       })
     } else {
-      return c.json({ error: 'No se encontró dirección en esa ubicación' }, 404)
+      return c.json({ error: 'address wasnt found' }, 404)
     }
   } catch (error) {
     return c.json({ error: 'connection problem' }, 500)
   }
 })
 
+//ruta para listar los edificios, esta sencilla, nomas es un get que pregunta que edificios tiene este usuario y se los trae
+routerBuilding.get('/myBuildings', async (c) => {
+  const profileId = c.req.query('profile_id')
+  if (!profileId) {
+    return c.json({ ok: false, error: 'profile_id is required' }, 400)
+  }
+  const supabase = createClient(c.env.SUPABASE_URL, c.env.SUPABASE_KEY)
+  const { data, error } = await supabase
+    .from('buildings')
+    //el select asi vacio siginifica select *, es la misma wea
+    .select()
+    .eq('profile_id', profileId)
+    .order('created_at', { ascending: false })
+  if (error) {
+    return c.json({ ok: false, message: 'Error while loading buildings', error }, 500)
+  }
+  return c.json({ ok: true, data })
+})
 export default routerBuilding

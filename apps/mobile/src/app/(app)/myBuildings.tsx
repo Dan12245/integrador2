@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -11,31 +11,20 @@ import {
   Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import Animated, { FadeInLeft, FadeInRight, FadeInDown } from "react-native-reanimated";
 import AppNavbar from "../../components/AppNavbar";
 import ReceiptScannerButton, { ExtractedData } from "../../components/Camera";
-import { addBuilding } from "@/src/lib/edificios";
+import { addBuilding, getBuildings, BuildingRecord } from "@/src/lib/edificios";
 import BuildingMap from "../../components/BuildingMap";
-
-interface Building {
-  id: string;
-  name: string;
-  type: string;
-  icon: string;
-}
-
-const INITIAL_BUILDINGS: Building[] = [
-  { id: "1", name: "Petco", type: "Building", icon: "🏢" },
-  { id: "2", name: "Main House", type: "House", icon: "🏠" },
-  { id: "3", name: "Logistics center", type: "Warehouse", icon: "🏭" },
-];
 
 export default function MyBuildings() {
   const router = useRouter();
   const [search, setSearch] = useState("");
-  const [buildings, setBuildings] = useState<Building[]>(INITIAL_BUILDINGS);
-  const [selectedId, setSelectedId] = useState<string | null>("1");
+  const [buildings, setBuildings] = useState<BuildingRecord[]>([]);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [loadingBuildings, setLoadingBuildings] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Form state for adding new building
   const [alias, setAlias] = useState("");
@@ -44,15 +33,37 @@ export default function MyBuildings() {
   const [description, setDescription] = useState("");
   const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
-  
   // Modo de seleccion de ubicacion: escribir la direccion, o tocar el mapa directamente
   const [locationMode, setLocationMode] = useState<"address" | "map">("address");
 
-  const filtered = buildings.filter((b) =>
-    b.name.toLowerCase().includes(search.toLowerCase())
+  // Esta funcion es la que realmente pide los datos al backend.
+  // La separamos aparte (en vez de meter todo dentro del useFocusEffect)
+  // para poder reusarla tambien en el pull-to-refresh de mas abajo.
+  const loadBuildings = useCallback(async () => {
+    const data = await getBuildings();
+    setBuildings(data ?? []); // si getBuildings regresa null (error), mostramos lista vacia en vez de tronar
+    setLoadingBuildings(false);
+    setRefreshing(false);
+  }, []);
+
+  //esta wea es para q cada que el usuario entre a la pagina se carga la lista, de esta forma siempre está actualizada
+  useFocusEffect(
+    useCallback(() => {
+      setLoadingBuildings(true);
+      loadBuildings();
+    }, [loadBuildings])
   );
 
-  const handleDelete = (id: string) => {
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadBuildings();
+  };
+
+  const filtered = buildings.filter((b) =>
+    b.alias.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const handleDelete = (id: number) => {
     setBuildings((prev) => prev.filter((b) => b.id !== id));
     if (selectedId === id) setSelectedId(null);
   };
@@ -90,14 +101,8 @@ export default function MyBuildings() {
       Alert.alert("Success", "The building was stored correctly");
     }
 
-    // Append to local state list
-    const newB: Building = {
-      id: Date.now().toString(),
-      name: alias,
-      type: "Building",
-      icon: "🏢",
-    };
-    setBuildings((prev) => [...prev, newB]);
+    //le pedimos nuevamente la lista de edificios al backend 
+    loadBuildings();
 
     // Reset fields & close modal window
     setAlias("");
@@ -145,21 +150,18 @@ export default function MyBuildings() {
     // esta wea es para cuando el usuario seleccione una opcion
     const selectAddress = (item: any) => {
     const { name, street, housenumber, city } = item.properties;
-
-    // armamos todo el perro texto de la direccion si tiene nombre lo ponemos, si no solo la calle y ciudad
+    // Armamos el texto. Si tiene nombre lo ponemos, si no solo la calle y ciudad.
     const calleConNumero = `${street || ''} ${housenumber || ''}`.trim();
 
-    // Metemos toda la wea a un arreglo y usamos un .filter(Boolean) para quitar los datos que vengan vacíos y unir el resto con comas
+    // 2. Metemos todo a un arreglo y usamos un truco ninja (.filter(Boolean)) 
+    // para quitar los datos que vengan vacíos y unir el resto con comas.
     const RealAdress = [name, calleConNumero, city].filter(Boolean).join(', ');
         
     setAddress(RealAdress);
-    
-    // Ocultamos la lista para que no siga buscando
-    setShowingSuggestions(false); 
-    
+    setShowingSuggestions(false); // Ocultamos la lista para que no siga buscando
     setSuggestions([]);
 
-    // Photon ya nos da las coordenadas en la misma sugerencia que vienen como long y lat
+    // Photon ya nos da las coordenadas en la misma sugerencia, ojo que vienen como [long, lat]
     const [long, lat] = item.geometry.coordinates;
     console.log("COORDS DATA:", { lat, long });
     setCoordinates({ lat, long });
@@ -206,7 +208,9 @@ export default function MyBuildings() {
                 value={search}
                 onChangeText={setSearch}
               />
-              <Text className="text-gray-400">🔍</Text>
+              <TouchableOpacity onPress={onRefresh} disabled={refreshing}>
+                <Text className="text-gray-400">{refreshing ? "⏳" : "🔄"}</Text>
+              </TouchableOpacity>
             </View>
 
             {/* BOTON AGREGAR EDIFICIO (Abre ventana emergente) */}
@@ -218,48 +222,65 @@ export default function MyBuildings() {
             </TouchableOpacity>
 
             {/* LISTA DE EDIFICIOS */}
-            <FlatList
-              data={filtered}
-              keyExtractor={(b) => b.id}
-              scrollEnabled={false}
-              ItemSeparatorComponent={() => <View className="h-3" />}
-              renderItem={({ item, index }) => (
-                <Animated.View entering={FadeInDown.delay(index * 80).duration(350)}>
-                  <TouchableOpacity
-                    onPress={() => setSelectedId(item.id)}
-                    className={`flex-row items-center justify-between rounded-2xl px-4 py-4 border bg-white ${
-                      selectedId === item.id ? "border-[#2089dc]" : "border-gray-200"
-                    }`}
-                    style={{
-                      shadowColor: "#000",
-                      shadowOffset: { width: 0, height: 1 },
-                      shadowOpacity: 0.05,
-                      shadowRadius: 4,
-                      elevation: 2,
-                    }}
-                  >
-                    <View className="flex-row items-center gap-3">
-                      <View className="w-9 h-9 rounded-xl bg-[#0d1b2e] items-center justify-center">
-                        <Text className="text-white text-base">{item.icon}</Text>
+            {loadingBuildings ? (
+              <View className="items-center py-8">
+                <Text className="text-gray-400 text-sm">Loading your buildings...</Text>
+              </View>
+            ) : (
+              <FlatList
+                data={filtered}
+                keyExtractor={(b) => b.id.toString()}
+                scrollEnabled={false}
+                ItemSeparatorComponent={() => <View className="h-3" />}
+                ListEmptyComponent={
+                  <View className="items-center py-8">
+                    <Text className="text-gray-400 text-sm">
+                      You don't have any buildings yet.
+                    </Text>
+                  </View>
+                }
+                renderItem={({ item, index }) => (
+                  <Animated.View entering={FadeInDown.delay(index * 80).duration(350)}>
+                    <TouchableOpacity
+                      onPress={() => setSelectedId(item.id)}
+                      className={`flex-row items-center justify-between rounded-2xl px-4 py-4 border bg-white ${
+                        selectedId === item.id ? "border-[#2089dc]" : "border-gray-200"
+                      }`}
+                      style={{
+                        shadowColor: "#000",
+                        shadowOffset: { width: 0, height: 1 },
+                        shadowOpacity: 0.05,
+                        shadowRadius: 4,
+                        elevation: 2,
+                      }}
+                    >
+                      <View className="flex-row items-center gap-3 flex-shrink">
+                        <View className="w-9 h-9 rounded-xl bg-[#0d1b2e] items-center justify-center">
+                          <Text className="text-white text-base">🏢</Text>
+                        </View>
+                        <View className="flex-shrink">
+                          <Text className="text-sm font-semibold text-[#0d1b2e]" numberOfLines={1}>
+                            {item.alias}
+                          </Text>
+                          <Text className="text-xs text-gray-400" numberOfLines={1}>
+                            {item.address}
+                          </Text>
+                        </View>
                       </View>
-                      <View>
-                        <Text className="text-sm font-semibold text-[#0d1b2e]">{item.name}</Text>
-                        <Text className="text-xs text-gray-400">{item.type}</Text>
-                      </View>
-                    </View>
 
-                    <View className="flex-row items-center gap-3">
-                      <TouchableOpacity>
-                        <Text className="text-[#2089dc] text-base">✏️</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity onPress={() => handleDelete(item.id)}>
-                        <Text className="text-red-400 text-base">🗑️</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </TouchableOpacity>
-                </Animated.View>
-              )}
-            />
+                      <View className="flex-row items-center gap-3">
+                        <TouchableOpacity>
+                          <Text className="text-[#2089dc] text-base">✏️</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => handleDelete(item.id)}>
+                          <Text className="text-red-400 text-base">🗑️</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </TouchableOpacity>
+                  </Animated.View>
+                )}
+              />
+            )}
           </Animated.View>
 
           {/* AREA PRINCIPAL DERECHA: Mapa Placeholder con tamaño vertical ampliado */}
