@@ -1,20 +1,9 @@
-import React, { useState } from "react";
-import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { supabase } from "../lib/supabase";
-import { useRouter } from "expo-router";
-import { usePostHog } from "../lib/posthog";
-
+import React from "react";
+import { Text, View } from "react-native";
 import { BlurView } from "expo-blur";
-
 import { Image } from "expo-image";
 
-
 export default function Index_CRA_Blur() {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [loading, setLoading] = useState(false);
-    const router = useRouter();
-    const posthog = usePostHog();
 
     return (
         <View style={{ position: "relative",top: 120, alignItems: "center" }}>

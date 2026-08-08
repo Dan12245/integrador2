@@ -13,14 +13,14 @@ export function getQueryParam(url: string, param: string): string | null {
     const params = new URLSearchParams(searchPart);
     const val = params.get(param);
     if (val) return val;
-  } catch (e) {}
+  } catch {}
 
   try {
     const hashPart = url.includes("#") ? url.split("#")[1] : "";
     const params = new URLSearchParams(hashPart);
     const val = params.get(param);
     if (val) return val;
-  } catch (e) {}
+  } catch {}
 
   const regex = new RegExp(`[?&#]${param}=([^&#]*)`);
   const match = url.match(regex);

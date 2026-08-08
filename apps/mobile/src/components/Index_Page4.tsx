@@ -1,16 +1,6 @@
 import React, { useState } from "react";
-import { Alert, Text, TextInput, TouchableOpacity, View, LayoutAnimation, Platform, UIManager } from "react-native";
-import { supabase } from "../lib/supabase";
-import { useRouter } from "expo-router";
-import { usePostHog } from "../lib/posthog";
-
+import { Text, TouchableOpacity, View, LayoutAnimation } from "react-native";
 import { BlurView } from "expo-blur";
-
-import { Image } from "expo-image";
-
-if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
-    UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 
 const faqItems = [
     {
@@ -27,13 +17,8 @@ const faqItems = [
     },
 ];
 
-export default function Index_Start_Message() {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [loading, setLoading] = useState(false);
+export default function Index_Page4() {
     const [openIndex, setOpenIndex] = useState<number | null>(null);
-    const router = useRouter();
-    const posthog = usePostHog();
 
     const toggleItem = (index: number) => {
         LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);

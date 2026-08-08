@@ -26,6 +26,7 @@ const BAR_WIDTH_COMPACT = 700;
 const SCROLL_RANGE = 80;
 
 export default function LandingScreen() {
+    const insets = useSafeAreaInsets();
     const [session, setSession] = useState<Session | null>(null);
     const [loading, setLoading] = useState(true);
     const [slideIndex, setSlideIndex] = useState(0);
@@ -106,8 +107,6 @@ export default function LandingScreen() {
         extrapolate: "clamp",
     });
 
-    const insets = useSafeAreaInsets();
-
     return (
         
         <View className="flex-1 bg-[#051b32]">
@@ -140,7 +139,7 @@ export default function LandingScreen() {
                         <Image
                             source={require("../assets/logo-blank.png")}
                             style={{ width: 80, height: 36 }}
-                            resizeMode="contain"
+                            contentFit="contain"
                         />
                     </Animated.View>
 
@@ -169,7 +168,7 @@ export default function LandingScreen() {
                             <Image
                                 source={require("../assets/user-icon.png")}
                                 style={{ width: 30, height: 30 }}
-                                resizeMode="contain"
+                                contentFit="contain"
                             />
                         </TouchableOpacity>
                     </Animated.View>
@@ -202,7 +201,7 @@ export default function LandingScreen() {
                 >
                     <Image
                         source={require("../assets/WhiteFade.png")}
-                        resizeMode="cover"
+                        contentFit="cover"
                         pointerEvents="none"
                         style={{
                             position: "absolute",
@@ -311,7 +310,7 @@ export default function LandingScreen() {
 
                     <Image
                         source={require("../assets/BlackFade2.png")}
-                        resizeMode="cover"
+                        contentFit="cover"
                         pointerEvents="none"
                         style={{
                             position: "absolute",
@@ -338,7 +337,7 @@ export default function LandingScreen() {
                 >
                     <Image
                         source={require("../assets/BlackFade.png")}
-                        resizeMode="cover"
+                        contentFit="cover"
                         pointerEvents="none"
                         style={{
                             position: "absolute",

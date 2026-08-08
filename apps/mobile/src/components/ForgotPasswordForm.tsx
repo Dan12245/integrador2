@@ -267,7 +267,7 @@ export default function ForgotPasswordForm() {
                     Reset Password
                 </Text>
                 <Text className="text-gray-500">
-                    Enter your email address and we'll send you a link to reset your password.
+                    Enter your email address and we&apos;ll send you a link to reset your password.
                 </Text>
             </View>
 
@@ -290,7 +290,7 @@ export default function ForgotPasswordForm() {
                         </Text>
                     </View>
                     <Text className="text-emerald-800 text-sm leading-5">
-                        We've sent a password reset link to{" "}
+                        We&apos;ve sent a password reset link to{" "}
                         <Text className="font-semibold">{email}</Text>. Click the link in the email
                         to set your new password.
                     </Text>

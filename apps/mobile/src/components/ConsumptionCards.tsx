@@ -78,12 +78,14 @@ export default function ConsumptionCards({ reportType, setReportType }: Consumpt
         </View>
         <View className="flex-row bg-gray-100 p-0.5 rounded-lg">
           <Pressable 
+            testID="report-type-monthly-button"
             onPress={() => setReportType("Monthly")}
             className={`px-3 py-1.5 rounded-md ${reportType === "Monthly" ? "bg-white" : ""}`}
           >
             <Text className={`text-xs font-bold ${reportType === "Monthly" ? "text-gray-900" : "text-gray-400"}`}>Monthly</Text>
           </Pressable>
           <Pressable 
+            testID="report-type-yearly-button"
             onPress={() => setReportType("Yearly")}
             className={`px-3 py-1.5 rounded-md ${reportType === "Yearly" ? "bg-white" : ""}`}
           >
@@ -91,7 +93,7 @@ export default function ConsumptionCards({ reportType, setReportType }: Consumpt
           </Pressable>
         </View>
       </View>
-      <Pressable className="bg-slate-900 py-3.5 rounded-xl flex-row justify-center items-center gap-2 active:bg-slate-800 mt-auto">
+      <Pressable testID="download-report-button" className="bg-slate-900 py-3.5 rounded-xl flex-row justify-center items-center gap-2 active:bg-slate-800 mt-auto">
         <Feather name="download" size={15} color="white" />
         <Text className="text-white text-xs font-bold">Download (.PDF)</Text>
       </Pressable>

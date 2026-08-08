@@ -1,91 +1,18 @@
-import React from "react";
+import React, { useState, useMemo } from "react";
 import { View, Text, Pressable, useWindowDimensions } from "react-native";
-import { BarChart } from "react-native-chart-kit/v2";
 import { Feather } from "@expo/vector-icons";
-
-// Helper to generate dynamic chart data based on the real date
-const getChartData = (period: string) => {
-  const currentDate = new Date();
-  
-  if (period === "Week") {
-    // Current week (Monday to Sunday)
-    const dayOfWeek = currentDate.getDay(); // 0 (Sun) to 6 (Sat)
-    const distanceToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-    const monday = new Date(currentDate);
-    monday.setDate(currentDate.getDate() + distanceToMonday);
-
-    const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-    const mockValues = [15, 22, 18, 24, 20, 16, 21];
-    
-    return dayNames.map((day, idx) => {
-      const dayDate = new Date(monday);
-      dayDate.setDate(monday.getDate() + idx);
-      const isToday = dayDate.toDateString() === currentDate.toDateString();
-      return {
-        label: isToday ? `${day}` : day,
-        value: mockValues[idx],
-      };
-    });
-  }
-  
-  if (period === "Month") {
-    // Each day of the current month until the current day
-    const todayDate = currentDate.getDate(); // e.g. 5
-    
-    return Array.from({ length: todayDate }, (_, i) => {
-      const dayNum = i + 1;
-      const isToday = dayNum === todayDate;
-      
-      const baseVal = 18;
-      const valVariation = Math.floor(Math.sin(dayNum * 0.7) * 8);
-      
-      return {
-        label: todayDate <= 10 
-          ? (isToday ? `${dayNum}` : `${dayNum}`)
-          : (isToday ? `${dayNum}` : (dayNum % 5 === 0 ? `${dayNum}` : "")),
-        value: Math.max(5, baseVal + valVariation),
-      };
-    });
-  }
-  
-  // Year period: months of the actual year until now
-  const currentMonth = currentDate.getMonth(); // 0 to 11
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const mockValues = [52, 86, 58, 134, 95, 177, 122, 110, 145, 160, 130, 115];
-  
-  return months.slice(0, currentMonth + 1).map((month, idx) => {
-    const isCurrent = idx === currentMonth;
-    return {
-      label: isCurrent ? `${month}` : month,
-      value: mockValues[idx],
-    };
-  });
-};
-
-export function ConsumptionsChart({ data, width, height }: { data: { label: string; value: number }[]; width?: number; height?: number }) {
-  const { width: windowWidth } = useWindowDimensions();
-  const chartWidth = width || Math.min(windowWidth - 96, 1150);
-  const isLargeScreen = windowWidth >= 1024;
-  const chartHeight = height || (isLargeScreen ? 350 : 200);
-
-  return (
-    <BarChart
-      data={data}
-      xKey="label"
-      yKey="value"
-      scrollable
-      visiblePoints={7}
-      width={chartWidth}
-      height={chartHeight}
-    />
-  );
-}
+import ConsumptionsChart from "./ConsumptionsChart";
+import AddConsumptionModal from "./AddConsumptionModal";
+import EditRecordsModal from "./EditRecordsModal";
+import { formatDateKey, getDaysInMonth, computeChartData } from "./ConsumptionHelpers";
 
 export interface ConsumptionGraphProps {
   selectedBuilding: string;
   setSelectedBuilding: (building: string) => void;
   selectedPeriod: string;
   setSelectedPeriod: (period: string) => void;
+  records?: Record<string, number>;
+  setRecords?: React.Dispatch<React.SetStateAction<Record<string, number>>>;
 }
 
 export default function ConsumptionGraph({
@@ -93,17 +20,101 @@ export default function ConsumptionGraph({
   setSelectedBuilding,
   selectedPeriod,
   setSelectedPeriod,
+  records: externalRecords,
+  setRecords: externalSetRecords,
 }: ConsumptionGraphProps) {
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 1024;
   const chartWidth = isLargeScreen ? Math.min(width - 96, 1150) : width - 64;
 
+  // Building-keyed consumption records fallback
+  const [internalRecords, setInternalRecords] = useState<Record<string, number>>({});
+  const records = externalRecords !== undefined ? externalRecords : internalRecords;
+  const setRecords = externalSetRecords !== undefined ? externalSetRecords : setInternalRecords;
+
+  // Modal & form states for Add Consumption
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [amountInput, setAmountInput] = useState("");
+  const [periodType, setPeriodType] = useState<"Day" | "Month">("Day");
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [calendarViewDate, setCalendarViewDate] = useState<Date>(new Date());
+
+  // Modal & form states for Edit / Delete Records
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editMode, setEditMode] = useState<"Day" | "Month">("Day");
+  const [editSelectedDate, setEditSelectedDate] = useState<Date>(new Date());
+  const [editCalendarViewDate, setEditCalendarViewDate] = useState<Date>(new Date());
+  const [editAmountInput, setEditAmountInput] = useState("");
+  const [confirmDeleteMonth, setConfirmDeleteMonth] = useState(false);
+
+  const chartData = useMemo(
+    () => computeChartData(selectedPeriod, selectedBuilding, records),
+    [selectedPeriod, selectedBuilding, records]
+  );
+
+  // Dates for constraints
+  const todayDateObj = new Date();
+  todayDateObj.setHours(0, 0, 0, 0);
+  const currentYear = todayDateObj.getFullYear();
+  const currentMonth = todayDateObj.getMonth();
+
+  const handleOpenModal = () => {
+    const today = new Date();
+    setSelectedDate(today);
+    setCalendarViewDate(today);
+    setAmountInput("");
+    setPeriodType("Day");
+    setIsModalOpen(true);
+  };
+
+  const handleSaveConsumption = () => {
+    const val = parseFloat(amountInput);
+    if (isNaN(val) || val <= 0) return;
+
+    const updatedRecords = { ...records };
+
+    if (periodType === "Day") {
+      const key = `${selectedBuilding}:${formatDateKey(selectedDate)}`;
+      updatedRecords[key] = (updatedRecords[key] || 0) + val;
+    } else if (periodType === "Month") {
+      const year = selectedDate.getFullYear();
+      const month = selectedDate.getMonth();
+      const daysInM = getDaysInMonth(year, month);
+
+      const isCurrentMonth =
+        year === todayDateObj.getFullYear() && month === todayDateObj.getMonth();
+      const daysToDistribute = isCurrentMonth ? todayDateObj.getDate() : daysInM;
+
+      const perDay = val / daysToDistribute;
+      for (let d = 1; d <= daysToDistribute; d++) {
+        const key = `${selectedBuilding}:${formatDateKey(new Date(year, month, d))}`;
+        updatedRecords[key] = (updatedRecords[key] || 0) + perDay;
+      }
+    }
+
+    setRecords(updatedRecords);
+    setIsModalOpen(false);
+    setAmountInput("");
+  };
+
+  const handleOpenEditModal = () => {
+    const today = new Date();
+    setEditSelectedDate(today);
+    setEditCalendarViewDate(today);
+    setEditMode("Day");
+    const currentVal = records[`${selectedBuilding}:${formatDateKey(today)}`] || 0;
+    setEditAmountInput(currentVal > 0 ? String(currentVal) : "");
+    setConfirmDeleteMonth(false);
+    setIsEditModalOpen(true);
+  };
+
   return (
-    <View className="bg-white p-5 md:p-6 rounded-3xl shadow-sm border border-gray-100 mt-4">
+    <View className="bg-white p-5 md:p-6 rounded-3xl border border-gray-100 mt-4">
+      {/* Top Header & Building Selector */}
       <View className="flex-row flex-wrap justify-between items-center">
         <View>
           <Text className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-3">Selected Building</Text>
-          <Pressable className="flex-row items-center justify-between border border-gray-200 rounded-xl px-3 py-3 bg-gray-50">
+          <Pressable testID="select-building-button" className="flex-row items-center justify-between border border-gray-200 rounded-xl px-3 py-3 bg-gray-50">
             <Text className="text-gray-900 text-sm font-semibold">{selectedBuilding}</Text>
             <Feather name="chevron-down" size={16} color="#6B7280" />
           </Pressable>
@@ -113,6 +124,7 @@ export default function ConsumptionGraph({
         <View className="flex-row bg-gray-100 p-2 mt-8 rounded-xl">
           {["Week", "Month", "Year"].map((period) => (
             <Pressable
+              testID={`select-period-${period.toLowerCase()}-button`}
               key={period}
               onPress={() => setSelectedPeriod(period)}
               className={`px-4 py-2.5 rounded-lg ${selectedPeriod === period ? "bg-white" : ""}`}
@@ -127,20 +139,68 @@ export default function ConsumptionGraph({
 
       {/* Chart container */}
       <View className="items-center justify-center py-4 w-full overflow-hidden">
-        <ConsumptionsChart data={getChartData(selectedPeriod)} width={chartWidth} />
+        <ConsumptionsChart data={chartData} width={chartWidth} />
       </View>
 
-      {/* Buttons under chart */}
+      {/* Action Buttons under chart */}
       <View className="flex-row justify-center items-center gap-3 mt-6 flex-wrap">
-        <Pressable className="bg-slate-950 px-6 py-3.5 rounded-xl flex-row items-center gap-2 active:bg-slate-800">
+        <Pressable
+          testID="add-consumption-button"
+          onPress={handleOpenModal}
+          className="bg-slate-950 px-6 py-3.5 rounded-xl flex-row items-center gap-2 active:bg-slate-800"
+        >
           <Feather name="plus" size={16} color="white" />
           <Text className="text-white text-xs font-bold">Add consumption</Text>
         </Pressable>
-        <Pressable className="bg-sky-50 px-6 py-3.5 rounded-xl flex-row items-center gap-2 border border-sky-100 active:bg-sky-100">
+        <Pressable
+          testID="edit-records-button"
+          onPress={handleOpenEditModal}
+          className="bg-sky-50 px-6 py-3.5 rounded-xl flex-row items-center gap-2 border border-sky-100 active:bg-sky-100"
+        >
           <Feather name="edit-2" size={14} color="#0284C7" />
           <Text className="text-sky-800 text-xs font-bold">Edit records</Text>
         </Pressable>
       </View>
+
+      {/* Emergent Window for Adding Water Consumption */}
+      <AddConsumptionModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        periodType={periodType}
+        setPeriodType={setPeriodType}
+        amountInput={amountInput}
+        setAmountInput={setAmountInput}
+        selectedDate={selectedDate}
+        setSelectedDate={setSelectedDate}
+        calendarViewDate={calendarViewDate}
+        setCalendarViewDate={setCalendarViewDate}
+        todayDateObj={todayDateObj}
+        currentYear={currentYear}
+        currentMonth={currentMonth}
+        onSave={handleSaveConsumption}
+      />
+
+      {/* Emergent Window for Editing or Deleting Records */}
+      <EditRecordsModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        editMode={editMode}
+        setEditMode={setEditMode}
+        editSelectedDate={editSelectedDate}
+        setEditSelectedDate={setEditSelectedDate}
+        editCalendarViewDate={editCalendarViewDate}
+        setEditCalendarViewDate={setEditCalendarViewDate}
+        editAmountInput={editAmountInput}
+        setEditAmountInput={setEditAmountInput}
+        confirmDeleteMonth={confirmDeleteMonth}
+        setConfirmDeleteMonth={setConfirmDeleteMonth}
+        records={records}
+        setRecords={setRecords}
+        selectedBuilding={selectedBuilding}
+        todayDateObj={todayDateObj}
+        currentYear={currentYear}
+        currentMonth={currentMonth}
+      />
     </View>
   );
 }
