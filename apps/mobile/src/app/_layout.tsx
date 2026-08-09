@@ -6,6 +6,9 @@ import { Session, AuthChangeEvent } from "@supabase/supabase-js";
 import { ActivityIndicator, View } from "react-native";
 import { posthog, PostHogProvider } from "../lib/posthog";
 
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+
+
 export default function RootLayout() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -67,6 +70,11 @@ export default function RootLayout() {
 
   // 3. Render layouts
   return (
+
+   
+        <GestureHandlerRootView style={{ flex: 1 }}>
+            
+
     <PostHogProvider
       client={posthog}
       autocapture={{
@@ -81,5 +89,6 @@ export default function RootLayout() {
         <Stack.Screen name="(app)" />
       </Stack>
     </PostHogProvider>
+            </GestureHandlerRootView>
   );
 }

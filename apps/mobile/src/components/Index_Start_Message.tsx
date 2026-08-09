@@ -7,6 +7,8 @@ import { usePostHog } from "../lib/posthog";
 import { BlurView } from "expo-blur";
 
 import { Image } from "expo-image";
+import { Platform } from "react-native";
+
 
 
 export default function Index_Start_Message() {
@@ -15,14 +17,16 @@ export default function Index_Start_Message() {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
     const posthog = usePostHog();
+    // dentro del componente
+    const isAndroid = Platform.OS === "android";
 
     return (
         <View style={{ position: "relative", alignItems: "center", justifyContent: "center"}}>
 
-                <View className="flex flex-col gap-4 mb-8">
+                <View className="flex flex-col  mb-8">
                     
                     <Text className="text-6xl font-semibold text-[#1e90ff] text-center mb-2">
-                        Improve the world,
+                        Improve the world
                     </Text>
                     <Text className="text-6xl font-semibold text-[#1e90ff] text-center mb-2">
                         with awareness.
