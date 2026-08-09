@@ -116,10 +116,63 @@ export const getBuildings = async (): Promise<BuildingRecord[] | null> => {
             return null;
         }
 
-        console.log("Buildings fetched correctly:", answerData.data);
+        //console.log("Buildings fetched correctly:", answerData.data);
         return answerData.data as BuildingRecord[];
     } catch (error) {
         console.log("Connection error", error);
         return null;
     }
 };
+
+//funcion para borrar edificio
+export const deleteBuilding = async (id:number) => {
+    try{
+        const url =`http://192.168.0.15:8787/${id}`
+
+        const response = await fetch (url,{
+            method: 'DELETE',
+            headers:{
+                'Content-Type': 'application/json',
+            }
+        });
+        if (!response.ok) {
+        throw new Error(`Error while deleting. Status: ${response.status}`);
+        }
+
+        // 4. Si todo salió bien, sacas la respuesta
+        const data = await response.json();
+        console.log('Building deleted:', data);
+        
+        return true;  
+    } catch (error) {
+        console.error('Error at deleteBuilding:', error);
+        return false;
+    }
+}
+
+export const editBuilding = async (
+    id:number,
+    alias:string,
+    description:string
+    ) => {
+        try{
+            const response = await fetch(`http://192.168.0.15:8787/${id}`, {
+                method: 'PUT', // Le decimos que es actualización
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({    
+                    alias: alias,
+                    description: description    
+                })    
+            });    
+            if (!response.ok) {
+                throw new Error(`Error while editing. Status: ${response.status}`);    
+            }
+
+            const data = await response.json();
+            console.log('Building edited:', data);                    
+            return true;  
+        }catch (error){
+            console.error('Error at deleteBuilding:', error);
+            return false;
+        }   
+}

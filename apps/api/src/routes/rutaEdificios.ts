@@ -15,7 +15,7 @@ const routerBuilding = new Hono<{Bindings: Bindings}> ();
 //aca hacemos la ruta de la api para que se ponga a chambear la desgraciada
 routerBuilding.post('/addBuilding', async (c) => {
 
-    if (!c.env.SUPABASE_URL) {
+  if (!c.env.SUPABASE_URL) {
     return c.json({
       alert: "Hono isn't reading the .dev.vars file",
       data: c.env 
@@ -55,11 +55,13 @@ routerBuilding.post('/addBuilding', async (c) => {
 
     //aca nomas es validar para ver si tronó o neh
     if (error) {        
-        return c.json({ 
-            ok: false, 
-            message: 'Error while savin in the database', 
-            error }, 500)
-  }
+      return c.json({ 
+          ok: false, 
+          message: 'Error while saving in the database', 
+          error 
+        },
+        500)
+    }
 
   return c.json({ 
     ok: true, 
@@ -67,6 +69,79 @@ routerBuilding.post('/addBuilding', async (c) => {
     data 
   })
 })
+
+//ruta para eliminar edificios
+routerBuilding.delete('/:id', async (c)=>{
+  if (!c.env.SUPABASE_URL) {
+    return c.json({
+      alert: "Hono isn't reading the .dev.vars file",
+      data: c.env 
+    }, 400)
+  }
+  //leemos el id que viene en la url
+  const idString = c.req.param('id');
+  const id = parseInt(idString, 10);
+
+  const supabase = createClient(c.env.SUPABASE_URL, c.env.SUPABASE_KEY);
+  //y le hacemos la query a supabase
+  const {data,error} = await supabase
+    .from('buildings')
+    .delete()
+    .eq('id',id)
+
+  if (error) {        
+    return c.json({ 
+        ok: false, 
+        message: 'Error while trying to delete the building', 
+        error 
+      },
+      500)
+  }
+
+  return c.json({ 
+    ok: true, 
+    message: 'YA BUILDING WAS DELETED, FELLA', 
+    data 
+  })
+})
+
+//funcion para editar edificios
+routerBuilding.put('/:id', async (c) => {
+  if (!c.env.SUPABASE_URL) {
+    return c.json({
+      alert: "Hono isn't reading the .dev.vars file",
+      data: c.env 
+    }, 400)
+  }
+  //leemos el id que viene en la url
+  const idString = c.req.param('id');
+  const id = parseInt(idString, 10);
+  const body = await c.req.json();
+
+  const supabase = createClient(c.env.SUPABASE_URL, c.env.SUPABASE_KEY);
+  //y le hacemos la query a supabase
+  const {data,error} = await supabase
+    .from('buildings')
+    .update(body)
+    .eq('id',id)
+    .select();
+  if (error) {        
+    return c.json({ 
+        ok: false, 
+        message: 'Error while trying to edit the building', 
+        error 
+      },
+      500)
+  }
+
+  return c.json({ 
+    ok: true, 
+    message: 'YA BUILDING WAS EDITED, FELLA', 
+    data 
+  })
+    
+})
+
 
 //funcion para buscar la localizacion del lugar
 routerBuilding.get('/searchBuilding', async (c) => {
@@ -183,4 +258,6 @@ routerBuilding.get('/myBuildings', async (c) => {
   }
   return c.json({ ok: true, data })
 })
+
+
 export default routerBuilding

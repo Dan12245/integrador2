@@ -1,7 +1,7 @@
-//este archivo es para que no caiga pedo cuando expo ande armando el proyecto, todo por culpa del mapa q google no me pudpo soltar la api
+// este archivo es para que no caiga pedo cuando expo ande armando el proyecto, todo por culpa del mapa q google no me pudpo soltar la api
 import React, { useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
+// import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -18,7 +18,7 @@ type Props = {
   onLocationSelect?: (lat: number, long: number) => void;
 };
 
-const DEFAULT_CENTER: [number, number] = [28.6353, -106.0889];
+const DEFAULT_CENTER: [number, number] = [28.6353, -106.0889]; // Chihuahua capital 🤠
 const DEFAULT_ZOOM = 5;
 const SELECTED_ZOOM = 16;
 
@@ -42,6 +42,21 @@ function ClickHandler({ onLocationSelect }: { onLocationSelect?: (lat: number, l
 }
 
 export default function BuildingMap({ lat, long, addressLabel, onLocationSelect }: Props) {
+  
+  // ✅ Inyectamos el CSS de Leaflet directamente al navegador
+  useEffect(() => {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+    link.crossOrigin = "";
+    document.head.appendChild(link);
+
+    return () => {
+      // Limpiamos el CSS si el componente se desmonta
+      document.head.removeChild(link);
+    };
+  }, []);
+
   return (
     // Antes: width/height fijos en px. Ahora llena al 100% del padre.
     <div style={{ width: "100%", height: "100%" }}>
