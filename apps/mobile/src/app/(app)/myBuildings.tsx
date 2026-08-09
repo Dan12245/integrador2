@@ -77,6 +77,14 @@ export default function MyBuildings() {
       }
       return;
     }
+    if (contractNumber.length < 8 ) {
+      if (Platform.OS === "web") {
+        window.alert("Failed\nComplete all the fields");
+      } else {
+        Alert.alert("Failed", "Complete all the fields");
+      }
+      return;
+    }
 
     const answer = await addBuilding(
       alias,
