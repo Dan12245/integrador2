@@ -15,7 +15,8 @@ import { useRouter, useFocusEffect } from "expo-router";
 import Animated, { FadeInLeft, FadeInRight, FadeInDown } from "react-native-reanimated";
 import AppNavbar from "../../components/AppNavbar";
 import ReceiptScannerButton, { ExtractedData } from "../../components/Camera";
-import { addBuilding, getBuildings, BuildingRecord } from "@/src/lib/edificios";
+// ✅ Agregamos editBuilding aquí a tus importaciones
+import { addBuilding, getBuildings, BuildingRecord, deleteBuilding, editBuilding } from "@/src/lib/edificios";
 import BuildingMap from "../../components/BuildingMap";
 
 export default function MyBuildings() {
@@ -33,22 +34,23 @@ export default function MyBuildings() {
   const [description, setDescription] = useState("");
   const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
+  
   // Modo de seleccion de ubicacion: escribir la direccion, o tocar el mapa directamente
   const [locationMode, setLocationMode] = useState<"address" | "map">("address");
 
-  // Esta funcion es la que realmente pide los datos al backend.
-  // La separamos aparte (en vez de meter todo dentro del useFocusEffect)
-  // para poder reusarla tambien en el pull-to-refresh de mas abajo.
+  // ✅ Estados para la ventana de EDITAR
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [editId, setEditId] = useState<number | null>(null);
+  const [editAlias, setEditAlias] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+
   const loadBuildings = useCallback(async () => {
     const data = await getBuildings();
-    setBuildings(data ?? []); // si getBuildings regresa null (error), mostramos lista vacia en vez de tronar
+    setBuildings(data ?? []); 
     setLoadingBuildings(false);
     setRefreshing(false);
   }, []);
 
-  // useFocusEffect corre cada vez que el usuario ENTRA a esta pantalla,
-  // no solo la primera vez que se monta. Asi, si acabas de guardar un
-  // edificio nuevo y regresas aqui, la lista se refresca sola.
   useFocusEffect(
     useCallback(() => {
       setLoadingBuildings(true);
@@ -103,9 +105,6 @@ export default function MyBuildings() {
       Alert.alert("Success", "The building was stored correctly");
     }
 
-    // En vez de inventar un objeto localmente, volvemos a pedirle la lista
-    // completa al backend -- asi el nuevo edificio aparece con su
-    // id real (el que genero Supabase), no uno inventado.
     loadBuildings();
 
     // Reset fields & close modal window
@@ -154,26 +153,19 @@ export default function MyBuildings() {
     // esta wea es para cuando el usuario seleccione una opcion
     const selectAddress = (item: any) => {
     const { name, street, housenumber, city } = item.properties;
-    // Armamos el texto. Si tiene nombre lo ponemos, si no solo la calle y ciudad.
     const calleConNumero = `${street || ''} ${housenumber || ''}`.trim();
-
-    // 2. Metemos todo a un arreglo y usamos un truco ninja (.filter(Boolean)) 
-    // para quitar los datos que vengan vacíos y unir el resto con comas.
     const RealAdress = [name, calleConNumero, city].filter(Boolean).join(', ');
         
     setAddress(RealAdress);
-    setShowingSuggestions(false); // Ocultamos la lista para que no siga buscando
+    setShowingSuggestions(false); 
     setSuggestions([]);
 
-    // Photon ya nos da las coordenadas en la misma sugerencia, ojo que vienen como [long, lat]
     const [long, lat] = item.geometry.coordinates;
     console.log("COORDS DATA:", { lat, long });
     setCoordinates({ lat, long });
   };
 
-  //una funcion para q el usuaio pueda seleccionar su ubi directo del mapa
   const handleMapLocationSelect = async (lat: number, long: number) => {
-    // Actualizamos coordenadas de una vez para que el marker/mapa reaccione rápido
     setCoordinates({ lat, long });
 
     try {
@@ -184,26 +176,102 @@ export default function MyBuildings() {
         setAddress(data.address);
       }
     } catch (error) {
-      console.error("Error al buscar la dirección desde el mapa:", error);
+      console.error("Error Error while searching map location:", error);
     }
   };
+
+  const confirmarYBorrar = async (id: number) => {
+    const exito = await deleteBuilding(id); 
+    if (!exito) {
+      if (Platform.OS === "web") {
+        window.alert("Failed\nThe building couldn't be deleted correctly");
+      } else {
+        Alert.alert("Failed", "The building couldn't be deleted correctly");
+      }
+      return;
+    }
+    handleDelete(id);
+    if (Platform.OS === "web") {
+        window.alert("Succeed\nThe building was deleted correctly");
+      } else {
+        Alert.alert("Succeed", "The building was deleted correctly");
+      }
+  };
   
+  const confirmarBorrado = (id: number, nombreEdificio: string) => {
+    if (Platform.OS === "web") {
+      const seguro = window.confirm(`Are you sure you want to delete "${nombreEdificio}"? This action can't be undone.`);  
+      if (seguro) {
+        console.log("Borrando desde la web el ID:", id);
+        confirmarYBorrar(id);
+      }
+    } else {
+      Alert.alert(
+        "Delete Building",
+        `Are you sure you want to delete "${nombreEdificio}"? This action can't be undone.`,
+        [
+          { text: "Cancel", style: "cancel" },
+          { 
+            text: "Delete", 
+            style: "destructive", 
+            onPress: () => confirmarYBorrar(id)
+          }
+        ]
+      );
+    }
+  };
+
+  // ✅ Abre la ventana y pre-carga los datos del edificio
+  const openEditModal = (item: BuildingRecord) => {
+    setEditId(item.id);
+    setEditAlias(item.alias);
+    setEditDescription(item.description || ""); 
+    setShowEditForm(true);
+  };
+
+  // ✅ Manda llamar a tu API y actualiza la lista
+  const handleUpdateBuilding = async () => {
+    if (!editId || !editAlias || !editDescription) {
+      if (Platform.OS === "web") {
+        window.alert("Failed\nComplete all the fields");
+      } else {
+        Alert.alert("Failed", "Complete all the fields");
+      }
+      return;
+    }
+
+    const success = await editBuilding(editId, editAlias, editDescription);
+    
+    if (success) {
+      setShowEditForm(false);
+      loadBuildings();
+      if (Platform.OS === "web") {
+        window.alert("Success\nThe building was updated correctly");
+      } else {
+        Alert.alert("Success", "The building was updated correctly");
+      }
+    } else {
+      if (Platform.OS === "web") {
+        window.alert("Failed\nThe building couldn't be updated");
+      } else {
+        Alert.alert("Failed", "The building couldn't be updated");
+      }
+    }
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-[#f4f6f8]" edges={["top", "left", "right", "bottom"]}>
       <AppNavbar />
 
       <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="flex-1">
-        {/* Contenedor general principal */}
         <View className="flex-1 flex-col md:flex-row p-4 gap-4">
-          {/* BARRA LATERAL IZQUIERDA: My Buildings List */}
+          
           <Animated.View
             entering={FadeInLeft.duration(400).springify()}
             className="w-full md:w-80 gap-3"
           >
             <Text className="text-2xl font-bold text-[#0d1b2e] mb-1">My Buildings</Text>
 
-            {/* BUSCADOR */}
             <View className="flex-row items-center bg-white rounded-2xl px-4 py-2 border border-gray-200 gap-2 mb-2">
               <TextInput
                 className="flex-1 text-sm text-gray-700"
@@ -217,7 +285,6 @@ export default function MyBuildings() {
               </TouchableOpacity>
             </View>
 
-            {/* BOTON AGREGAR EDIFICIO (Abre ventana emergente) */}
             <TouchableOpacity
               className="flex-row items-center justify-center bg-[#2089dc] rounded-2xl py-3.5 gap-2 mb-2 shadow-sm active:bg-[#1976d2]"
               onPress={() => setShowAddForm(true)}
@@ -225,7 +292,6 @@ export default function MyBuildings() {
               <Text className="text-white font-bold text-sm">+ Add new building</Text>
             </TouchableOpacity>
 
-            {/* LISTA DE EDIFICIOS */}
             {loadingBuildings ? (
               <View className="items-center py-8">
                 <Text className="text-gray-400 text-sm">Loading your buildings...</Text>
@@ -273,10 +339,12 @@ export default function MyBuildings() {
                       </View>
 
                       <View className="flex-row items-center gap-3">
-                        <TouchableOpacity>
+                        {/* ✅ Aquí conectamos el botón de editar */}
+                        <TouchableOpacity onPress={() => openEditModal(item)}>
                           <Text className="text-[#2089dc] text-base">✏️</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => handleDelete(item.id)}>
+                        
+                        <TouchableOpacity onPress={() => confirmarBorrado(item.id, item.alias)}>
                           <Text className="text-red-400 text-base">🗑️</Text>
                         </TouchableOpacity>
                       </View>
@@ -287,7 +355,6 @@ export default function MyBuildings() {
             )}
           </Animated.View>
 
-          {/* AREA PRINCIPAL DERECHA: Mapa Placeholder con tamaño vertical ampliado */}
           <View className="flex-1">
             <Animated.View
               entering={FadeInRight.duration(450).springify()}
@@ -302,7 +369,6 @@ export default function MyBuildings() {
                 elevation: 4,
               }}
             >
-              {/* Etiqueta Facility Locations */}
               <View
                 className="absolute top-4 left-4 bg-white rounded-xl px-4 py-3 z-10"
                 style={{ shadowColor: "#000", shadowOpacity: 0.08, shadowRadius: 6, elevation: 3 }}
@@ -311,7 +377,6 @@ export default function MyBuildings() {
                 <Text className="text-xs text-gray-500">{buildings.length} active monitoring sites</Text>
               </View>
 
-              {/* Controles de zoom */}
               <View
                 className="absolute top-4 right-4 bg-white rounded-xl overflow-hidden z-10"
                 style={{ shadowColor: "#000", shadowOpacity: 0.08, shadowRadius: 6, elevation: 3 }}
@@ -324,7 +389,6 @@ export default function MyBuildings() {
                 </TouchableOpacity>
               </View>
 
-              {/* Contenido del mapa, ahora ocupa toda la tarjeta */}
               <View className="flex-1">
                 <BuildingMap
                   lat={coordinates?.lat ?? null}
@@ -419,8 +483,6 @@ export default function MyBuildings() {
               <View className="relative z-50">
                 <View className="flex-row items-center justify-between mb-1">
                   <Text className="text-xs font-semibold text-gray-700">Address</Text>
-
-                  {/* Toggle: escribir direccion vs elegirla directo en el mapa */}
                   <View className="flex-row bg-gray-100 rounded-lg p-0.5">
                     <TouchableOpacity
                       onPress={() => {
@@ -428,9 +490,7 @@ export default function MyBuildings() {
                         setShowingSuggestions(false);
                       }}
                       className="px-2.5 py-1 rounded-md"
-                      style={{
-                        backgroundColor: locationMode === "address" ? "#ffffff" : "transparent",
-                      }}
+                      style={{ backgroundColor: locationMode === "address" ? "#ffffff" : "transparent" }}
                     >
                       <Text
                         className="text-[11px] font-semibold"
@@ -446,9 +506,7 @@ export default function MyBuildings() {
                         setSuggestions([]);
                       }}
                       className="px-2.5 py-1 rounded-md"
-                      style={{
-                        backgroundColor: locationMode === "map" ? "#ffffff" : "transparent",
-                      }}
+                      style={{ backgroundColor: locationMode === "map" ? "#ffffff" : "transparent" }}
                     >
                       <Text
                         className="text-[11px] font-semibold"
@@ -468,7 +526,7 @@ export default function MyBuildings() {
                       value={address}
                       onChangeText={(text) => {
                         setAddress(text);
-                        setShowingSuggestions(true); // Al teclear la direccion se llama a la wea de las sugerencias
+                        setShowingSuggestions(true);
                       }}
                       placeholder="Address"
                       placeholderTextColor="#9ca3af"
@@ -556,6 +614,87 @@ export default function MyBuildings() {
           </Animated.View>
         </View>
       </Modal>
+
+      {/* ✅ VENTANA EMERGENTE (MODAL): Editar Edificio */}
+      <Modal
+        visible={showEditForm}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setShowEditForm(false)}
+      >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0, 0, 0, 0.65)",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 16,
+          }}
+        >
+          <Animated.View
+            entering={FadeInDown.duration(300)}
+            style={{
+              width: "100%",
+              maxWidth: 520,
+              backgroundColor: "#ffffff",
+              borderRadius: 28,
+              padding: 24,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 8 },
+              shadowOpacity: 0.25,
+              shadowRadius: 24,
+              elevation: 12,
+              gap: 16,
+            }}
+          >
+            <View className="flex-row items-center justify-between border-b border-gray-100 pb-3">
+              <Text className="text-xl font-black text-[#0d1b2e]">Edit Building</Text>
+              <TouchableOpacity
+                onPress={() => setShowEditForm(false)}
+                className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center"
+              >
+                <Text className="text-gray-500 font-bold text-base">✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View className="gap-3">
+              <View>
+                <Text className="text-xs font-semibold text-gray-700 mb-1">Building Alias</Text>
+                <TextInput
+                  className="bg-gray-50 p-3 rounded-xl border border-gray-200 text-sm text-gray-800"
+                  style={{ backgroundColor: "#f8fafc" }}
+                  value={editAlias}
+                  onChangeText={setEditAlias}
+                  placeholder="e.g. Petco Center"
+                  placeholderTextColor="#9ca3af"
+                />
+              </View>
+
+              <View>
+                <Text className="text-xs font-semibold text-gray-700 mb-1">Description</Text>
+                <TextInput
+                  className="bg-gray-50 p-3 rounded-xl border border-gray-200 text-sm text-gray-800"
+                  style={{ backgroundColor: "#f8fafc" }}
+                  value={editDescription}
+                  onChangeText={setEditDescription}
+                  placeholder="Building description"
+                  placeholderTextColor="#9ca3af"
+                />
+              </View>
+            </View>
+
+            <View className="mt-2 gap-3">
+              <TouchableOpacity
+                className="bg-[#2089dc] rounded-xl py-3.5 items-center shadow-sm active:bg-[#1976d2]"
+                onPress={handleUpdateBuilding}
+              >
+                <Text className="text-white text-base font-semibold">Save changes</Text>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        </View>
+      </Modal>
+
     </SafeAreaView>
   );
 }
