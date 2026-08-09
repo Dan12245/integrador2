@@ -46,7 +46,9 @@ export default function MyBuildings() {
     setRefreshing(false);
   }, []);
 
-  //esta wea es para q cada que el usuario entre a la pagina se carga la lista, de esta forma siempre está actualizada
+  // useFocusEffect corre cada vez que el usuario ENTRA a esta pantalla,
+  // no solo la primera vez que se monta. Asi, si acabas de guardar un
+  // edificio nuevo y regresas aqui, la lista se refresca sola.
   useFocusEffect(
     useCallback(() => {
       setLoadingBuildings(true);
@@ -70,14 +72,6 @@ export default function MyBuildings() {
 
   const handleSaveBuilding = async () => {
     if (!alias || !contractNumber || !address || !description || !coordinates) {
-      if (Platform.OS === "web") {
-        window.alert("Failed\nComplete all the fields");
-      } else {
-        Alert.alert("Failed", "Complete all the fields");
-      }
-      return;
-    }
-    if (contractNumber.length < 8 ) {
       if (Platform.OS === "web") {
         window.alert("Failed\nComplete all the fields");
       } else {
@@ -109,7 +103,9 @@ export default function MyBuildings() {
       Alert.alert("Success", "The building was stored correctly");
     }
 
-    //le pedimos nuevamente la lista de edificios al backend 
+    // En vez de inventar un objeto localmente, volvemos a pedirle la lista
+    // completa al backend -- asi el nuevo edificio aparece con su
+    // id real (el que genero Supabase), no uno inventado.
     loadBuildings();
 
     // Reset fields & close modal window
@@ -519,7 +515,7 @@ export default function MyBuildings() {
                     </Text>
                     {address ? (
                       <Text className="text-xs text-gray-600 mt-1" numberOfLines={2}>
-                        📍 {address}
+                         {address}
                       </Text>
                     ) : null}
                   </View>
