@@ -1,22 +1,37 @@
-import React, { useState } from 'react';
-import { Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { supabase } from '../lib/supabase';
-import { useRouter } from 'expo-router';
+import React, { useState } from "react";
+import {
+  Alert,
+  Image,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import Animated, {
+  FadeInDown,
+  FadeInUp,
+} from "react-native-reanimated";
+import { Feather } from "@expo/vector-icons";
+import { supabase } from "../lib/supabase";
+import { useRouter } from "expo-router";
 import { usePostHog } from "../lib/posthog";
 import { performGoogleSignIn } from "../lib/auth";
 import GoogleIcon from "./GoogleIcon";
 
 export default function SignUpForm() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
-  const router = useRouter();
+  const [email, setEmail]                     = useState("");
+  const [username, setUsername]               = useState("");
+  const [password, setPassword]               = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading]                 = useState(false);
+  const [googleLoading, setGoogleLoading]     = useState(false);
+  const [showPassword, setShowPassword]       = useState(false);
+  const [showConfirm, setShowConfirm]         = useState(false);
+  const router  = useRouter();
   const posthog = usePostHog();
 
   async function signUpWithEmail() {
-    if (!email || !password) {
+    if (!email || !password || !username) {
       Alert.alert("Error", "Please fill in all fields");
       return;
     }
@@ -25,11 +40,7 @@ export default function SignUpForm() {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
-      email: email,
-      password: password,
-    });
-
+    const { error } = await supabase.auth.signUp({ email, password });
     if (error) {
       Alert.alert("Error", error.message);
       posthog.capture("registration_failed", { error_message: error.message });
@@ -71,105 +82,170 @@ export default function SignUpForm() {
   }
 
   return (
-    <View className="flex-1 justify-center p-6 bg-white w-full max-w-md self-center">
-      <View className="mb-8">
-        <Text className="text-3xl font-extrabold text-gray-900 tracking-tight mb-2">
-          Create Account
-        </Text>
-        <Text className="text-gray-500">
-          Sign up to get started
-        </Text>
-      </View>
+    <View className="flex-1 justify-center items-center px-6">
 
-      <TouchableOpacity
-        testID="google_sign_up_button"
-        className={`w-full bg-white border border-gray-300 py-3.5 px-4 rounded-xl mb-6 shadow-sm active:bg-gray-50 ${googleLoading ? 'opacity-50' : ''}`}
-        onPress={handleGoogleSignUp}
-        disabled={googleLoading || loading}
+      {/*LOGO CRA*/}
+      <Animated.View
+        entering={FadeInDown.duration(500).springify()}
+        style={{
+          width: 160,
+          height: 160,
+          marginBottom: -65,
+          zIndex: 10,
+        }}
       >
-        <View className="flex-row items-center justify-center w-full">
-          <GoogleIcon size={20} style={{ marginRight: 12 }} />
-          <Text className="text-gray-800 text-base font-semibold">
-            {googleLoading ? "Connecting to Google..." : "Sign Up with Google"}
-          </Text>
-        </View>
-      </TouchableOpacity>
+        <Image
+          source={require("../assets/images/cra-logo.png")}
+          style={{ width: "100%", height: "100%" }}
+          resizeMode="contain"
+        />
+      </Animated.View>
 
-      <View className="flex-row items-center mb-6">
-        <View className="flex-1 h-px bg-gray-200" />
-        <Text className="mx-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-          Or sign up with email
-        </Text>
-        <View className="flex-1 h-px bg-gray-200" />
-      </View>
+      {/*TARJETA PRINCIPAL*/}
+      <Animated.View
+        entering={FadeInUp.delay(150).duration(450).springify()}
+        style={{
+          width: "100%",
+          maxWidth: 680,
+          backgroundColor: "rgba(255,255,255,0.5)",
+          borderRadius: 40,
+          paddingTop: 95,
+          paddingBottom: 46,
+          paddingHorizontal: 46,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 10 },
+          shadowOpacity: 0.12,
+          shadowRadius: 28,
+          elevation: 10,
+        }}
+      >
+        {/*CAMPO: Email*/}
+        <Animated.View entering={FadeInDown.delay(250).duration(350)}>
+          <View className="flex-row items-center bg-[#f0f4f8] rounded-full px-6 py-4 mb-4 border border-gray-200">
+            {/*Icono de sobre a la izquierda*/}
+            <Feather name="mail" size={20} color="#9ca3af" style={{ marginRight: 12 }} />
+            <TextInput
+              testID="signup_email_field"
+              onChangeText={setEmail}
+              value={email}
+              placeholder="Email"
+              autoCapitalize="none"
+              keyboardType="email-address"
+              placeholderTextColor="#9ca3af"
+              // flex-1 hace que el input ocupe el espacio restante,
+              // empujando cualquier ícono derecho (como el ícono del ojo) al borde
+              className="flex-1 text-lg text-gray-800"
+            />
+          </View>
+        </Animated.View>
 
-      <View className="flex flex-col gap-4 mb-8">
-        <View>
-          <Text className="text-sm font-semibold text-gray-700 mb-2">Email Address</Text>
-          <TextInput
-            testID="signup_email_field"
-            onChangeText={(text) => setEmail(text)}
-            value={email}
-            placeholder="you@example.com"
-            autoCapitalize="none"
-            keyboardType="email-address"
-            className="w-full border border-gray-300 rounded-xl px-4 py-3 text-base text-gray-900 bg-gray-50 focus:border-indigo-600 focus:bg-white"
-          />
-        </View>
+        {/*CAMPO: Username*/}
+        <Animated.View entering={FadeInDown.delay(310).duration(350)}>
+          <View className="flex-row items-center bg-[#f0f4f8] rounded-full px-6 py-4 mb-4 border border-gray-200">
+            <Feather name="user" size={20} color="#9ca3af" style={{ marginRight: 12 }} />
+            <TextInput
+              testID="signup_username_field"
+              onChangeText={setUsername}
+              value={username}
+              placeholder="Username"
+              autoCapitalize="none"
+              placeholderTextColor="#9ca3af"
+              className="flex-1 text-lg text-gray-800"
+            />
+          </View>
+        </Animated.View>
 
-        <View>
-          <Text className="text-sm font-semibold text-gray-700 mb-2">Password</Text>
-          <TextInput
-            testID="signup_password_field"
-            onChangeText={(text) => setPassword(text)}
-            value={password}
-            secureTextEntry={true}
-            placeholder="••••••••"
-            autoCapitalize="none"
-            className="w-full border border-gray-300 rounded-xl px-4 py-3 text-base text-gray-900 bg-gray-50 focus:border-indigo-600 focus:bg-white"
-          />
-        </View>
+        {/*CAMPO: Password con ojo*/}
+        <Animated.View entering={FadeInDown.delay(370).duration(350)}>
+          <View className="flex-row items-center bg-[#f0f4f8] rounded-full px-6 py-4 mb-4 border border-gray-200">
+            <Feather name="lock" size={20} color="#9ca3af" style={{ marginRight: 12 }} />
+            <TextInput
+              testID="signup_password_field"
+              onChangeText={setPassword}
+              value={password}
+              secureTextEntry={!showPassword}
+              placeholder="Password"
+              autoCapitalize="none"
+              placeholderTextColor="#9ca3af"
+              className="flex-1 text-lg text-gray-800"
+            />
+            {/*Botón de ojo*/}
+            <TouchableOpacity onPress={() => setShowPassword(prev => !prev)}>
+              <Feather name={showPassword ? "eye-off" : "eye"} size={18} color="#9ca3af" />
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
 
-        <View>
-          <Text className="text-sm font-semibold text-gray-700 mb-2">Confirm Password</Text>
-          <TextInput
-            testID="signup_confirm_password_field"
-            onChangeText={(text) => setConfirmPassword(text)}
-            value={confirmPassword}
-            secureTextEntry={true}
-            placeholder="••••••••"
-            autoCapitalize="none"
-            className="w-full border border-gray-300 rounded-xl px-4 py-3 text-base text-gray-900 bg-gray-50 focus:border-indigo-600 focus:bg-white"
-          />
-        </View>
-      </View>
+        {/*CAMPO: Confirm Password con ojo*/}
+        <Animated.View entering={FadeInDown.delay(430).duration(350)}>
+          <View className="flex-row items-center bg-[#f0f4f8] rounded-full px-6 py-4 mb-6 border border-gray-200">
+            <Feather name="lock" size={20} color="#9ca3af" style={{ marginRight: 12 }} />
+            <TextInput
+              testID="signup_confirm_password_field"
+              onChangeText={setConfirmPassword}
+              value={confirmPassword}
+              secureTextEntry={!showConfirm}
+              placeholder="Confirm password"
+              autoCapitalize="none"
+              placeholderTextColor="#9ca3af"
+              className="flex-1 text-lg text-gray-800"
+            />
+            <TouchableOpacity onPress={() => setShowConfirm(prev => !prev)}>
+              <Feather name={showConfirm ? "eye-off" : "eye"} size={18} color="#9ca3af" />
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
 
-      <View className="flex flex-col gap-4">
-        <TouchableOpacity
-          testID="signup_submit_button"
-          className={`w-full bg-indigo-600 py-4 rounded-xl items-center justify-center shadow-lg shadow-indigo-600/30 ${loading ? 'opacity-50' : ''}`}
-          onPress={signUpWithEmail}
-          disabled={loading || googleLoading}
-        >
-          <Text className="text-white text-base font-semibold">
-            {loading ? "Creating account..." : "Sign Up"}
-          </Text>
-        </TouchableOpacity>
+        {/*BOTON: Register*/}
+        <Animated.View entering={FadeInDown.delay(490).duration(350)}>
+          <TouchableOpacity
+            testID="signup_submit_button"
+            onPress={signUpWithEmail}
+            disabled={loading || googleLoading}
+            className={`rounded-full py-4 items-center mb-3 ${loading ? "opacity-50" : ""}`}
+            style={{ backgroundColor: "#0d1b2e" }}
+          >
+            <Text className="text-white text-lg font-bold">
+              {loading ? "Creating account..." : "Register"}
+            </Text>
+          </TouchableOpacity>
+        </Animated.View>
 
-        <TouchableOpacity
-          testID="signin_redirect_button"
-          onPress={() => {
-            posthog.capture("sign_in_redirect_tapped");
-            router.push("/login" as any);
-          }}
-          className="w-full py-2 items-center"
-        >
-          <Text className="text-indigo-600 font-medium">
-            Already have an account? Sign In
-          </Text>
-        </TouchableOpacity>
-      </View>
+        {/*BOTON: Continue with Google*/}
+        <Animated.View entering={FadeInDown.delay(550).duration(350)}>
+          <TouchableOpacity
+            testID="google_sign_up_button"
+            onPress={handleGoogleSignUp}
+            disabled={loading || googleLoading}
+            className={`rounded-full py-4 items-center flex-row justify-center mb-4 ${googleLoading ? "opacity-50" : ""}`}
+            style={{ backgroundColor: "#c8e6f7" }}
+          >
+            <GoogleIcon size={26} />
+            <Text className="text-[#0d1b2e] text-lg font-bold ml-2">
+              {googleLoading ? "Connecting..." : "Continue with Google"}
+            </Text>
+          </TouchableOpacity>
+        </Animated.View>
+
+        {/*LINK: I already have an account*/}
+        <Animated.View entering={FadeInDown.delay(610).duration(350)}>
+          <TouchableOpacity
+            testID="signin_redirect_button"
+            onPress={() => {
+              posthog.capture("sign_in_redirect_tapped");
+              router.push("/login" as any);
+            }}
+            className="items-center"
+          >
+            <Text
+              className="text-base text-[#0d1b2e]"
+              style={{ textDecorationLine: "underline" }}
+            >
+              I have an account already
+            </Text>
+          </TouchableOpacity>
+        </Animated.View>
+      </Animated.View>
     </View>
   );
 }
-
