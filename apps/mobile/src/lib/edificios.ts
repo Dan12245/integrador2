@@ -1,3 +1,4 @@
+import { Platform } from "react-native";
 import { supabase } from "./supabase";
 import { getApiUrl } from "./api";
 
@@ -32,7 +33,7 @@ export const addBuilding = async (
     const userId = session?.user?.id;
 
     if (!userId) {
-        console.log("Error: You are not loged");
+        console.log("Error: You are not logged in");
         return;
     }
 

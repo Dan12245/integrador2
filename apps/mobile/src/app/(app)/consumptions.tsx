@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import AppNavbar from "../../components/AppNavbar";
 import ConsumptionCards from "../../components/ConsumptionCards";
 import ConsumptionGraph from "../../components/ConsumptionGraph";
@@ -18,26 +19,35 @@ export default function ConsumptionsScreen() {
 
       <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="flex-1" showsVerticalScrollIndicator={false}>
         <View className="p-4 md:p-8 flex-1 w-full max-w-7xl mx-auto">
-          <ConsumptionCards 
-            reportType={reportType} 
-            setReportType={setReportType} 
-          />
-          <ConsumptionGraph 
-            selectedBuilding={selectedBuilding} 
-            setSelectedBuilding={setSelectedBuilding} 
-            selectedPeriod={selectedPeriod} 
-            setSelectedPeriod={setSelectedPeriod} 
-            records={records}
-            setRecords={setRecords}
-          />
-          <HistoricalRecords 
-            selectedBuilding={selectedBuilding}
-            records={records}
-          />
+          <Animated.View entering={FadeInDown.delay(50).springify()}>
+            <ConsumptionCards
+              reportType={reportType}
+              setReportType={setReportType}
+            />
+          </Animated.View>
+
+          <Animated.View entering={FadeInDown.delay(150).springify()}>
+            <ConsumptionGraph 
+              selectedBuilding={selectedBuilding} 
+              setSelectedBuilding={setSelectedBuilding} 
+              selectedPeriod={selectedPeriod} 
+              setSelectedPeriod={setSelectedPeriod} 
+              records={records}
+              setRecords={setRecords}
+            />
+          </Animated.View>
+
+          <Animated.View entering={FadeInDown.delay(250).springify()}>
+            <HistoricalRecords 
+              selectedBuilding={selectedBuilding}
+              records={records}
+            />
+          </Animated.View>
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
+
 
 
