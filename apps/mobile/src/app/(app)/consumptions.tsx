@@ -78,6 +78,7 @@ export default function ConsumptionsScreen() {
               setReportType={setReportType}
               abnormalThreshold={abnormalThreshold}
               setAbnormalThreshold={setAbnormalThreshold}
+              buildings={buildings}
             />
           </Animated.View>
 

@@ -4,6 +4,7 @@ import ocrRouter from './routes/ocr'
 import routerBuilding from './routes/rutaEdificios'
 import chatRouter from './routes/chat'
 import consumptionsRouter from './routes/consumptions'
+import reportRouter from './routes/reportRoutes'
 
 const app = new Hono()
 app.use('/*', cors())
@@ -21,5 +22,6 @@ app.route('/', ocrRouter)
 app.route('/', routerBuilding)
 app.route('/', chatRouter)
 app.route('/', consumptionsRouter)
+app.route('/', reportRouter)
 
 export default app

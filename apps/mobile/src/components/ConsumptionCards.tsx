@@ -2,6 +2,8 @@ import React, { useState, useMemo, useEffect } from "react";
 import { View, Text, Pressable, useWindowDimensions, Modal, TextInput, ScrollView } from "react-native";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import ReportConfigModal from "./ReportConfigModal";
+import { BuildingRecord } from "@/src/lib/edificios";
 
 export interface ConsumptionCardsProps {
   buildingId?: number | null;
@@ -11,6 +13,7 @@ export interface ConsumptionCardsProps {
   setReportType: (type: string) => void;
   abnormalThreshold?: number;
   setAbnormalThreshold?: (val: number) => void;
+  buildings?: BuildingRecord[];
 }
 
 export default function ConsumptionCards({
@@ -21,6 +24,7 @@ export default function ConsumptionCards({
   setReportType,
   abnormalThreshold: externalThreshold,
   setAbnormalThreshold: externalSetThreshold,
+  buildings = [],
 }: ConsumptionCardsProps) {
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 1024;
@@ -34,6 +38,7 @@ export default function ConsumptionCards({
 
   // Settings modal state
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [targetInput, setTargetInput] = useState("100");
   const [thresholdInput, setThresholdInput] = useState("30");
 
@@ -243,7 +248,11 @@ export default function ConsumptionCards({
           </Pressable>
         </View>
       </View>
-      <Pressable testID="download-report-button" className="bg-slate-900 py-3.5 rounded-xl flex-row justify-center items-center gap-2 active:bg-slate-800 mt-auto">
+      <Pressable
+        testID="download-report-button"
+        onPress={() => setIsReportModalOpen(true)}
+        className="bg-slate-900 py-3.5 rounded-xl flex-row justify-center items-center gap-2 active:bg-slate-800 mt-auto"
+      >
         <Feather name="download" size={15} color="white" />
         <Text className="text-white text-xs font-bold">Download (.PDF)</Text>
       </Pressable>
@@ -350,6 +359,17 @@ export default function ConsumptionCards({
           </Pressable>
         </Pressable>
       </Modal>
+
+      {/* Report Configuration Modal */}
+      <ReportConfigModal
+        visible={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        reportType={reportType}
+        buildingId={buildingId}
+        buildingName={buildingName}
+        buildings={buildings}
+        records={records}
+      />
     </View>
   );
 }
