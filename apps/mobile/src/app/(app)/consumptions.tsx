@@ -1,17 +1,66 @@
-import React, { useState } from "react";
-import { ScrollView, View } from "react-native";
+import React, { useState, useEffect, useCallback } from "react";
+import { ScrollView, View, ActivityIndicator, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
+import { useFocusEffect } from "expo-router";
 import AppNavbar from "../../components/AppNavbar";
 import ConsumptionCards from "../../components/ConsumptionCards";
 import ConsumptionGraph from "../../components/ConsumptionGraph";
 import HistoricalRecords from "../../components/HistoricalRecords";
+import { getBuildings, BuildingRecord } from "@/src/lib/edificios";
+import { fetchConsumptions, consumptionsToRecords } from "@/src/lib/consumptions";
 
 export default function ConsumptionsScreen() {
-  const [selectedBuilding, setSelectedBuilding] = useState("Main Complex");
+  const [buildings, setBuildings] = useState<BuildingRecord[]>([]);
+  const [selectedBuilding, setSelectedBuilding] = useState<BuildingRecord | null>(null);
+  const [loadingBuildings, setLoadingBuildings] = useState(true);
+
   const [selectedPeriod, setSelectedPeriod] = useState("Week");
   const [reportType, setReportType] = useState("Monthly");
   const [records, setRecords] = useState<Record<string, number>>({});
+  const [loadingConsumptions, setLoadingConsumptions] = useState(false);
+
+  // Load buildings on focus
+  useFocusEffect(
+    useCallback(() => {
+      const load = async () => {
+        setLoadingBuildings(true);
+        const data = await getBuildings();
+        setBuildings(data ?? []);
+        setLoadingBuildings(false);
+      };
+      load();
+    }, [])
+  );
+
+  // Auto-select first building if none is selected
+  useEffect(() => {
+    if (!selectedBuilding && buildings.length > 0) {
+      setSelectedBuilding(buildings[0]);
+    }
+  }, [buildings, selectedBuilding]);
+
+  // Fetch consumption data whenever selected building changes
+  useEffect(() => {
+    if (!selectedBuilding) return;
+
+    const loadConsumptions = async () => {
+      setLoadingConsumptions(true);
+      const data = await fetchConsumptions(selectedBuilding.id);
+      if (data) {
+        setRecords(consumptionsToRecords(selectedBuilding.id, data));
+      } else {
+        setRecords({});
+      }
+      setLoadingConsumptions(false);
+    };
+
+    loadConsumptions();
+  }, [selectedBuilding?.id]);
+
+  const handleSelectBuilding = (building: BuildingRecord) => {
+    setSelectedBuilding(building);
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-[#f8fafc]" edges={["top", "left", "right", "bottom"]}>
@@ -27,19 +76,29 @@ export default function ConsumptionsScreen() {
           </Animated.View>
 
           <Animated.View entering={FadeInDown.delay(150).springify()}>
-            <ConsumptionGraph 
-              selectedBuilding={selectedBuilding} 
-              setSelectedBuilding={setSelectedBuilding} 
-              selectedPeriod={selectedPeriod} 
-              setSelectedPeriod={setSelectedPeriod} 
-              records={records}
-              setRecords={setRecords}
-            />
+            {loadingBuildings ? (
+              <View className="bg-white p-8 rounded-3xl border border-gray-100 mt-4 items-center justify-center">
+                <ActivityIndicator size="large" color="#3B82F6" />
+                <Text className="text-gray-400 text-sm mt-3">Loading buildings...</Text>
+              </View>
+            ) : (
+              <ConsumptionGraph
+                buildingId={selectedBuilding?.id ?? null}
+                buildingName={selectedBuilding?.alias ?? ""}
+                buildings={buildings}
+                onSelectBuilding={handleSelectBuilding}
+                selectedPeriod={selectedPeriod}
+                setSelectedPeriod={setSelectedPeriod}
+                records={records}
+                setRecords={setRecords}
+              />
+            )}
           </Animated.View>
 
           <Animated.View entering={FadeInDown.delay(250).springify()}>
-            <HistoricalRecords 
-              selectedBuilding={selectedBuilding}
+            <HistoricalRecords
+              buildingId={selectedBuilding?.id ?? null}
+              buildingName={selectedBuilding?.alias ?? ""}
               records={records}
             />
           </Animated.View>
@@ -48,6 +107,3 @@ export default function ConsumptionsScreen() {
     </SafeAreaView>
   );
 }
-
-
-

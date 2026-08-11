@@ -4,6 +4,7 @@ import { Feather } from "@expo/vector-icons";
 import DatePickerGrid from "./DatePickerGrid";
 import MonthPickerGrid from "./MonthPickerGrid";
 import { SHORT_MONTH_NAMES, formatDateKey, getDaysInMonth } from "./ConsumptionHelpers";
+import { upsertConsumption, deleteConsumption, deleteMonthConsumptions } from "@/src/lib/consumptions";
 
 export interface EditRecordsModalProps {
   isOpen: boolean;
@@ -20,7 +21,8 @@ export interface EditRecordsModalProps {
   setConfirmDeleteMonth: (val: boolean) => void;
   records: Record<string, number>;
   setRecords: (records: Record<string, number>) => void;
-  selectedBuilding: string;
+  buildingId: number | null;
+  buildingName: string;
   todayDateObj: Date;
   currentYear: number;
   currentMonth: number;
@@ -41,11 +43,14 @@ export function EditRecordsModal({
   setConfirmDeleteMonth,
   records,
   setRecords,
-  selectedBuilding,
+  buildingId,
+  buildingName,
   todayDateObj,
   currentYear,
   currentMonth,
 }: EditRecordsModalProps) {
+  const recordKey = buildingId !== null ? String(buildingId) : buildingName;
+
   return (
     <Modal
       testID="edit-records-modal"
@@ -114,7 +119,7 @@ export function EditRecordsModal({
                   selectedDate={editSelectedDate}
                   onSelectDate={(newD) => {
                     setEditSelectedDate(newD);
-                    const currentVal = records[`${selectedBuilding}:${formatDateKey(newD)}`] || 0;
+                    const currentVal = records[`${recordKey}:${formatDateKey(newD)}`] || 0;
                     setEditAmountInput(currentVal > 0 ? String(currentVal) : "");
                   }}
                   todayDateObj={todayDateObj}
@@ -122,7 +127,7 @@ export function EditRecordsModal({
                   currentMonth={currentMonth}
                   testIDPrefix="edit-calendar"
                   records={records}
-                  building={selectedBuilding}
+                  building={recordKey}
                 />
 
                 {/* Current record & update input */}
@@ -130,7 +135,7 @@ export function EditRecordsModal({
                   <View className="flex-row justify-between items-center mb-4">
                     <Text className="text-xs font-semibold text-gray-600">Current Consumption:</Text>
                     <Text className="text-sm font-black text-gray-900">
-                      {(records[`${selectedBuilding}:${formatDateKey(editSelectedDate)}`] || 0).toFixed(1)} m³
+                      {(records[`${recordKey}:${formatDateKey(editSelectedDate)}`] || 0).toFixed(1)} m³
                     </Text>
                   </View>
 
@@ -152,11 +157,17 @@ export function EditRecordsModal({
                 <View className="flex-row gap-3">
                   <Pressable
                     testID="delete-record-button"
-                    onPress={() => {
+                    onPress={async () => {
+                      const dateKey = formatDateKey(editSelectedDate);
                       const updated = { ...records };
-                      delete updated[`${selectedBuilding}:${formatDateKey(editSelectedDate)}`];
+                      delete updated[`${recordKey}:${dateKey}`];
                       setRecords(updated);
                       setEditAmountInput("");
+
+                      // Persist to DB
+                      if (buildingId !== null) {
+                        await deleteConsumption(buildingId, dateKey);
+                      }
                     }}
                     className="flex-1 bg-red-50 border border-red-200 py-3 rounded-xl items-center active:bg-red-100"
                   >
@@ -165,14 +176,21 @@ export function EditRecordsModal({
 
                   <Pressable
                     testID="update-record-button"
-                    onPress={() => {
+                    onPress={async () => {
                       const val = parseFloat(editAmountInput);
                       const updated = { ...records };
-                      const key = `${selectedBuilding}:${formatDateKey(editSelectedDate)}`;
+                      const dateKey = formatDateKey(editSelectedDate);
+                      const key = `${recordKey}:${dateKey}`;
                       if (isNaN(val) || val <= 0) {
                         delete updated[key];
+                        if (buildingId !== null) {
+                          await deleteConsumption(buildingId, dateKey);
+                        }
                       } else {
                         updated[key] = val;
+                        if (buildingId !== null) {
+                          await upsertConsumption(buildingId, dateKey, val);
+                        }
                       }
                       setRecords(updated);
                       onClose();
@@ -211,7 +229,7 @@ export function EditRecordsModal({
                       <Text className="font-bold">
                         {SHORT_MONTH_NAMES[editSelectedDate.getMonth()]} {editSelectedDate.getFullYear()}
                       </Text>{" "}
-                      in <Text className="font-bold">{selectedBuilding}</Text>.
+                      in <Text className="font-bold">{buildingName}</Text>.
                     </Text>
                   </View>
                 </View>
@@ -242,19 +260,25 @@ export function EditRecordsModal({
 
                       <Pressable
                         testID="confirm-delete-month-button"
-                        onPress={() => {
+                        onPress={async () => {
                           const yr = editSelectedDate.getFullYear();
                           const mo = editSelectedDate.getMonth();
                           const daysInM = getDaysInMonth(yr, mo);
                           const updated = { ...records };
 
                           for (let d = 1; d <= daysInM; d++) {
-                            const key = `${selectedBuilding}:${formatDateKey(new Date(yr, mo, d))}`;
+                            const key = `${recordKey}:${formatDateKey(new Date(yr, mo, d))}`;
                             delete updated[key];
                           }
 
                           setRecords(updated);
                           setConfirmDeleteMonth(false);
+
+                          // Persist to DB (month is 1-indexed for the API)
+                          if (buildingId !== null) {
+                            await deleteMonthConsumptions(buildingId, yr, mo + 1);
+                          }
+
                           onClose();
                         }}
                         className="flex-1 bg-red-600 py-2.5 rounded-xl items-center active:bg-red-700 shadow-sm"

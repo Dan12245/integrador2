@@ -3,19 +3,24 @@ import { View, Text, ScrollView } from "react-native";
 import { Feather } from "@expo/vector-icons";
 
 export interface HistoricalRecordsProps {
-  selectedBuilding?: string;
+  buildingId?: number | null;
+  buildingName?: string;
   records?: Record<string, number>;
 }
 
 export default function HistoricalRecords({
-  selectedBuilding = "Main Complex",
+  buildingId = null,
+  buildingName = "Building",
   records = {},
 }: HistoricalRecordsProps) {
+  // Use buildingId as the key prefix if available
+  const keyPrefix = buildingId !== null ? String(buildingId) : buildingName;
+
   // Extract and sort consumption records for the selected building
   const entries = Object.entries(records)
-    .filter(([key, val]) => key.startsWith(`${selectedBuilding}:`) && val > 0)
+    .filter(([key, val]) => key.startsWith(`${keyPrefix}:`) && val > 0)
     .map(([key, val]) => {
-      const dateStr = key.replace(`${selectedBuilding}:`, "");
+      const dateStr = key.replace(`${keyPrefix}:`, "");
       const [yearStr, monthStr, dayStr] = dateStr.split("-");
       const dateObj = new Date(parseInt(yearStr, 10), parseInt(monthStr, 10) - 1, parseInt(dayStr, 10));
       return {
@@ -42,14 +47,24 @@ export default function HistoricalRecords({
 
       {/* Container Box with Internal Scroll */}
       <View className="bg-white rounded-3xl p-4 md:p-5 border border-gray-100 shadow-sm">
-        {entries.length === 0 ? (
+        {buildingId === null ? (
+          <View className="items-center justify-center py-8">
+            <Feather name="home" size={32} color="#9CA3AF" className="mb-2" />
+            <Text className="text-gray-600 text-sm font-semibold text-center">
+              Select a building to view history
+            </Text>
+            <Text className="text-gray-400 text-xs text-center mt-1">
+              Choose a building from the dropdown above.
+            </Text>
+          </View>
+        ) : entries.length === 0 ? (
           <View className="items-center justify-center py-8">
             <Feather name="inbox" size={32} color="#9CA3AF" className="mb-2" />
             <Text className="text-gray-600 text-sm font-semibold text-center">
               No consumption records registered yet
             </Text>
             <Text className="text-gray-400 text-xs text-center mt-1">
-              Add consumption data above for {selectedBuilding} to view history.
+              Add consumption data above for {buildingName} to view history.
             </Text>
           </View>
         ) : (
