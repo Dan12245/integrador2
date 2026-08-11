@@ -17,6 +17,7 @@ app.get('/', (c) => {
 
 app.route('/', ocrRouter)
 //nomas añadimos una nueva wea, en este caso para añadir edificios
-app.route('/',routerBuilding)
+app.route('/', routerBuilding)
+app.route('/', chatRouter)
 
 export default app

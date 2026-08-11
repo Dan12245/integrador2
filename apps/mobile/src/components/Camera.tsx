@@ -2,22 +2,7 @@ import React, { useState } from "react";
 import { TouchableOpacity, Text, ActivityIndicator, Alert, Platform } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Feather } from "@expo/vector-icons";
-
-import Constants from "expo-constants";
-
-// Define default API URL. Priority: EXPO_PUBLIC_API_URL env var > Metro Host IP > Simulator aliases
-const getHostIp = () => {
-    const hostUri = Constants.expoConfig?.hostUri;
-    return hostUri ? hostUri.split(":")[0] : null;
-};
-
-const DEFAULT_API_URL =
-    process.env.EXPO_PUBLIC_API_URL ||
-    (getHostIp()
-        ? `http://${getHostIp()}:8787`
-        : Platform.OS === "android"
-        ? "http://10.0.2.2:8787"
-        : "http://localhost:8787");
+import { getApiUrl } from "@/src/lib/api";
 
 export interface ExtractedData {
     contract_number: string | null;
@@ -38,7 +23,7 @@ export interface ReceiptScannerButtonProps {
 export default function ReceiptScannerButton({
     onDataExtracted,
     onError,
-    apiUrl = DEFAULT_API_URL,
+    apiUrl = getApiUrl(),
 }: ReceiptScannerButtonProps) {
     const [isProcessing, setIsProcessing] = useState(false);
 

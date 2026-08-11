@@ -11,16 +11,13 @@ import {
     Platform,
 } from "react-native";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { getApiUrl } from "@/src/lib/api";
 
 export interface Message {
     id: string;
     role: "user" | "model";
     content: string;
 }
-
-const API_BASE_URL =
-    process.env.EXPO_PUBLIC_API_URL ||
-    (Platform.OS === "android" ? "http://10.0.2.2:8787" : "http://localhost:8787");
 
 export default function AIChatBubble() {
     const [isOpen, setIsOpen] = useState(false);
@@ -82,7 +79,7 @@ export default function AIChatBubble() {
             const payload =
                 apiMessages.length > 0 ? apiMessages : [{ role: "user", content: userText }];
 
-            const response = await fetch(`${API_BASE_URL}/chat`, {
+            const response = await fetch(`${getApiUrl()}/chat`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

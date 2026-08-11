@@ -17,6 +17,7 @@ import AppNavbar from "../../components/AppNavbar";
 import ReceiptScannerButton, { ExtractedData } from "../../components/Camera";
 // ✅ Agregamos editBuilding aquí a tus importaciones
 import { addBuilding, getBuildings, BuildingRecord, deleteBuilding, editBuilding } from "@/src/lib/edificios";
+import { getApiUrl } from "@/src/lib/api";
 import BuildingMap from "../../components/BuildingMap";
 
 export default function MyBuildings() {
@@ -135,7 +136,7 @@ export default function MyBuildings() {
 
     const delayDebounce = setTimeout(async () => {
       try {  
-        const res = await fetch(`http://192.168.0.15:8787/autocomplete?q=${encodeURIComponent(address)}`);
+        const res = await fetch(`${getApiUrl()}/autocomplete?q=${encodeURIComponent(address)}`);
         if (!res.ok) {
           console.log("Backend error:", res.status);
           return; 
@@ -169,7 +170,7 @@ export default function MyBuildings() {
     setCoordinates({ lat, long });
 
     try {
-      const res = await fetch(`http://192.168.0.15:8787/reverseGeocode?lat=${lat}&lon=${long}`);
+      const res = await fetch(`${getApiUrl()}/reverseGeocode?lat=${lat}&lon=${long}`);
       const data = await res.json();
 
       if (data.address) {
