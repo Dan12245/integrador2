@@ -17,6 +17,7 @@ import { useRouter } from "expo-router";
 import { usePostHog } from "../lib/posthog";
 import { performGoogleSignIn } from "../lib/auth";
 import GoogleIcon from "./GoogleIcon";
+import * as Linking from "expo-linking";
 
 export default function SignUpForm() {
   const [email, setEmail]                     = useState("");
@@ -40,7 +41,13 @@ export default function SignUpForm() {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: Linking.createURL("/"),
+      }
+    });
     if (error) {
       Alert.alert("Error", error.message);
       posthog.capture("registration_failed", { error_message: error.message });

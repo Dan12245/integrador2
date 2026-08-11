@@ -6,7 +6,7 @@ import { supabase } from "../lib/supabase";
 import { handleAuthRedirectUrl } from "../lib/auth";
 import * as Linking from "expo-linking";
 import { Session, AuthChangeEvent } from "@supabase/supabase-js";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, View, KeyboardAvoidingView, Platform } from "react-native";
 import { posthog, PostHogProvider } from "../lib/posthog";
 import { DarkTheme } from "@react-navigation/native";
 
@@ -81,7 +81,7 @@ export default function RootLayout() {
 
         // Check if the user is currently in the "(app)" group
         const inAppGroup = (segments[0] as string) === "(app)";
-        const isResetPasswordScreen = (segments[0] as string) === "(auth)" && segments[1] === "forgot-password";
+        const isResetPasswordScreen = (segments[0] as string) === "(auth)" && (segments[1] === "forgot-password" || segments[1] === "reset-password");
 
         if (!session && inAppGroup) {
             // If NOT logged in, and trying to access protected screens, redirect to login

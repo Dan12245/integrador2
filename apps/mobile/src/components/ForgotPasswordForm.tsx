@@ -14,6 +14,7 @@ import Animated, {
 import { supabase } from "../lib/supabase";
 import { useRouter } from "expo-router";
 import { usePostHog } from "../lib/posthog";
+import * as Linking from "expo-linking";
 
 export default function ForgotPasswordForm() {
   const [email, setEmail]     = useState("");
@@ -29,7 +30,7 @@ export default function ForgotPasswordForm() {
     }
     setLoading(true);
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: "myapp://reset-password",
+      redirectTo: Linking.createURL("/reset-password"),
     });
     if (error) {
       Alert.alert("Error", error.message);
