@@ -3,10 +3,9 @@ import {
   View,
   Text,
   TextInput,
-  ScrollView,
-  KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, {
   FadeInDown,
@@ -66,11 +65,11 @@ export default function TechSupport() {
     <SafeAreaView className="flex-1 bg-white" edges={["top", "left", "right", "bottom"]}>
       <AppNavbar />
 
-      <KeyboardAvoidingView
+      <KeyboardAwareScrollView
         className="flex-1"
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        showsVerticalScrollIndicator={false}
+        bottomOffset={20}
       >
-        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
           {/* HERO OSCURO */}
           <View className="bg-[#0d1b2e] px-8 pt-10 pb-16">
             <Animated.Text
@@ -126,8 +125,7 @@ export default function TechSupport() {
             {/* FORMULARIO DE FEEDBACK */}
             <FeedbackForm />
           </Animated.View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+      </KeyboardAwareScrollView>
 
       {/* Volatile AI Assistant Floating Chat Widget */}
       <AIChatBubble />

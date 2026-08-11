@@ -3,9 +3,9 @@ import {
   View,
   Text,
   TouchableOpacity,
-  ScrollView,
   useWindowDimensions,
 } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -450,10 +450,11 @@ export default function Home() {
     <SafeAreaView style={{ flex: 1, backgroundColor: "#f8fafc" }} edges={["top", "left", "right", "bottom"]}>
       <AppNavbar />
 
-      <ScrollView
+      <KeyboardAwareScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         style={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
+        bottomOffset={20}
       >
         {/* Centered max-width container matching the reference design */}
         <View style={{ width: "100%", maxWidth: 1280, alignSelf: "center", paddingHorizontal: 20, paddingVertical: 28, gap: 16 }}>
@@ -507,7 +508,7 @@ export default function Home() {
           )}
 
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 }

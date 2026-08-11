@@ -2,13 +2,13 @@ import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
-  ScrollView,
   useWindowDimensions,
   ImageBackground,
   ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import Animated, { FadeInDown, FadeInUp, FadeOutUp } from "react-native-reanimated";
 import AppNavbar from "../../components/AppNavbar";
 import Account from "../../components/Account";
@@ -157,7 +157,7 @@ export default function UserProfile() {
           style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}
         />
 
-        <ScrollView
+        <KeyboardAwareScrollView
           className="flex-1"
           contentContainerStyle={{
             flexGrow: 1,
@@ -166,6 +166,7 @@ export default function UserProfile() {
             paddingHorizontal: isMobile ? 12 : 16,
           }}
           showsVerticalScrollIndicator={false}
+          bottomOffset={20}
         >
           {/* FILA DE TARJETAS DE INFORMACION (Details / Networks / Settings) */}
           <Animated.View
@@ -292,7 +293,7 @@ export default function UserProfile() {
               </Text>
             </Animated.View>
           )}
-        </ScrollView>
+        </KeyboardAwareScrollView>
       </View>
     </SafeAreaView>
   );

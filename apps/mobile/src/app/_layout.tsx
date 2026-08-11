@@ -6,8 +6,9 @@ import { supabase } from "../lib/supabase";
 import { handleAuthRedirectUrl } from "../lib/auth";
 import * as Linking from "expo-linking";
 import { Session, AuthChangeEvent } from "@supabase/supabase-js";
-import { ActivityIndicator, View, KeyboardAvoidingView, Platform } from "react-native";
+import { ActivityIndicator, View, Platform } from "react-native";
 import { posthog, PostHogProvider } from "../lib/posthog";
+import { KeyboardProvider } from "react-native-keyboard-controller";
 import { DarkTheme } from "@react-navigation/native";
 
 export default function RootLayout() {
@@ -110,12 +111,14 @@ export default function RootLayout() {
                 propsToCapture: ["testID"],
             }}
         >
-            <StatusBar style="dark" />
-            <Stack screenOptions={{ headerShown: false }}>
-                <Stack.Screen name="index" />
-                <Stack.Screen name="(auth)" />
-                <Stack.Screen name="(app)" />
-            </Stack>
+            <KeyboardProvider statusBarTranslucent>
+                <StatusBar style="dark" />
+                <Stack screenOptions={{ headerShown: false }}>
+                    <Stack.Screen name="index" />
+                    <Stack.Screen name="(auth)" />
+                    <Stack.Screen name="(app)" />
+                </Stack>
+            </KeyboardProvider>
         </PostHogProvider>
     );
 }

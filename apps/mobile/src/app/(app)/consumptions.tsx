@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { ScrollView, View, ActivityIndicator, Text } from "react-native";
+import { View, ActivityIndicator, Text } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useFocusEffect } from "expo-router";
@@ -66,7 +67,7 @@ export default function ConsumptionsScreen() {
     <SafeAreaView className="flex-1 bg-[#f8fafc]" edges={["top", "left", "right", "bottom"]}>
       <AppNavbar />
 
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="flex-1" showsVerticalScrollIndicator={false}>
+      <KeyboardAwareScrollView contentContainerStyle={{ flexGrow: 1 }} className="flex-1" showsVerticalScrollIndicator={false} bottomOffset={20}>
         <View className="p-4 md:p-8 flex-1 w-full max-w-7xl mx-auto">
           <Animated.View entering={FadeInDown.delay(50).springify()}>
             <ConsumptionCards
@@ -103,7 +104,7 @@ export default function ConsumptionsScreen() {
             />
           </Animated.View>
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 }

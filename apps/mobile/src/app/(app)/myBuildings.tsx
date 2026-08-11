@@ -4,13 +4,13 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
   FlatList,
   Alert,
   Platform,
   Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useRouter, useFocusEffect } from "expo-router";
 import Animated, { FadeInLeft, FadeInRight, FadeInDown } from "react-native-reanimated";
 import AppNavbar from "../../components/AppNavbar";
@@ -264,7 +264,7 @@ export default function MyBuildings() {
     <SafeAreaView className="flex-1 bg-[#f4f6f8]" edges={["top", "left", "right", "bottom"]}>
       <AppNavbar />
 
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="flex-1">
+      <KeyboardAwareScrollView contentContainerStyle={{ flexGrow: 1 }} className="flex-1" bottomOffset={20}>
         <View className="flex-1 flex-col md:flex-row p-4 gap-4">
           
           <Animated.View
@@ -401,7 +401,7 @@ export default function MyBuildings() {
             </Animated.View>
           </View>
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       {/* VENTANA EMERGENTE (MODAL): Agregar Nuevo Edificio */}
       <Modal
@@ -410,15 +410,11 @@ export default function MyBuildings() {
         transparent
         onRequestClose={() => setShowAddForm(false)}
       >
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: "rgba(0, 0, 0, 0.65)",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: 16,
-          }}
-        >
+        <View style={{ flex: 1, backgroundColor: "rgba(0, 0, 0, 0.65)" }}>
+          <KeyboardAwareScrollView
+            contentContainerStyle={{ flexGrow: 1, justifyContent: "center", alignItems: "center", padding: 16 }}
+            showsVerticalScrollIndicator={false}
+          >
           <Animated.View
             entering={FadeInDown.duration(300)}
             style={{
@@ -613,6 +609,7 @@ export default function MyBuildings() {
               </TouchableOpacity>
             </View>
           </Animated.View>
+          </KeyboardAwareScrollView>
         </View>
       </Modal>
 
@@ -623,15 +620,11 @@ export default function MyBuildings() {
         transparent
         onRequestClose={() => setShowEditForm(false)}
       >
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: "rgba(0, 0, 0, 0.65)",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: 16,
-          }}
-        >
+        <View style={{ flex: 1, backgroundColor: "rgba(0, 0, 0, 0.65)" }}>
+          <KeyboardAwareScrollView
+            contentContainerStyle={{ flexGrow: 1, justifyContent: "center", alignItems: "center", padding: 16 }}
+            showsVerticalScrollIndicator={false}
+          >
           <Animated.View
             entering={FadeInDown.duration(300)}
             style={{
@@ -693,6 +686,7 @@ export default function MyBuildings() {
               </TouchableOpacity>
             </View>
           </Animated.View>
+          </KeyboardAwareScrollView>
         </View>
       </Modal>
 
