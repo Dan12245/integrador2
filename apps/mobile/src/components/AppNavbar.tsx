@@ -12,10 +12,12 @@ export default function AppNavbar() {
     <View className="flex-row items-center justify-between bg-[#0d1b2e] px-6 h-14">
 
       {/* Logo */}
-      <TouchableOpacity onPress={() => router.push("/home" as any)}>
-        <View className="w-9 h-9 rounded-full border border-white/30 items-center justify-center">
-          <Text className="text-white text-[10px] font-black">CRA</Text>
-        </View>
+      <TouchableOpacity onPress={() => router.push("/home" as any)} className="flex-row items-center">
+        <Image
+          source={require("../assets/images/splash-icon.png")}
+          style={{ width: 36, height: 36 }}
+          resizeMode="contain"
+        />
       </TouchableOpacity>
 
       {/* Nav links */}

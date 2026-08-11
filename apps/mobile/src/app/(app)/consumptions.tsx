@@ -20,6 +20,7 @@ export default function ConsumptionsScreen() {
   const [reportType, setReportType] = useState("Monthly");
   const [records, setRecords] = useState<Record<string, number>>({});
   const [loadingConsumptions, setLoadingConsumptions] = useState(false);
+  const [abnormalThreshold, setAbnormalThreshold] = useState<number>(30);
 
   // Load buildings on focus
   useFocusEffect(
@@ -71,8 +72,14 @@ export default function ConsumptionsScreen() {
         <View className="p-4 md:p-8 flex-1 w-full max-w-7xl mx-auto">
           <Animated.View entering={FadeInDown.delay(50).springify()}>
             <ConsumptionCards
+              buildingId={selectedBuilding?.id ?? null}
+              buildingName={selectedBuilding?.alias ?? ""}
+              records={records}
               reportType={reportType}
               setReportType={setReportType}
+              abnormalThreshold={abnormalThreshold}
+              setAbnormalThreshold={setAbnormalThreshold}
+              buildings={buildings}
             />
           </Animated.View>
 
@@ -101,6 +108,7 @@ export default function ConsumptionsScreen() {
               buildingId={selectedBuilding?.id ?? null}
               buildingName={selectedBuilding?.alias ?? ""}
               records={records}
+              abnormalThreshold={abnormalThreshold}
             />
           </Animated.View>
         </View>

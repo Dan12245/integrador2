@@ -1,18 +1,50 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, ScrollView } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export interface HistoricalRecordsProps {
   buildingId?: number | null;
   buildingName?: string;
   records?: Record<string, number>;
+  abnormalThreshold?: number;
 }
 
 export default function HistoricalRecords({
   buildingId = null,
   buildingName = "Building",
   records = {},
+  abnormalThreshold: propThreshold,
 }: HistoricalRecordsProps) {
+  const [localThreshold, setLocalThreshold] = useState<number>(30);
+
+  // Load custom threshold from AsyncStorage if not provided as prop
+  useEffect(() => {
+    if (propThreshold !== undefined) {
+      setLocalThreshold(propThreshold);
+      return;
+    }
+    if (buildingId === null) return;
+    const loadSettings = async () => {
+      try {
+        const saved = await AsyncStorage.getItem(`building_settings_${buildingId}`);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.abnormalThreshold) {
+            setLocalThreshold(parsed.abnormalThreshold);
+          }
+        } else {
+          setLocalThreshold(30);
+        }
+      } catch (e) {
+        console.log("Error loading building settings in HistoricalRecords:", e);
+      }
+    };
+    loadSettings();
+  }, [buildingId, propThreshold]);
+
+  const activeThreshold = propThreshold !== undefined ? propThreshold : localThreshold;
+
   // Use buildingId as the key prefix if available
   const keyPrefix = buildingId !== null ? String(buildingId) : buildingName;
 
@@ -80,7 +112,7 @@ export default function HistoricalRecords({
                 day: "numeric",
                 year: "numeric",
               });
-              const isHighUsage = item.val > 30;
+              const isHighUsage = item.val > activeThreshold;
 
               return (
                 <View
@@ -102,7 +134,9 @@ export default function HistoricalRecords({
                   {isHighUsage ? (
                     <View className="flex-row items-center bg-red-50 border border-red-200 px-3.5 py-1.5 rounded-full gap-1">
                       <Feather name="alert-triangle" size={12} color="#B91C1C" />
-                      <Text className="text-red-700 text-xs font-bold">High usage</Text>
+                      <Text className="text-red-700 text-xs font-bold">
+                        High usage (&gt;{activeThreshold}m³)
+                      </Text>
                     </View>
                   ) : (
                     <View className="flex-row items-center bg-green-50 border border-green-200 px-3.5 py-1.5 rounded-full gap-1">
