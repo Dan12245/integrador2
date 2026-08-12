@@ -2,22 +2,8 @@ import React, { useState } from "react";
 import { TouchableOpacity, Text, ActivityIndicator, Alert, Platform } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Feather } from "@expo/vector-icons";
-
-import Constants from "expo-constants";
-
-// Define default API URL. Priority: EXPO_PUBLIC_API_URL env var > Metro Host IP > Simulator aliases
-const getHostIp = () => {
-    const hostUri = Constants.expoConfig?.hostUri;
-    return hostUri ? hostUri.split(":")[0] : null;
-};
-
-const DEFAULT_API_URL =
-    process.env.EXPO_PUBLIC_API_URL ||
-    (getHostIp()
-        ? `http://${getHostIp()}:8787`
-        : Platform.OS === "android"
-        ? "http://10.0.2.2:8787"
-        : "http://localhost:8787");
+import { useTranslation } from "react-i18next";
+import { getApiUrl } from "@/src/lib/api";
 
 export interface ExtractedData {
     contract_number: string | null;
@@ -38,8 +24,9 @@ export interface ReceiptScannerButtonProps {
 export default function ReceiptScannerButton({
     onDataExtracted,
     onError,
-    apiUrl = DEFAULT_API_URL,
+    apiUrl = getApiUrl(),
 }: ReceiptScannerButtonProps) {
+    const { t } = useTranslation();
     const [isProcessing, setIsProcessing] = useState(false);
 
     const handleScanReceipt = async () => {
@@ -49,8 +36,8 @@ export default function ReceiptScannerButton({
 
             if (!permissionResult.granted) {
                 Alert.alert(
-                    "Permission Required",
-                    "Camera access is required to take a picture of your water receipt.",
+                    t("camera.permissionRequiredTitle"),
+                    t("camera.permissionRequiredMessage"),
                 );
                 return;
             }
@@ -73,7 +60,7 @@ export default function ReceiptScannerButton({
             const base64Image = capturedAsset.base64;
 
             if (!base64Image) {
-                throw new Error("Failed to get image base64 data.");
+                throw new Error(t("camera.base64Error"));
             }
 
             // 3. Send photo to OCR API endpoint
@@ -102,7 +89,7 @@ export default function ReceiptScannerButton({
             if (!response.ok) {
                 const errorMsg = result.details
                     ? `${result.error} - ${result.details}`
-                    : result.error || "Failed to process image OCR.";
+                    : result.error || t("camera.ocrFailedError");
                 throw new Error(errorMsg);
             }
 
@@ -118,16 +105,16 @@ export default function ReceiptScannerButton({
                     rawData: result.rawData,
                 });
             } else {
-                throw new Error("No data could be extracted from the receipt.");
+                throw new Error(t("camera.noDataExtractedError"));
             }
         } catch (error: any) {
             console.error("OCR Scanner Error:", error, "| API URL:", apiUrl);
-            const errorMessage = error.message || "An unknown error occurred.";
+            const errorMessage = error.message || t("camera.unknownError");
 
             if (onError) {
                 onError(errorMessage);
             } else {
-                Alert.alert("OCR Processing Error", errorMessage);
+                Alert.alert(t("camera.ocrErrorTitle"), errorMessage);
             }
         } finally {
             setIsProcessing(false);
@@ -149,7 +136,7 @@ export default function ReceiptScannerButton({
                 <Feather name="camera" size={18} color="#ffffff" />
             )}
             <Text className="text-white font-bold text-sm">
-                {isProcessing ? "Processing Receipt..." : "Scan Water Receipt"}
+                {isProcessing ? t("camera.processingReceipt") : t("camera.scanWaterReceipt")}
             </Text>
         </TouchableOpacity>
     );

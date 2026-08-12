@@ -25,7 +25,7 @@ export const SHORT_MONTH_NAMES = [
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 ];
 
-export const computeChartData = (period: string, building: string, records: Record<string, number>) => {
+export const computeChartData = (period: string, building: string | number, records: Record<string, number>) => {
   const currentDate = new Date();
 
   if (period === "Week") {

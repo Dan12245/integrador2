@@ -3,15 +3,15 @@ import {
   View,
   Text,
   TextInput,
-  ScrollView,
-  KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, {
   FadeInDown,
   FadeInLeft,
 } from "react-native-reanimated";
+import { useTranslation } from "react-i18next";
 import AppNavbar from "../../components/AppNavbar";
 import FeedbackForm from "../../components/FeedbackForm";
 import AIChatBubble from "../../components/AIChatBubble";
@@ -49,16 +49,17 @@ function HelpCard({ title, description, delay }: HelpCardProps) {
 
 // ─── PANTALLA PRINCIPAL: Tech Support ────────────────────────────────────────
 export default function TechSupport() {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
 
   const helpCards = [
     {
-      title: "FAQ",
-      description: "Find answers to commonly asked questions regarding water meter telemetry and billing.",
+      title: t("support.faqTitle"),
+      description: t("support.faqDescription"),
     },
     {
-      title: "Contact Us",
-      description: "Direct support contact options for urgent technical inquiries and meter issues.",
+      title: t("support.contactUsTitle"),
+      description: t("support.contactUsDescription"),
     },
   ];
 
@@ -66,11 +67,11 @@ export default function TechSupport() {
     <SafeAreaView className="flex-1 bg-white" edges={["top", "left", "right", "bottom"]}>
       <AppNavbar />
 
-      <KeyboardAvoidingView
+      <KeyboardAwareScrollView
         className="flex-1"
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        showsVerticalScrollIndicator={false}
+        bottomOffset={20}
       >
-        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
           {/* HERO OSCURO */}
           <View className="bg-[#0d1b2e] px-8 pt-10 pb-16">
             <Animated.Text
@@ -78,7 +79,7 @@ export default function TechSupport() {
               style={{ fontSize: 44, color: "#ffffff" }}
               className="font-black leading-tight mb-8"
             >
-              {"How can we\nhelp?"}
+              {t("support.heroTitle")}
             </Animated.Text>
 
             {/* BARRA DE BÚSQUEDA */}
@@ -94,7 +95,7 @@ export default function TechSupport() {
               <Text className="text-gray-400 text-xl">🔍</Text>
               <TextInput
                 className="flex-1 text-base text-gray-700"
-                placeholder="Search your issue here"
+                placeholder={t("support.searchPlaceholder")}
                 placeholderTextColor="#9ca3af"
                 value={searchQuery}
                 onChangeText={setSearchQuery}
@@ -126,8 +127,7 @@ export default function TechSupport() {
             {/* FORMULARIO DE FEEDBACK */}
             <FeedbackForm />
           </Animated.View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+      </KeyboardAwareScrollView>
 
       {/* Volatile AI Assistant Floating Chat Widget */}
       <AIChatBubble />

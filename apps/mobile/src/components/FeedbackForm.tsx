@@ -11,6 +11,7 @@ import {
     ActivityIndicator,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { supabase } from "../lib/supabase";
 
 export const CATEGORY_OPTIONS = ["Error", "Suggestion", "Other"] as const;
@@ -29,6 +30,7 @@ const showAlert = (title: string, message: string) => {
 };
 
 export default function FeedbackForm() {
+    const { t } = useTranslation();
     const [category, setCategory] = useState<CategoryOption>("Error");
     const [description, setDescription] = useState("");
     const [loading, setLoading] = useState(false);
@@ -36,7 +38,7 @@ export default function FeedbackForm() {
 
     const handleSubmit = async () => {
         if (!description.trim()) {
-            showAlert("Validation Error", "Please provide a description for your feedback.");
+            showAlert(t("feedback.alerts.validationErrorTitle"), t("feedback.alerts.validationErrorMessage"));
             return;
         }
 
@@ -48,7 +50,7 @@ export default function FeedbackForm() {
             } = await supabase.auth.getSession();
 
             if (sessionError || !session?.user) {
-                showAlert("Authentication Error", "You must be logged in to submit feedback.");
+                showAlert(t("feedback.alerts.authErrorTitle"), t("feedback.alerts.authErrorMessage"));
                 return;
             }
 
@@ -65,11 +67,11 @@ export default function FeedbackForm() {
                 throw error;
             }
 
-            showAlert("Success", "Your feedback has been submitted successfully.");
+            showAlert(t("feedback.alerts.successTitle"), t("feedback.alerts.successMessage"));
             setDescription("");
             setCategory("Error");
         } catch (err: any) {
-            showAlert("Submission Failed", err?.message || "An unexpected error occurred.");
+            showAlert(t("feedback.alerts.submissionFailedTitle"), err?.message || t("feedback.alerts.unexpectedErrorMessage"));
         } finally {
             setLoading(false);
         }
@@ -77,18 +79,18 @@ export default function FeedbackForm() {
 
     return (
         <View className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm mt-4">
-            <Text className="text-xl font-bold text-gray-800 mb-4">Submit Feedback</Text>
+            <Text className="text-xl font-bold text-gray-800 mb-4">{t("feedback.title")}</Text>
 
             {/* Category Combobox Field */}
             <View className="mb-4">
-                <Text className="text-sm font-semibold text-gray-700 mb-1.5">Category</Text>
+                <Text className="text-sm font-semibold text-gray-700 mb-1.5">{t("feedback.categoryLabel")}</Text>
 
                 <Pressable
                     testID="feedback-category-combobox"
                     onPress={() => setDropdownVisible(!dropdownVisible)}
                     className="flex-row items-center justify-between border border-gray-300 rounded-xl px-4 py-3 bg-gray-50 active:bg-gray-100"
                 >
-                    <Text className="text-gray-900 font-medium text-base">{category}</Text>
+                    <Text className="text-gray-900 font-medium text-base">{t(`feedback.categories.${category}`)}</Text>
                     <Feather
                         name={dropdownVisible ? "chevron-up" : "chevron-down"}
                         size={20}
@@ -109,7 +111,7 @@ export default function FeedbackForm() {
                     >
                         <View className="bg-white w-full max-w-sm rounded-2xl p-4 shadow-xl border border-gray-100">
                             <Text className="text-lg font-bold text-gray-800 mb-3 text-center">
-                                Select Category
+                                {t("feedback.selectCategory")}
                             </Text>
                             {CATEGORY_OPTIONS.map((opt) => (
                                 <TouchableOpacity
@@ -130,7 +132,7 @@ export default function FeedbackForm() {
                                             category === opt ? "text-sky-700" : "text-gray-700"
                                         }`}
                                     >
-                                        {opt}
+                                        {t(`feedback.categories.${opt}`)}
                                     </Text>
                                     {category === opt && (
                                         <Feather name="check" size={18} color="#0369a1" />
@@ -144,12 +146,12 @@ export default function FeedbackForm() {
 
             {/* Description Field */}
             <View className="mb-5">
-                <Text className="text-sm font-semibold text-gray-700 mb-1.5">Description</Text>
+                <Text className="text-sm font-semibold text-gray-700 mb-1.5">{t("feedback.descriptionLabel")}</Text>
                 <TextInput
                     testID="feedback-description-input"
                     value={description}
                     onChangeText={setDescription}
-                    placeholder="Describe your issue, bug, suggestion, or comment here..."
+                    placeholder={t("feedback.descriptionPlaceholder")}
                     placeholderTextColor="#9CA3AF"
                     multiline
                     numberOfLines={4}
@@ -172,7 +174,7 @@ export default function FeedbackForm() {
                 ) : (
                     <>
                         <Feather name="send" size={18} color="#ffffff" style={{ marginRight: 8 }} />
-                        <Text className="text-white text-base font-bold">Submit Feedback</Text>
+                        <Text className="text-white text-base font-bold">{t("feedback.submitButton")}</Text>
                     </>
                 )}
             </TouchableOpacity>

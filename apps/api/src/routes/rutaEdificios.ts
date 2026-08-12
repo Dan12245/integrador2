@@ -5,12 +5,17 @@ import { createClient } from '@supabase/supabase-js';
 type Bindings = {
   SUPABASE_URL: string
   SUPABASE_KEY: string
+  SUPABASE_SERVICE_ROLE_KEY?: string
   USER_EMAIL: string
 }
 
 //hacemos una instancia de hono para que nos sirva de router y le pasamos sus credenciales para q no truene
 const routerBuilding = new Hono<{Bindings: Bindings}> ();
 
+const getSupabaseClient = (c: any) => {
+  const key = c.env.SUPABASE_SERVICE_ROLE_KEY || c.env.SUPABASE_KEY;
+  return createClient(c.env.SUPABASE_URL, key);
+};
 
 //aca hacemos la ruta de la api para que se ponga a chambear la desgraciada
 routerBuilding.post('/addBuilding', async (c) => {
@@ -32,7 +37,7 @@ routerBuilding.post('/addBuilding', async (c) => {
     };
   
     // iniciamos la conexion con supabase
-    const supabase = createClient(c.env.SUPABASE_URL, c.env.SUPABASE_KEY);
+    const supabase = getSupabaseClient(c);
 
     //y le mandamos toda la info, que en este caso está hardcodeada de momento, a la DB
     //olvidenlo ya no esta hardcodeada LET'S GOOOOOO
@@ -82,7 +87,7 @@ routerBuilding.delete('/:id', async (c)=>{
   const idString = c.req.param('id');
   const id = parseInt(idString, 10);
 
-  const supabase = createClient(c.env.SUPABASE_URL, c.env.SUPABASE_KEY);
+  const supabase = getSupabaseClient(c);
   //y le hacemos la query a supabase
   const {data,error} = await supabase
     .from('buildings')
@@ -118,7 +123,7 @@ routerBuilding.put('/:id', async (c) => {
   const id = parseInt(idString, 10);
   const body = await c.req.json();
 
-  const supabase = createClient(c.env.SUPABASE_URL, c.env.SUPABASE_KEY);
+  const supabase = getSupabaseClient(c);
   //y le hacemos la query a supabase
   const {data,error} = await supabase
     .from('buildings')
@@ -242,11 +247,17 @@ routerBuilding.get('/reverseGeocode', async (c) => {
 
 //ruta para listar los edificios, esta sencilla, nomas es un get que pregunta que edificios tiene este usuario y se los trae
 routerBuilding.get('/myBuildings', async (c) => {
+  if (!c.env.SUPABASE_URL) {
+    return c.json({
+      alert: "Hono isn't reading SUPABASE_URL from .dev.vars",
+      data: c.env 
+    }, 400)
+  }
   const profileId = c.req.query('profile_id')
   if (!profileId) {
     return c.json({ ok: false, error: 'profile_id is required' }, 400)
   }
-  const supabase = createClient(c.env.SUPABASE_URL, c.env.SUPABASE_KEY)
+  const supabase = getSupabaseClient(c)
   const { data, error } = await supabase
     .from('buildings')
     //el select asi vacio siginifica select *, es la misma wea

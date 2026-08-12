@@ -10,8 +10,11 @@
     "@cra2/shared": "^1.0.0",
     "@google-cloud/vision": "^5.3.7",
     "@google/genai": "^2.15.0",
+    "@react-pdf/renderer": "^4.6.0",
     "@supabase/supabase-js": "^2.107.0",
-    "hono": "^4.12.23"
+    "hono": "^4.12.23",
+    "pdf-lib": "^1.17.1",
+    "react": "^19.1.0"
   },
   "devDependencies": {
     "wrangler": "^4.4.0"

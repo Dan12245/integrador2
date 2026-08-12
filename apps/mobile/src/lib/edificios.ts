@@ -1,4 +1,6 @@
+import { Platform } from "react-native";
 import { supabase } from "./supabase";
+import { getApiUrl } from "./api";
 
 // Esta es la forma de un edificio TAL COMO viene de la base de datos.
 // Los nombres de estos campos tienen que ser exactamente los de las
@@ -31,7 +33,7 @@ export const addBuilding = async (
     const userId = session?.user?.id;
 
     if (!userId) {
-        console.log("Error: You are not loged");
+        console.log("Error: You are not logged in");
         return;
     }
 
@@ -47,11 +49,7 @@ export const addBuilding = async (
             long: long,
         };
 
-        // Y le mandamos la wea a hono la linea de aca abajo nomas es debug 
-        //console.log("Package ready to be sent:", TestBuilding);
-
-        // Aca tenemos q poner la ip del server, osea la pc, en este caso es la mia NO DOXXEN HIJOS DE LA LANZA CAMOTES
-        const answer = await fetch("http://192.168.0.15:8787/addBuilding", {
+        const answer = await fetch(`${getApiUrl()}/addBuilding`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -94,7 +92,7 @@ export const getBuildings = async (): Promise<BuildingRecord[] | null> => {
     }
     try {
         const answer = await fetch(
-            `http://192.168.0.15:8787/myBuildings?profile_id=${userId}`
+            `${getApiUrl()}/myBuildings?profile_id=${userId}`
         );
         if (!answer.ok) {
             const answerData = await answer.json();
@@ -122,7 +120,7 @@ export const getBuildings = async (): Promise<BuildingRecord[] | null> => {
 //funcion para borrar edificio
 export const deleteBuilding = async (id:number) => {
     try{
-        const url =`http://192.168.0.15:8787/${id}`
+        const url =`${getApiUrl()}/${id}`
 
         const response = await fetch (url,{
             method: 'DELETE',
@@ -158,7 +156,7 @@ export const editBuilding = async (
     long: number
 ) => {
         try{
-            const response = await fetch(`http://192.168.0.15:8787/${id}`, {
+            const response = await fetch(`${getApiUrl()}/${id}`, {
                 method: 'PUT', // Le decimos que es actualización
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({    

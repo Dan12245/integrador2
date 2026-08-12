@@ -4,21 +4,24 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
   FlatList,
   Alert,
   Platform,
   Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useRouter, useFocusEffect } from "expo-router";
 import Animated, { FadeInLeft, FadeInRight, FadeInDown } from "react-native-reanimated";
+import { useTranslation } from "react-i18next";
 import AppNavbar from "../../components/AppNavbar";
 import ReceiptScannerButton, { ExtractedData } from "../../components/Camera";
 import { addBuilding, getBuildings, BuildingRecord, deleteBuilding, editBuilding } from "@/src/lib/edificios";
+import { getApiUrl } from "@/src/lib/api";
 import BuildingMap from "../../components/BuildingMap";
 
 export default function MyBuildings() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [buildings, setBuildings] = useState<BuildingRecord[]>([]);
@@ -79,9 +82,9 @@ export default function MyBuildings() {
   const handleSaveBuilding = async () => {
     if (!alias || !contractNumber || !address || !description || !coordinates) {
       if (Platform.OS === "web") {
-        window.alert("Failed\nComplete all the fields");
+        window.alert(`${t("buildings.alertFailed")}\n${t("buildings.alertCompleteFields")}`);
       } else {
-        Alert.alert("Failed", "Complete all the fields");
+        Alert.alert(t("buildings.alertFailed"), t("buildings.alertCompleteFields"));
       }
       return;
     }
@@ -96,17 +99,17 @@ export default function MyBuildings() {
     );
     if (!answer) {
       if (Platform.OS === "web") {
-        window.alert("Failed\nThe building couldn't be stored correctly");
+        window.alert(`${t("buildings.alertFailed")}\n${t("buildings.alertSaveFailed")}`);
       } else {
-        Alert.alert("Failed", "The building couldn't be stored correctly");
+        Alert.alert(t("buildings.alertFailed"), t("buildings.alertSaveFailed"));
       }
       return;
     }
 
     if (Platform.OS === "web") {
-      window.alert("Success.\nThe building was stored correctly");
+      window.alert(`${t("buildings.alertSuccess")}\n${t("buildings.alertSaveSuccess")}`);
     } else {
-      Alert.alert("Success", "The building was stored correctly");
+      Alert.alert(t("buildings.alertSuccess"), t("buildings.alertSaveSuccess"));
     }
 
     loadBuildings();
@@ -138,8 +141,8 @@ export default function MyBuildings() {
     }
 
     const delayDebounce = setTimeout(async () => {
-      try {
-        const res = await fetch(`http://192.168.0.15:8787/autocomplete?q=${encodeURIComponent(address)}`);
+      try {  
+        const res = await fetch(`${getApiUrl()}/autocomplete?q=${encodeURIComponent(address)}`);
         if (!res.ok) {
           console.log("Backend error:", res.status);
           return;
@@ -173,7 +176,7 @@ export default function MyBuildings() {
     setCoordinates({ lat, long });
 
     try {
-      const res = await fetch(`http://192.168.0.15:8787/reverseGeocode?lat=${lat}&lon=${long}`);
+      const res = await fetch(`${getApiUrl()}/reverseGeocode?lat=${lat}&lon=${long}`);
       const data = await res.json();
 
       if (data.address) {
@@ -240,36 +243,36 @@ export default function MyBuildings() {
     const exito = await deleteBuilding(id);
     if (!exito) {
       if (Platform.OS === "web") {
-        window.alert("Failed\nThe building couldn't be deleted correctly");
+        window.alert(`${t("buildings.alertFailed")}\n${t("buildings.alertDeleteFailed")}`);
       } else {
-        Alert.alert("Failed", "The building couldn't be deleted correctly");
+        Alert.alert(t("buildings.alertFailed"), t("buildings.alertDeleteFailed"));
       }
       return;
     }
     handleDelete(id);
     if (Platform.OS === "web") {
-      window.alert("Succeed\nThe building was deleted correctly");
+      window.alert(`${t("buildings.alertSuccess")}\n${t("buildings.alertDeleteSuccess")}`);
     } else {
-      Alert.alert("Succeed", "The building was deleted correctly");
+      Alert.alert(t("buildings.alertSuccess"), t("buildings.alertDeleteSuccess"));
     }
   };
 
   const confirmarBorrado = (id: number, nombreEdificio: string) => {
     if (Platform.OS === "web") {
-      const seguro = window.confirm(`Are you sure you want to delete "${nombreEdificio}"? This action can't be undone.`);
+      const seguro = window.confirm(t("buildings.deleteBuildingConfirm", { name: nombreEdificio }));  
       if (seguro) {
         console.log("Borrando desde la web el ID:", id);
         confirmarYBorrar(id);
       }
     } else {
       Alert.alert(
-        "Delete Building",
-        `Are you sure you want to delete "${nombreEdificio}"? This action can't be undone.`,
+        t("buildings.deleteBuildingTitle"),
+        t("buildings.deleteBuildingConfirm", { name: nombreEdificio }),
         [
-          { text: "Cancel", style: "cancel" },
-          {
-            text: "Delete",
-            style: "destructive",
+          { text: t("buildings.cancel"), style: "cancel" },
+          { 
+            text: t("buildings.delete"), 
+            style: "destructive", 
             onPress: () => confirmarYBorrar(id)
           }
         ]
@@ -309,9 +312,9 @@ export default function MyBuildings() {
   const handleUpdateBuilding = async () => {
     if (!editId || !editAlias || !editDescription || !editAddress || !editCoordinates) {
       if (Platform.OS === "web") {
-        window.alert("Failed\nComplete all the fields");
+        window.alert(`${t("buildings.alertFailed")}\n${t("buildings.alertCompleteFields")}`);
       } else {
-        Alert.alert("Failed", "Complete all the fields");
+        Alert.alert(t("buildings.alertFailed"), t("buildings.alertCompleteFields"));
       }
       return;
     }
@@ -329,15 +332,15 @@ export default function MyBuildings() {
       closeEditModal();
       loadBuildings();
       if (Platform.OS === "web") {
-        window.alert("Success\nThe building was updated correctly");
+        window.alert(`${t("buildings.alertSuccess")}\n${t("buildings.alertUpdateSuccess")}`);
       } else {
-        Alert.alert("Success", "The building was updated correctly");
+        Alert.alert(t("buildings.alertSuccess"), t("buildings.alertUpdateSuccess"));
       }
     } else {
       if (Platform.OS === "web") {
-        window.alert("Failed\nThe building couldn't be updated");
+        window.alert(`${t("buildings.alertFailed")}\n${t("buildings.alertUpdateFailed")}`);
       } else {
-        Alert.alert("Failed", "The building couldn't be updated");
+        Alert.alert(t("buildings.alertFailed"), t("buildings.alertUpdateFailed"));
       }
     }
   };
@@ -346,19 +349,19 @@ export default function MyBuildings() {
     <SafeAreaView className="flex-1 bg-[#f4f6f8]" edges={["top", "left", "right", "bottom"]}>
       <AppNavbar />
 
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="flex-1">
+      <KeyboardAwareScrollView contentContainerStyle={{ flexGrow: 1 }} className="flex-1" bottomOffset={20}>
         <View className="flex-1 flex-col md:flex-row p-4 gap-4">
 
           <Animated.View
             entering={FadeInLeft.duration(400).springify()}
             className="w-full md:w-80 gap-3"
           >
-            <Text className="text-2xl font-bold text-[#0d1b2e] mb-1">My Buildings</Text>
+            <Text className="text-2xl font-bold text-[#0d1b2e] mb-1">{t("buildings.title")}</Text>
 
             <View className="flex-row items-center bg-white rounded-2xl px-4 py-2 border border-gray-200 gap-2 mb-2">
               <TextInput
                 className="flex-1 text-sm text-gray-700"
-                placeholder="Search"
+                placeholder={t("buildings.searchPlaceholder")}
                 placeholderTextColor="#9ca3af"
                 value={search}
                 onChangeText={setSearch}
@@ -372,12 +375,12 @@ export default function MyBuildings() {
               className="flex-row items-center justify-center bg-[#2089dc] rounded-2xl py-3.5 gap-2 mb-2 shadow-sm active:bg-[#1976d2]"
               onPress={() => setShowAddForm(true)}
             >
-              <Text className="text-white font-bold text-sm">+ Add new building</Text>
+              <Text className="text-white font-bold text-sm">{t("buildings.addNewBuilding")}</Text>
             </TouchableOpacity>
 
             {loadingBuildings ? (
               <View className="items-center py-8">
-                <Text className="text-gray-400 text-sm">Loading your buildings...</Text>
+                <Text className="text-gray-400 text-sm">{t("buildings.loadingBuildings")}</Text>
               </View>
             ) : (
               <FlatList
@@ -388,7 +391,7 @@ export default function MyBuildings() {
                 ListEmptyComponent={
                   <View className="items-center py-8">
                     <Text className="text-gray-400 text-sm">
-                      You don't have any buildings yet.
+                      {t("buildings.noBuildingsYet")}
                     </Text>
                   </View>
                 }
@@ -457,8 +460,8 @@ export default function MyBuildings() {
                 className="absolute bottom-4 left-4 bg-white rounded-xl px-4 py-3 z-10"
                 style={{ shadowColor: "#000", shadowOpacity: 0.08, shadowRadius: 6, elevation: 3 }}
               >
-                <Text className="text-sm font-bold text-[#0d1b2e]">Facility Locations</Text>
-                <Text className="text-xs text-gray-500">{buildings.length} active monitoring sites</Text>
+                <Text className="text-sm font-bold text-[#0d1b2e]">{t("buildings.facilityLocations")}</Text>
+                <Text className="text-xs text-gray-500">{t("buildings.activeMonitoringSites", { count: buildings.length })}</Text>
               </View>
 
               {/* Botones de zoom custom eliminados: se usan los que trae
@@ -475,7 +478,7 @@ export default function MyBuildings() {
             </Animated.View>
           </View>
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       {/* VENTANA EMERGENTE (MODAL): Agregar Nuevo Edificio */}
       <Modal
@@ -484,15 +487,11 @@ export default function MyBuildings() {
         transparent
         onRequestClose={() => setShowAddForm(false)}
       >
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: "rgba(0, 0, 0, 0.65)",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: 16,
-          }}
-        >
+        <View style={{ flex: 1, backgroundColor: "rgba(0, 0, 0, 0.65)" }}>
+          <KeyboardAwareScrollView
+            contentContainerStyle={{ flexGrow: 1, justifyContent: "center", alignItems: "center", padding: 16 }}
+            showsVerticalScrollIndicator={false}
+          >
           <Animated.View
             entering={FadeInDown.duration(300)}
             style={{
@@ -510,7 +509,7 @@ export default function MyBuildings() {
             }}
           >
             <View className="flex-row items-center justify-between border-b border-gray-100 pb-3">
-              <Text className="text-xl font-black text-[#0d1b2e]">Add New Building</Text>
+              <Text className="text-xl font-black text-[#0d1b2e]">{t("buildings.addBuildingModalTitle")}</Text>
               <TouchableOpacity
                 onPress={() => setShowAddForm(false)}
                 className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center"
@@ -521,43 +520,43 @@ export default function MyBuildings() {
 
             {extractedData && (
               <View className="p-3 bg-blue-50 border border-blue-200 rounded-xl">
-                <Text className="text-xs font-bold text-blue-900 mb-1">Scanned Receipt Data:</Text>
-                <Text className="text-xs text-blue-800">Contract: {extractedData.contract_number || "N/A"}</Text>
-                <Text className="text-xs text-blue-800">Address: {extractedData.address || "N/A"}</Text>
+                <Text className="text-xs font-bold text-blue-900 mb-1">{t("buildings.scannedReceiptData")}</Text>
+                <Text className="text-xs text-blue-800">{t("buildings.contract")}: {extractedData.contract_number || t("buildings.notAvailable")}</Text>
+                <Text className="text-xs text-blue-800">{t("buildings.address")}: {extractedData.address || t("buildings.notAvailable")}</Text>
                 <Text className="text-xs text-blue-800 font-semibold mt-1">
-                  Reading: {extractedData.consumption_reading || "N/A"}
+                  {t("buildings.reading")}: {extractedData.consumption_reading || t("buildings.notAvailable")}
                 </Text>
               </View>
             )}
 
             <View className="gap-3">
               <View>
-                <Text className="text-xs font-semibold text-gray-700 mb-1">Building Alias</Text>
+                <Text className="text-xs font-semibold text-gray-700 mb-1">{t("buildings.buildingAlias")}</Text>
                 <TextInput
                   className="bg-gray-50 p-3 rounded-xl border border-gray-200 text-sm text-gray-800"
                   style={{ backgroundColor: "#f8fafc" }}
                   value={alias}
                   onChangeText={setAlias}
-                  placeholder="e.g. Petco Center"
+                  placeholder={t("buildings.aliasPlaceholder")}
                   placeholderTextColor="#9ca3af"
                 />
               </View>
 
               <View>
-                <Text className="text-xs font-semibold text-gray-700 mb-1">Contract Number</Text>
+                <Text className="text-xs font-semibold text-gray-700 mb-1">{t("buildings.contractNumber")}</Text>
                 <TextInput
                   className="bg-gray-50 p-3 rounded-xl border border-gray-200 text-sm text-gray-800"
                   style={{ backgroundColor: "#f8fafc" }}
                   value={contractNumber}
                   onChangeText={setContractNumber}
-                  placeholder="Contract Number"
+                  placeholder={t("buildings.contractNumberPlaceholder")}
                   placeholderTextColor="#9ca3af"
                 />
               </View>
 
               <View className="relative z-50">
                 <View className="flex-row items-center justify-between mb-1">
-                  <Text className="text-xs font-semibold text-gray-700">Address</Text>
+                  <Text className="text-xs font-semibold text-gray-700">{t("buildings.addressLabel")}</Text>
                   <View className="flex-row bg-gray-100 rounded-lg p-0.5">
                     <TouchableOpacity
                       onPress={() => {
@@ -571,7 +570,7 @@ export default function MyBuildings() {
                         className="text-[11px] font-semibold"
                         style={{ color: locationMode === "address" ? "#0d1b2e" : "#9ca3af" }}
                       >
-                         Type it
+                         {t("buildings.typeIt")}
                       </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -587,7 +586,7 @@ export default function MyBuildings() {
                         className="text-[11px] font-semibold"
                         style={{ color: locationMode === "map" ? "#0d1b2e" : "#9ca3af" }}
                       >
-                         Pick on map
+                         {t("buildings.pickOnMap")}
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -603,7 +602,7 @@ export default function MyBuildings() {
                         setAddress(text);
                         setShowingSuggestions(true);
                       }}
-                      placeholder="Address"
+                      placeholder={t("buildings.addressPlaceholder")}
                       placeholderTextColor="#9ca3af"
                     />
                     {suggestions.length > 0 && showingSuggestions && (
@@ -643,8 +642,8 @@ export default function MyBuildings() {
                         onLocationSelect={handleMapLocationSelect}
                       />
                     </View>
-                    <Text className="text-[11px] text-gray-400 mt-1 mb-1">
-                      Tap anywhere on the map to set the location.
+                    <Text className="text-[11px] text-gray-400 mt-1">
+                      {t("buildings.tapMapInstruction")}
                     </Text>
                     {/* Barrita editable: el usuario puede corregir a mano la
                         direccion que devolvio el reverse geocoding */}
@@ -661,13 +660,13 @@ export default function MyBuildings() {
               </View>
 
               <View>
-                <Text className="text-xs font-semibold text-gray-700 mb-1">Description</Text>
+                <Text className="text-xs font-semibold text-gray-700 mb-1">{t("buildings.descriptionLabel")}</Text>
                 <TextInput
                   className="bg-gray-50 p-3 rounded-xl border border-gray-200 text-sm text-gray-800"
                   style={{ backgroundColor: "#f8fafc" }}
                   value={description}
                   onChangeText={setDescription}
-                  placeholder="Building description"
+                  placeholder={t("buildings.descriptionPlaceholder")}
                   placeholderTextColor="#9ca3af"
                 />
               </View>
@@ -688,10 +687,11 @@ export default function MyBuildings() {
                 className="bg-[#2089dc] rounded-xl py-3.5 items-center shadow-sm active:bg-[#1976d2]"
                 onPress={handleSaveBuilding}
               >
-                <Text className="text-white text-base font-semibold">Save building</Text>
+                <Text className="text-white text-base font-semibold">{t("buildings.saveBuilding")}</Text>
               </TouchableOpacity>
             </View>
           </Animated.View>
+          </KeyboardAwareScrollView>
         </View>
       </Modal>
 
@@ -702,15 +702,11 @@ export default function MyBuildings() {
         transparent
         onRequestClose={closeEditModal}
       >
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: "rgba(0, 0, 0, 0.65)",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: 16,
-          }}
-        >
+        <View style={{ flex: 1, backgroundColor: "rgba(0, 0, 0, 0.65)" }}>
+          <KeyboardAwareScrollView
+            contentContainerStyle={{ flexGrow: 1, justifyContent: "center", alignItems: "center", padding: 16 }}
+            showsVerticalScrollIndicator={false}
+          >
           <Animated.View
             entering={FadeInDown.duration(300)}
             style={{
@@ -728,7 +724,7 @@ export default function MyBuildings() {
             }}
           >
             <View className="flex-row items-center justify-between border-b border-gray-100 pb-3">
-              <Text className="text-xl font-black text-[#0d1b2e]">Edit Building</Text>
+              <Text className="text-xl font-black text-[#0d1b2e]">{t("buildings.editBuildingModalTitle")}</Text>
               <TouchableOpacity
                 onPress={closeEditModal}
                 className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center"
@@ -739,13 +735,13 @@ export default function MyBuildings() {
 
             <View className="gap-3">
               <View>
-                <Text className="text-xs font-semibold text-gray-700 mb-1">Building Alias</Text>
+                <Text className="text-xs font-semibold text-gray-700 mb-1">{t("buildings.buildingAlias")}</Text>
                 <TextInput
                   className="bg-gray-50 p-3 rounded-xl border border-gray-200 text-sm text-gray-800"
                   style={{ backgroundColor: "#f8fafc" }}
                   value={editAlias}
                   onChangeText={setEditAlias}
-                  placeholder="e.g. Petco Center"
+                  placeholder={t("buildings.aliasPlaceholder")}
                   placeholderTextColor="#9ca3af"
                 />
               </View>
@@ -857,13 +853,13 @@ export default function MyBuildings() {
               </View>
 
               <View>
-                <Text className="text-xs font-semibold text-gray-700 mb-1">Description</Text>
+                <Text className="text-xs font-semibold text-gray-700 mb-1">{t("buildings.descriptionLabel")}</Text>
                 <TextInput
                   className="bg-gray-50 p-3 rounded-xl border border-gray-200 text-sm text-gray-800"
                   style={{ backgroundColor: "#f8fafc" }}
                   value={editDescription}
                   onChangeText={setEditDescription}
-                  placeholder="Building description"
+                  placeholder={t("buildings.descriptionPlaceholder")}
                   placeholderTextColor="#9ca3af"
                 />
               </View>
@@ -874,10 +870,11 @@ export default function MyBuildings() {
                 className="bg-[#2089dc] rounded-xl py-3.5 items-center shadow-sm active:bg-[#1976d2]"
                 onPress={handleUpdateBuilding}
               >
-                <Text className="text-white text-base font-semibold">Save changes</Text>
+                <Text className="text-white text-base font-semibold">{t("buildings.saveChanges")}</Text>
               </TouchableOpacity>
             </View>
           </Animated.View>
+          </KeyboardAwareScrollView>
         </View>
       </Modal>
 

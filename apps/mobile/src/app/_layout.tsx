@@ -1,4 +1,5 @@
 import "../../global.css";
+import "../i18n";
 import { useEffect, useState } from "react";
 import { Stack, useRouter, useSegments, usePathname } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -6,8 +7,9 @@ import { supabase } from "../lib/supabase";
 import { handleAuthRedirectUrl } from "../lib/auth";
 import * as Linking from "expo-linking";
 import { Session, AuthChangeEvent } from "@supabase/supabase-js";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, View, Platform } from "react-native";
 import { posthog, PostHogProvider } from "../lib/posthog";
+import { KeyboardProvider } from "react-native-keyboard-controller";
 import { DarkTheme } from "@react-navigation/native";
 
 export default function RootLayout() {
@@ -81,7 +83,7 @@ export default function RootLayout() {
 
         // Check if the user is currently in the "(app)" group
         const inAppGroup = (segments[0] as string) === "(app)";
-        const isResetPasswordScreen = (segments[0] as string) === "(auth)" && segments[1] === "forgot-password";
+        const isResetPasswordScreen = (segments[0] as string) === "(auth)" && (segments[1] === "forgot-password" || segments[1] === "reset-password");
 
         if (!session && inAppGroup) {
             // If NOT logged in, and trying to access protected screens, redirect to login
@@ -110,12 +112,14 @@ export default function RootLayout() {
                 propsToCapture: ["testID"],
             }}
         >
-            <StatusBar style="dark" />
-            <Stack screenOptions={{ headerShown: false }}>
-                <Stack.Screen name="index" />
-                <Stack.Screen name="(auth)" />
-                <Stack.Screen name="(app)" />
-            </Stack>
+            <KeyboardProvider statusBarTranslucent>
+                <StatusBar style="dark" />
+                <Stack screenOptions={{ headerShown: false }}>
+                    <Stack.Screen name="index" />
+                    <Stack.Screen name="(auth)" />
+                    <Stack.Screen name="(app)" />
+                </Stack>
+            </KeyboardProvider>
         </PostHogProvider>
     );
 }

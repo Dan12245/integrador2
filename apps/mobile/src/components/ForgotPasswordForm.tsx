@@ -14,8 +14,11 @@ import Animated, {
 import { supabase } from "../lib/supabase";
 import { useRouter } from "expo-router";
 import { usePostHog } from "../lib/posthog";
+import * as Linking from "expo-linking";
+import { useTranslation } from "react-i18next";
 
 export default function ForgotPasswordForm() {
+  const { t } = useTranslation();
   const [email, setEmail]     = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent]       = useState(false);
@@ -24,15 +27,15 @@ export default function ForgotPasswordForm() {
 
   async function handleResetPassword() {
     if (!email) {
-      Alert.alert("Error", "Please enter your email address");
+      Alert.alert(t('forgotPassword.error_title'), t('forgotPassword.error_email_required'));
       return;
     }
     setLoading(true);
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: "myapp://reset-password",
+      redirectTo: Linking.createURL("/reset-password"),
     });
     if (error) {
-      Alert.alert("Error", error.message);
+      Alert.alert(t('forgotPassword.error_title'), error.message);
       posthog.capture("forgot_password_failed", { error_message: error.message });
     } else {
       posthog.capture("forgot_password_sent", { email });
@@ -88,12 +91,12 @@ export default function ForgotPasswordForm() {
               </Animated.View>
               <Animated.View entering={FadeInDown.delay(140).duration(350)}>
                 <Text className="text-4xl font-black text-[#0d1b2e] text-center mb-3">
-                  Check your inbox
+                  {t('forgotPassword.check_inbox_title')}
                 </Text>
               </Animated.View>
               <Animated.View entering={FadeInDown.delay(200).duration(350)}>
                 <Text className="text-2xl text-gray-500 text-center leading-8 mb-8">
-                  We sent a password reset link to{"\n"}
+                  {t('forgotPassword.sent_link_prefix')}{"\n"}
                   <Text className="font-semibold text-[#0d1b2e]">{email}</Text>
                 </Text>
               </Animated.View>
@@ -106,7 +109,7 @@ export default function ForgotPasswordForm() {
                     className="rounded-full px-10 py-6 items-center w-full"
                     style={{ backgroundColor: "#0d1b2e" }}
                   >
-                    <Text className="text-white text-2xl font-bold">Back to Log in</Text>
+                    <Text className="text-white text-2xl font-bold">{t('forgotPassword.back_to_login')}</Text>
                   </TouchableOpacity>
                 </View>
               </Animated.View>
@@ -123,7 +126,7 @@ export default function ForgotPasswordForm() {
                     style={{ backgroundColor: "#c8e6f7" }}
                   >
                     <Text className="text-[#0d1b2e] text-2xl font-bold">
-                      Didn't receive it? Try again
+                      {t('forgotPassword.try_again')}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -136,12 +139,12 @@ export default function ForgotPasswordForm() {
             {/*TITULO*/}
             <Animated.View entering={FadeInDown.delay(80).duration(350)}>
               <Text className="text-4xl font-black text-[#0d1b2e] text-center mb-2">
-                Forgot password?
+                {t('forgotPassword.title')}
               </Text>
             </Animated.View>
             <Animated.View entering={FadeInDown.delay(140).duration(350)}>
               <Text className="text-xl text-gray-500 text-center mb-8 leading-7">
-                Enter your email and we'll send you a link to reset your password.
+                {t('forgotPassword.description')}
               </Text>
             </Animated.View>
 
@@ -153,7 +156,7 @@ export default function ForgotPasswordForm() {
                   testID="forgot_password_email_field"
                   onChangeText={setEmail}
                   value={email}
-                  placeholder="Email"
+                  placeholder={t('forgotPassword.email_placeholder')}
                   autoCapitalize="none"
                   keyboardType="email-address"
                   placeholderTextColor="#9ca3af"
@@ -172,7 +175,7 @@ export default function ForgotPasswordForm() {
                 style={{ backgroundColor: "#0d1b2e" }}
               >
                 <Text className="text-white text-2xl font-bold">
-                  {loading ? "Sending..." : "Send reset link"}
+                  {loading ? t('forgotPassword.sending') : t('forgotPassword.send_link')}
                 </Text>
               </TouchableOpacity>
             </Animated.View>
@@ -187,7 +190,7 @@ export default function ForgotPasswordForm() {
                 className="rounded-full py-6 items-center"
                 style={{ backgroundColor: "#c8e6f7" }}
               >
-                <Text className="text-[#0d1b2e] text-2xl font-bold">Back to Log in</Text>
+                <Text className="text-[#0d1b2e] text-2xl font-bold">{t('forgotPassword.back_to_login')}</Text>
               </TouchableOpacity>
             </Animated.View>
           </Animated.View>

@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { SHORT_MONTH_NAMES, getDaysInMonth, formatDateKey } from "./ConsumptionHelpers";
 
 export interface DatePickerGridProps {
@@ -28,6 +29,7 @@ export function DatePickerGrid({
   records = {},
   building = "",
 }: DatePickerGridProps) {
+  const { t, i18n } = useTranslation();
   const viewYear = viewDate.getFullYear();
   const viewMonth = viewDate.getMonth();
   const firstDayOfWeek = new Date(viewYear, viewMonth, 1).getDay();
@@ -42,6 +44,10 @@ export function DatePickerGrid({
 
   const isNextDisabled = viewYear > currentYear || (viewYear === currentYear && viewMonth >= currentMonth);
 
+  const dayHeaders = (t("pickers.dayHeaders", { returnObjects: true }) as string[]) || [
+    "Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"
+  ];
+
   return (
     <View className="border border-gray-200 rounded-2xl p-4 bg-gray-50 mb-5">
       {/* Month Navigator Header */}
@@ -50,7 +56,7 @@ export function DatePickerGrid({
           <Feather name="chevron-left" size={18} color="#374151" />
         </Pressable>
         <Text className="text-sm font-bold text-gray-900">
-          {SHORT_MONTH_NAMES[viewMonth]} {viewYear}
+          {t(`pickers.monthsShort.${viewMonth}`)} {viewYear}
         </Text>
         <Pressable
           testID={`${testIDPrefix}-next-month`}
@@ -64,8 +70,8 @@ export function DatePickerGrid({
 
       {/* Day Headers */}
       <View className="flex-row justify-between mb-2">
-        {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((dayName) => (
-          <Text key={dayName} className="w-8 text-center text-xs font-bold text-gray-400">
+        {Array.isArray(dayHeaders) && dayHeaders.map((dayName, idx) => (
+          <Text key={idx} className="w-8 text-center text-xs font-bold text-gray-400">
             {dayName}
           </Text>
         ))}
@@ -135,9 +141,9 @@ export function DatePickerGrid({
 
       {/* Selected date indicator */}
       <View className="mt-3 pt-3 border-t border-gray-200 flex-row items-center justify-between">
-        <Text className="text-xs text-gray-500 font-medium">Selected Date:</Text>
+        <Text className="text-xs text-gray-500 font-medium">{t("pickers.selectedDate")}</Text>
         <Text className="text-xs font-bold text-blue-600">
-          {selectedDate.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" })}
+          {selectedDate.toLocaleDateString(i18n.language || undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" })}
         </Text>
       </View>
     </View>

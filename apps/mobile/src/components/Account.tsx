@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, Text, TextInput, TouchableOpacity, View, useWindowDimensions } from "react-native";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { supabase } from "../lib/supabase";
 import Avatar from "./Avatar";
 import { usePostHog } from "../lib/posthog";
@@ -12,12 +13,15 @@ export default function Account({
   userId: string;
   email?: string;
 }) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState("");
   const [website, setWebsite] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const router = useRouter();
   const posthog = usePostHog();
+  const { width } = useWindowDimensions();
+  const isMobile = width < 768;
 
   useEffect(() => {
     if (userId) getProfile();
@@ -87,10 +91,10 @@ export default function Account({
   }
 
   return (
-    <View className="mt-10 p-3">
+    <View className="mt-4 sm:mt-8 p-1 sm:p-3">
       <View>
         <Avatar
-          size={200}
+          size={isMobile ? 140 : 200}
           url={avatarUrl}
           onUpload={(url: string) => {
             setAvatarUrl(url);
@@ -98,63 +102,64 @@ export default function Account({
           }}
         />
       </View>
-      <View className="py-1 self-stretch mt-5">
-        <Text className="text-base font-semibold text-[#86939e] mb-1.5">Email</Text>
+      <View className="py-1 self-stretch mt-4">
+        <Text className="text-sm sm:text-base font-semibold text-[#86939e] mb-1.5">{t("account.emailLabel")}</Text>
         <TextInput
           testID="account_email_field"
           value={email ?? ""}
           editable={false}
           selectTextOnFocus={false}
-          className="border border-[#86939e] rounded p-3 text-base bg-[#f2f2f2] border-[#d1d1d1] text-[#9e9e9e]"
+          className="border border-[#d1d1d1] rounded-xl p-3 text-sm sm:text-base bg-[#f2f2f2] text-[#9e9e9e]"
         />
       </View>
       <View className="py-1 self-stretch">
-        <Text className="text-base font-semibold text-[#86939e] mb-1.5">Username</Text>
+        <Text className="text-sm sm:text-base font-semibold text-[#86939e] mb-1.5">{t("account.usernameLabel")}</Text>
         <TextInput
           testID="account_username_field"
           value={username || ""}
           onChangeText={(text) => setUsername(text)}
-          className="border border-[#86939e] rounded p-3 text-base"
+          className="border border-[#86939e] rounded-xl p-3 text-sm sm:text-base"
         />
       </View>
       <View className="py-1 self-stretch">
-        <Text className="text-base font-semibold text-[#86939e] mb-1.5">Website</Text>
+        <Text className="text-sm sm:text-base font-semibold text-[#86939e] mb-1.5">{t("account.websiteLabel")}</Text>
         <TextInput
           testID="account_website_field"
           value={website || ""}
           onChangeText={(text) => setWebsite(text)}
-          className="border border-[#86939e] rounded p-3 text-base"
+          className="border border-[#86939e] rounded-xl p-3 text-sm sm:text-base"
         />
       </View>
 
       <View className="py-1 self-stretch mt-5">
         <TouchableOpacity
           testID="account_update_button"
-          className={`bg-[#2089dc] rounded p-3 items-center ${loading ? "opacity-50" : ""}`}
+          className={`bg-[#2089dc] rounded-xl p-3.5 items-center ${loading ? "opacity-50" : ""}`}
           onPress={() =>
             updateProfile({ username, website, avatar_url: avatarUrl })
           }
           disabled={loading}
         >
           <Text className="text-white text-base font-semibold">
-            {loading ? "Loading ..." : "Update"}
+            {loading ? t("account.loading") : t("account.updateButton")}
           </Text>
         </TouchableOpacity>
       </View>
 
-      <View className="py-1 self-stretch mt-5">
+      <View className="py-1 self-stretch mt-3">
         <TouchableOpacity
           testID="account_signout_button"
-          className="bg-[#2089dc] rounded-xl p-3.5 items-center"
+          className="bg-[#0d1b2e] rounded-xl p-3.5 items-center"
           onPress={() => {
               posthog.capture("user_signed_out");
               posthog.reset();
               supabase.auth.signOut();
             }}
         >
-          <Text className="text-white text-base font-semibold">Sign Out</Text>
+          <Text className="text-white text-base font-semibold">{t("account.signOutButton")}</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 }
+
