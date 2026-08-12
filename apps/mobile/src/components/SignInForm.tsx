@@ -17,8 +17,10 @@ import { useRouter } from "expo-router";
 import { usePostHog } from "../lib/posthog";
 import { performGoogleSignIn } from "../lib/auth";
 import GoogleIcon from "./GoogleIcon";
+import { useTranslation } from "react-i18next";
 
 export default function SignInForm() {
+  const { t } = useTranslation();
   const [email, setEmail]                 = useState("");
   const [password, setPassword]           = useState("");
   const [loading, setLoading]             = useState(false);
@@ -29,13 +31,13 @@ export default function SignInForm() {
 
   async function signInWithEmail() {
     if (!email || !password) {
-      Alert.alert("Error", "Please fill in all fields");
+      Alert.alert(t('login.error_title'), t('login.error_empty'));
       return;
     }
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-      Alert.alert("Error", error.message);
+      Alert.alert(t('login.error_title'), error.message);
       posthog.capture("sign_in_failed", { error_message: error.message });
     } else {
       posthog.identify(email, {
@@ -64,7 +66,7 @@ export default function SignInForm() {
       }
     } catch (error: any) {
       if (error?.message && !error.message.includes("cancel")) {
-        Alert.alert("Google Sign-In Error", error.message);
+        Alert.alert(t('login.google_error_title'), error.message);
       }
       posthog.capture("google_sign_in_failed", { error_message: error?.message });
     } finally {
@@ -119,7 +121,7 @@ export default function SignInForm() {
               testID="login_email_field"
               onChangeText={setEmail}
               value={email}
-              placeholder="Username"
+              placeholder={t('login.username_placeholder')}
               autoCapitalize="none"
               keyboardType="email-address"
               placeholderTextColor="#9ca3af"
@@ -138,7 +140,7 @@ export default function SignInForm() {
               onChangeText={setPassword}
               value={password}
               secureTextEntry={!showPassword}
-              placeholder="Password"
+              placeholder={t('login.password_placeholder')}
               autoCapitalize="none"
               placeholderTextColor="#9ca3af"
               className="flex-1 text-2xl text-gray-800"
@@ -157,7 +159,7 @@ export default function SignInForm() {
               className="text-lg text-[#0d1b2e]"
               style={{ textDecorationLine: "underline" }}
             >
-              Forgot password?
+              {t('login.forgot_password')}
             </Text>
           </TouchableOpacity>
         </Animated.View>
@@ -172,7 +174,7 @@ export default function SignInForm() {
             style={{ backgroundColor: "#0d1b2e" }}
           >
             <Text className="text-white text-2xl font-bold">
-              {loading ? "Signing in..." : "Log in"}
+              {loading ? t('login.signing_in') : t('login.log_in')}
             </Text>
           </TouchableOpacity>
         </Animated.View>
@@ -191,7 +193,7 @@ export default function SignInForm() {
             className="rounded-full py-6 items-center mb-5"
             style={{ backgroundColor: "#c8e6f7" }}
           >
-            <Text className="text-[#0d1b2e] text-2xl font-bold">Register</Text>
+            <Text className="text-[#0d1b2e] text-2xl font-bold">{t('login.register')}</Text>
           </TouchableOpacity>
         </Animated.View>
 
@@ -206,7 +208,7 @@ export default function SignInForm() {
           >
             <GoogleIcon size={36} />
             <Text className="text-[#0d1b2e] text-2xl font-bold ml-3">
-              {googleLoading ? "Connecting..." : "Continue with Google"}
+              {googleLoading ? t('login.connecting') : t('login.continue_with_google')}
             </Text>
           </TouchableOpacity>
         </Animated.View>

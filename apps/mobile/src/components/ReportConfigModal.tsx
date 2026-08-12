@@ -11,6 +11,7 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { Feather, Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { getApiUrl } from "@/src/lib/api";
 import { supabase } from "@/src/lib/supabase";
 import { BuildingRecord } from "@/src/lib/edificios";
@@ -35,6 +36,7 @@ export default function ReportConfigModal({
   buildings,
   records,
 }: ReportConfigModalProps) {
+  const { t } = useTranslation();
   const [scope, setScope] = useState<"single" | "all">("single");
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth()); // 0-indexed
@@ -182,7 +184,7 @@ export default function ReportConfigModal({
           const { data: { session } } = await supabase.auth.getSession();
           const profileId = session?.user?.id;
           if (!profileId) {
-            setError("You must be logged in to generate reports");
+            setError(t("modals.reportConfig.errors.loginRequired"));
             setLoading(false);
             return;
           }
@@ -196,7 +198,7 @@ export default function ReportConfigModal({
           const { data: { session } } = await supabase.auth.getSession();
           const profileId = session?.user?.id;
           if (!profileId) {
-            setError("You must be logged in to generate reports");
+            setError(t("modals.reportConfig.errors.loginRequired"));
             setLoading(false);
             return;
           }
@@ -215,7 +217,7 @@ export default function ReportConfigModal({
       onClose();
     } catch (err: any) {
       console.error("Report generation error:", err);
-      setError(err.message || "Failed to generate report");
+      setError(err.message || t("modals.reportConfig.errors.failedToGenerate"));
       setLoading(false);
     }
   };
@@ -258,7 +260,7 @@ export default function ReportConfigModal({
                 <Feather name="file-text" size={18} color="#0284C7" />
               </View>
               <Text className="text-lg font-bold text-gray-900">
-                Generate {reportType} Report
+                {t("modals.reportConfig.title", { type: t(`modals.reportConfig.type.${reportType.toLowerCase()}`) })}
               </Text>
             </View>
             <Pressable
@@ -276,7 +278,7 @@ export default function ReportConfigModal({
           >
             {/* Scope selector */}
             <Text className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-              Report scope
+              {t("modals.reportConfig.reportScope")}
             </Text>
             <View className="flex-row bg-gray-100 p-1 rounded-xl mb-4">
               <Pressable
@@ -285,7 +287,7 @@ export default function ReportConfigModal({
                 className={`flex-1 py-2.5 rounded-lg items-center ${scope === "single" ? "bg-white" : ""} ${buildingId === null ? "opacity-40" : ""}`}
               >
                 <Text className={`text-xs font-bold ${scope === "single" ? "text-gray-900" : "text-gray-400"}`}>
-                  Current Building
+                  {t("modals.reportConfig.currentBuilding")}
                 </Text>
               </Pressable>
               <Pressable
@@ -293,7 +295,7 @@ export default function ReportConfigModal({
                 className={`flex-1 py-2.5 rounded-lg items-center ${scope === "all" ? "bg-white" : ""}`}
               >
                 <Text className={`text-xs font-bold ${scope === "all" ? "text-gray-900" : "text-gray-400"}`}>
-                  All Buildings
+                  {t("modals.reportConfig.allBuildings")}
                 </Text>
               </Pressable>
             </View>
@@ -302,7 +304,7 @@ export default function ReportConfigModal({
               <View className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-4 flex-row items-center gap-2">
                 <Ionicons name="business" size={16} color="#2563EB" />
                 <Text className="text-sm font-semibold text-blue-800 flex-1" numberOfLines={1}>
-                  {buildingName || (buildingId !== null ? `Building #${buildingId}` : "Selected Building")}
+                  {buildingName || (buildingId !== null ? t("modals.reportConfig.buildingWithId", { id: buildingId }) : t("modals.reportConfig.selectedBuilding"))}
                 </Text>
               </View>
             )}
@@ -311,14 +313,14 @@ export default function ReportConfigModal({
               <View className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4 flex-row items-center gap-2">
                 <Feather name="layers" size={14} color="#D97706" />
                 <Text className="text-xs font-semibold text-amber-800">
-                  Report will include all {buildings.length} building{buildings.length !== 1 ? "s" : ""}
+                  {t("modals.reportConfig.allBuildingsNotice", { count: buildings.length })}
                 </Text>
               </View>
             )}
 
             {/* Year Selector */}
             <Text className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-              Select Year
+              {t("modals.reportConfig.selectYear")}
             </Text>
             <View className="flex-row flex-wrap gap-2 mb-4">
               {availableYears.map((year) => {
@@ -354,7 +356,7 @@ export default function ReportConfigModal({
             {isMonthly && (
               <>
                 <Text className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                  Select Month
+                  {t("modals.reportConfig.selectMonth")}
                 </Text>
                 <View className="border border-gray-200 rounded-2xl p-3 bg-gray-50 mb-4">
                   <View className="flex-row flex-wrap justify-between gap-y-2">
@@ -396,7 +398,7 @@ export default function ReportConfigModal({
 
                   {/* Selected month indicator */}
                   <View className="mt-2.5 pt-2.5 border-t border-gray-200 flex-row items-center justify-between">
-                    <Text className="text-xs text-gray-500 font-medium">Selected:</Text>
+                    <Text className="text-xs text-gray-500 font-medium">{t("modals.reportConfig.selectedLabel")}</Text>
                     <Text className="text-xs font-bold text-blue-600">
                       {SHORT_MONTH_NAMES[selectedMonth]} {selectedYear}
                     </Text>
@@ -418,7 +420,7 @@ export default function ReportConfigModal({
               <View className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3 flex-row items-center gap-2">
                 <Feather name="info" size={14} color="#D97706" />
                 <Text className="text-xs font-semibold text-amber-700">
-                  No consumption data available for the selected period.
+                  {t("modals.reportConfig.noDataWarning")}
                 </Text>
               </View>
             )}
@@ -430,7 +432,7 @@ export default function ReportConfigModal({
               onPress={onClose}
               className="flex-1 bg-gray-100 py-3 rounded-xl items-center active:bg-gray-200"
             >
-              <Text className="text-gray-700 text-xs font-bold">Cancel</Text>
+              <Text className="text-gray-700 text-xs font-bold">{t("modals.reportConfig.cancel")}</Text>
             </Pressable>
             <Pressable
               onPress={handleGenerate}
@@ -446,7 +448,7 @@ export default function ReportConfigModal({
               ) : (
                 <>
                   <Feather name="download" size={14} color="white" />
-                  <Text className="text-white text-xs font-bold">Generate PDF</Text>
+                  <Text className="text-white text-xs font-bold">{t("modals.reportConfig.generatePdf")}</Text>
                 </>
               )}
             </Pressable>

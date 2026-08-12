@@ -1,12 +1,20 @@
 import React from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
 import { useRouter, usePathname } from "expo-router";
+import { useTranslation } from "react-i18next";
 
 export default function AppNavbar() {
   const router = useRouter();
   const pathname = usePathname();
+  const { t, i18n } = useTranslation();
 
   const isActive = (path: string) => pathname === path;
+  
+  const changeLanguage = (lang: string) => {
+    i18n.changeLanguage(lang);
+  };
+  
+  const currentLang = i18n.language || 'es';
 
   return (
     <View className="flex-row items-center justify-between bg-[#0d1b2e] px-6 h-14">
@@ -24,7 +32,7 @@ export default function AppNavbar() {
       <View className="flex-row items-center gap-2">
         <TouchableOpacity onPress={() => router.push("/home" as any)}>
           <Text className={`text-sm ${isActive("/home") ? "text-white font-semibold" : "text-white/70"}`}>
-            Home
+            {t('nav.home')}
           </Text>
         </TouchableOpacity>
 
@@ -32,7 +40,7 @@ export default function AppNavbar() {
 
         <TouchableOpacity onPress={() => router.push("/consumptions" as any)}>
           <Text className={`text-sm ${isActive("/consumptions") ? "text-white font-semibold" : "text-white/70"}`}>
-            Consumptions
+            {t('nav.consumptions')}
           </Text>
         </TouchableOpacity>
 
@@ -40,7 +48,7 @@ export default function AppNavbar() {
 
         <TouchableOpacity onPress={() => router.push("/myBuildings" as any)}>
           <Text className={`text-sm ${isActive("/myBuildings") ? "text-white font-semibold" : "text-white/70"}`}>
-            My buildings
+            {t('nav.myBuildings')}
           </Text>
         </TouchableOpacity>
 
@@ -48,18 +56,22 @@ export default function AppNavbar() {
 
         <TouchableOpacity onPress={() => router.push("/techSupport" as any)}>
           <Text className={`text-sm ${isActive("/techSupport") ? "text-white font-semibold" : "text-white/70"}`}>
-            Help
+            {t('nav.help')}
           </Text>
         </TouchableOpacity>
       </View>
 
       {/* Right side: lang + avatar */}
       <View className="flex-row items-center gap-4">
-        {/* Language toggle — conecta tu LangContext aquí si lo tienes */}
+        {/* Language toggle */}
         <View className="flex-row items-center gap-1">
-          <Text className="text-white text-xs font-semibold">EN</Text>
+          <TouchableOpacity onPress={() => changeLanguage('en')}>
+            <Text className={`text-xs ${currentLang.startsWith('en') ? 'text-white font-semibold' : 'text-white/50'}`}>EN</Text>
+          </TouchableOpacity>
           <Text className="text-white/40 text-xs">|</Text>
-          <Text className="text-white/50 text-xs">ES</Text>
+          <TouchableOpacity onPress={() => changeLanguage('es')}>
+            <Text className={`text-xs ${currentLang.startsWith('es') ? 'text-white font-semibold' : 'text-white/50'}`}>ES</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Avatar / User profile */}

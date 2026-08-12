@@ -15,6 +15,7 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { LineChart } from "react-native-chart-kit";
 import Svg, { Circle, G } from "react-native-svg";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTranslation } from "react-i18next";
 
 import AppNavbar from "../../components/AppNavbar";
 import { supabase } from "@/src/lib/supabase";
@@ -134,6 +135,7 @@ function Row({ children }: { children: React.ReactNode }) {
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 
 export default function Home() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { width } = useWindowDimensions();
 
@@ -244,9 +246,9 @@ export default function Home() {
             alertsList.push({
               id: `${building.id}-${c.log_date}`,
               severity: c.cubic_meters > settings.abnormalThreshold * 1.5 ? "red" : "yellow",
-              label: c.cubic_meters > settings.abnormalThreshold * 1.5 ? "High Leak Warning" : "High Usage Alert",
+              label: c.cubic_meters > settings.abnormalThreshold * 1.5 ? t("home.highLeakWarning") : t("home.highUsageAlert"),
               location: building.alias,
-              detail: `${c.cubic_meters.toFixed(1)} m³ logged on ${parts[1]}/${parts[2]} (limit: ${settings.abnormalThreshold}m³)`,
+              detail: t("home.alertDetail", { cubicMeters: c.cubic_meters.toFixed(1), month: parts[1], day: parts[2], limit: settings.abnormalThreshold }),
               icon: c.cubic_meters > settings.abnormalThreshold * 1.5 ? "alert-circle-outline" : "trending-up-outline",
             });
           }
@@ -258,7 +260,7 @@ export default function Home() {
 
     facilityItems.push({
       name: building.alias,
-      type: building.description || "Building",
+      type: building.description || t("home.building"),
       status: bHasAlert ? "warning" : "normal",
       icon: "business-outline",
     });
@@ -297,7 +299,7 @@ export default function Home() {
   // 7-day trend calculation across ALL buildings
   const trendLabels: string[] = [];
   const trendValues: number[] = [];
-  const dayNamesShort = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const dayNamesShort = [t("home.days.sun"), t("home.days.mon"), t("home.days.tue"), t("home.days.wed"), t("home.days.thu"), t("home.days.fri"), t("home.days.sat")];
 
   for (let i = 6; i >= 0; i--) {
     const d = new Date();
@@ -329,10 +331,10 @@ export default function Home() {
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
           <View>
             <Text style={{ fontSize: 14, fontWeight: "700", color: "#0f172a" }}>
-              Global Consumption
+              {t("home.globalConsumption")}
             </Text>
             <Text style={{ fontSize: 11, color: "#94a3b8", marginTop: 1 }}>
-              Current Month Across {buildings.length} {buildings.length === 1 ? "Building" : "Buildings"}
+              {t("home.currentMonthAcross", { count: buildings.length })}
             </Text>
           </View>
           <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: "#eff6ff", alignItems: "center", justifyContent: "center" }}>
@@ -350,7 +352,7 @@ export default function Home() {
         </View>
 
         <Text style={{ fontSize: 10, fontWeight: "600", color: "#94a3b8", letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 6 }}>
-          Global Usage vs Target
+          {t("home.globalUsageVsTarget")}
         </Text>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
           <View style={{ flex: 1 }}>
@@ -366,7 +368,7 @@ export default function Home() {
         <View style={{ height: 1, backgroundColor: "#f1f5f9", marginVertical: 14 }} />
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
           <Text style={{ fontSize: 12, fontWeight: "700", color: "#64748b" }}>
-            Total Registered: {buildings.length} {buildings.length === 1 ? "Facility" : "Facilities"}
+            {t("home.totalRegistered", { count: buildings.length })}
           </Text>
           <View
             style={{
@@ -391,7 +393,7 @@ export default function Home() {
                 fontWeight: "700",
               }}
             >
-              {Math.abs(percentVsLastMonth)}% vs last month
+              {t("home.vsLastMonth", { percent: Math.abs(percentVsLastMonth) })}
             </Text>
           </View>
         </View>
@@ -403,7 +405,7 @@ export default function Home() {
     <Animated.View entering={FadeInDown.delay(100).springify()} style={cardBase}>
       <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 14 }}>
         <Text style={{ fontSize: 14, fontWeight: "700", color: alertsList.length > 0 ? "#dc2626" : "#0f172a", flex: 1 }}>
-          Active System Alerts ({alertsList.length})
+          {t("home.activeAlerts", { count: alertsList.length })}
         </Text>
         <Ionicons name="warning" size={18} color={alertsList.length > 0 ? "#EF4444" : "#10B981"} />
       </View>
@@ -424,10 +426,10 @@ export default function Home() {
           >
             <Ionicons name="checkmark-circle-outline" size={24} color="#16A34A" />
             <Text style={{ fontSize: 13, fontWeight: "700", color: "#15803d", marginTop: 4 }}>
-              All Systems Normal
+              {t("home.allSystemsNormal")}
             </Text>
             <Text style={{ fontSize: 11, color: "#16a34a", textAlign: "center", marginTop: 2 }}>
-              No abnormal consumption detected across your facilities.
+              {t("home.noAbnormalConsumption")}
             </Text>
           </View>
         ) : (
@@ -469,7 +471,7 @@ export default function Home() {
   const QuickActionsCard = (
     <Animated.View entering={FadeInDown.delay(150).springify()} style={cardBase}>
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-        <Text style={{ fontSize: 14, fontWeight: "700", color: "#0f172a" }}>Quick Actions</Text>
+        <Text style={{ fontSize: 14, fontWeight: "700", color: "#0f172a" }}>{t("home.quickActions")}</Text>
         <Feather name="zap" size={16} color="#6B7280" />
       </View>
 
@@ -489,7 +491,7 @@ export default function Home() {
         >
           <MaterialCommunityIcons name="line-scan" size={16} color="white" />
           <Text style={{ color: "white", fontSize: 13, fontWeight: "700" }}>
-            Scan Receipt / Add Building
+            {t("home.scanReceiptOrAddBuilding")}
           </Text>
         </TouchableOpacity>
 
@@ -509,7 +511,7 @@ export default function Home() {
         >
           <Feather name="edit-2" size={14} color="#374151" />
           <Text style={{ color: "#374151", fontSize: 13, fontWeight: "600" }}>
-            Log Manual Water Reading
+            {t("home.logManualWaterReading")}
           </Text>
         </TouchableOpacity>
       </View>
@@ -520,22 +522,22 @@ export default function Home() {
     <Animated.View entering={FadeInDown.delay(200).springify()} style={cardBase}>
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
         <Text style={{ fontSize: 14, fontWeight: "700", color: "#0f172a" }}>
-          Facility Status Overview
+          {t("home.facilityStatusOverview")}
         </Text>
         <TouchableOpacity onPress={() => router.push("/myBuildings" as any)}>
-          <Text style={{ fontSize: 11, fontWeight: "700", color: "#2563EB" }}>Manage ({buildings.length})</Text>
+          <Text style={{ fontSize: 11, fontWeight: "700", color: "#2563EB" }}>{t("home.manage", { count: buildings.length })}</Text>
         </TouchableOpacity>
       </View>
 
       {facilityItems.length === 0 ? (
         <View style={{ padding: 16, alignItems: "center", justifyContent: "center", flex: 1, backgroundColor: "#f8fafc", borderRadius: 12, borderWidth: 1, borderColor: "#e2e8f0" }}>
           <Feather name="home" size={24} color="#9CA3AF" />
-          <Text style={{ fontSize: 13, fontWeight: "600", color: "#64748b", marginTop: 4 }}>No facilities registered</Text>
+          <Text style={{ fontSize: 13, fontWeight: "600", color: "#64748b", marginTop: 4 }}>{t("home.noFacilitiesRegistered")}</Text>
           <TouchableOpacity
             onPress={() => router.push("/myBuildings" as any)}
             style={{ marginTop: 8, backgroundColor: "#2563EB", paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 }}
           >
-            <Text style={{ fontSize: 11, fontWeight: "700", color: "white" }}>+ Add First Building</Text>
+            <Text style={{ fontSize: 11, fontWeight: "700", color: "white" }}>{t("home.addFirstBuilding")}</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -574,7 +576,7 @@ export default function Home() {
                     <Ionicons name="warning-outline" size={11} color="#EF4444" />
                   )}
                   <Text style={{ fontSize: 10, fontWeight: "700", color: isNormal ? "#15803d" : "#dc2626" }}>
-                    {isNormal ? "Normal Usage" : "High Usage"}
+                    {isNormal ? t("home.normalUsage") : t("home.highUsage")}
                   </Text>
                 </View>
               </View>
@@ -588,11 +590,11 @@ export default function Home() {
   const DistributionCard = (
     <Animated.View entering={FadeInDown.delay(250).springify()} style={cardBase}>
       <Text style={{ fontSize: 14, fontWeight: "700", color: "#0f172a", marginBottom: 16 }}>
-        Consumption Distribution
+        {t("home.consumptionDistribution")}
       </Text>
       {distributionItems.length === 0 ? (
         <View style={{ padding: 16, alignItems: "center", justifyContent: "center", flex: 1 }}>
-          <Text style={{ fontSize: 12, color: "#94a3b8" }}>No buildings to display</Text>
+          <Text style={{ fontSize: 12, color: "#94a3b8" }}>{t("home.noBuildingsToDisplay")}</Text>
         </View>
       ) : (
         <View style={{ flexDirection: "row", alignItems: "center", gap: 16, flex: 1 }}>
@@ -627,13 +629,13 @@ export default function Home() {
       }}
     >
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-        <Text style={{ fontSize: 14, fontWeight: "700", color: "#0f172a" }}>7-Day Usage Trend</Text>
+        <Text style={{ fontSize: 14, fontWeight: "700", color: "#0f172a" }}>{t("home.usageTrend7Days")}</Text>
         <TouchableOpacity
           onPress={() => router.push("/consumptions" as any)}
           activeOpacity={0.7}
           style={{ flexDirection: "row", alignItems: "center", gap: 3 }}
         >
-          <Text style={{ fontSize: 12, fontWeight: "600", color: "#2563EB" }}>View Detailed Analytics</Text>
+          <Text style={{ fontSize: 12, fontWeight: "600", color: "#2563EB" }}>{t("home.viewDetailedAnalytics")}</Text>
           <Feather name="arrow-right" size={12} color="#2563EB" />
         </TouchableOpacity>
       </View>
@@ -685,13 +687,13 @@ export default function Home() {
             entering={FadeInDown.delay(0).springify()}
             style={{ fontSize: 24, fontWeight: "800", color: "#0f172a", marginBottom: 4 }}
           >
-            Welcome {userName}!
+            {t("home.welcome", { name: userName })}
           </Animated.Text>
 
           {loading ? (
             <View style={{ padding: 40, alignItems: "center", justifyContent: "center" }}>
               <ActivityIndicator size="large" color="#2563EB" />
-              <Text style={{ fontSize: 13, color: "#94a3b8", marginTop: 12 }}>Loading dashboard statistics...</Text>
+              <Text style={{ fontSize: 13, color: "#94a3b8", marginTop: 12 }}>{t("home.loadingDashboard")}</Text>
             </View>
           ) : isLarge ? (
             <>

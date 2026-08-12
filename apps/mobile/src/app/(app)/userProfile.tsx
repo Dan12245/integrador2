@@ -10,6 +10,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import Animated, { FadeInDown, FadeInUp, FadeOutUp } from "react-native-reanimated";
+import { useTranslation } from "react-i18next";
 import AppNavbar from "../../components/AppNavbar";
 import Account from "../../components/Account";
 import { supabase } from "../../lib/supabase";
@@ -34,6 +35,7 @@ function ProfileCard({
   isMobile,
   onPress,
 }: ProfileCardProps) {
+  const { t } = useTranslation();
   return (
     <Animated.View
       entering={FadeInDown.delay(delay).duration(500).springify()}
@@ -82,7 +84,7 @@ function ProfileCard({
               isSelected ? "text-[#2089dc]" : "text-gray-400"
             }`}
           >
-            {isSelected ? "▲ Hide User Profile" : "▶ Click to View Profile"}
+            {isSelected ? t("profile.hideProfile") : t("profile.viewProfile")}
           </Text>
         )}
       </TouchableOpacity>
@@ -92,6 +94,7 @@ function ProfileCard({
 
 // PANTALLA PRINCIPAL USER PROFILE
 export default function UserProfile() {
+  const { t } = useTranslation();
   const { width: windowWidth } = useWindowDimensions();
   const isMobile = windowWidth < 768;
 
@@ -117,21 +120,18 @@ export default function UserProfile() {
   const cards = [
     {
       id: "Details",
-      title: "Details",
-      description:
-        "Manage your personal information, update avatar, view account details, and edit profile settings.",
+      title: t("profile.detailsTitle"),
+      description: t("profile.detailsDescription"),
     },
     {
       id: "Connected Networks",
-      title: "Connected Networks",
-      description:
-        "Overview of connected smart meters, IoT devices, building management systems, and network status.",
+      title: t("profile.connectedNetworksTitle"),
+      description: t("profile.connectedNetworksDescription"),
     },
     {
       id: "Settings",
-      title: "Settings",
-      description:
-        "Preferences, language configuration, privacy settings, and security protocols for your account.",
+      title: t("profile.settingsTitle"),
+      description: t("profile.settingsDescription"),
     },
   ];
 
@@ -231,7 +231,7 @@ export default function UserProfile() {
               }}
             >
               <Text className="text-2xl sm:text-3xl font-black text-[#0d1b2e] text-center mb-2">
-                User Profile
+                {t("profile.userProfileTitle")}
               </Text>
               <View className="h-[2.5px] bg-[#0d1b2e] mb-4 mx-auto w-20" />
 
@@ -258,11 +258,11 @@ export default function UserProfile() {
               }}
             >
               <Text className="text-xl sm:text-2xl font-bold text-[#0d1b2e] text-center mb-3">
-                Connected Networks
+                {t("profile.connectedNetworksTitle")}
               </Text>
               <View className="h-[2px] bg-[#0d1b2e] mb-4 mx-auto w-16" />
               <Text className="text-xs sm:text-sm text-gray-600 text-center leading-5 sm:leading-6">
-                Active telemetry devices: 3 smart meters online. Network protocol: MQTT/HTTP. All systems operational.
+                {t("profile.connectedNetworksContent")}
               </Text>
             </Animated.View>
           )}
@@ -285,11 +285,11 @@ export default function UserProfile() {
               }}
             >
               <Text className="text-xl sm:text-2xl font-bold text-[#0d1b2e] text-center mb-3">
-                Settings
+                {t("profile.settingsTitle")}
               </Text>
               <View className="h-[2px] bg-[#0d1b2e] mb-4 mx-auto w-16" />
               <Text className="text-xs sm:text-sm text-gray-600 text-center leading-5 sm:leading-6">
-                System preferences: Language (EN/ES), dark mode toggles, and notification preferences.
+                {t("profile.settingsContent")}
               </Text>
             </Animated.View>
           )}

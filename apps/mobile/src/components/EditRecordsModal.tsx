@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Pressable, Modal, TextInput, ScrollView } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import DatePickerGrid from "./DatePickerGrid";
 import MonthPickerGrid from "./MonthPickerGrid";
 import { SHORT_MONTH_NAMES, formatDateKey, getDaysInMonth } from "./ConsumptionHelpers";
@@ -49,6 +50,7 @@ export function EditRecordsModal({
   currentYear,
   currentMonth,
 }: EditRecordsModalProps) {
+  const { t } = useTranslation();
   const recordKey = buildingId !== null ? String(buildingId) : buildingName;
 
   return (
@@ -67,7 +69,7 @@ export function EditRecordsModal({
               <View className="w-8 h-8 rounded-full bg-sky-50 justify-center items-center">
                 <Feather name="edit-2" size={18} color="#0284C7" />
               </View>
-              <Text className="text-lg font-bold text-gray-900">Edit or Delete Records</Text>
+              <Text className="text-lg font-bold text-gray-900">{t("modals.editRecords.title")}</Text>
             </View>
             <Pressable
               testID="close-edit-modal-button"
@@ -80,7 +82,7 @@ export function EditRecordsModal({
 
           <ScrollView showsVerticalScrollIndicator={false} className="max-h-[80vh]">
             {/* Mode Tabs (Edit Day vs Delete Month) */}
-            <Text className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Operation Mode</Text>
+            <Text className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t("modals.editRecords.operationMode")}</Text>
             <View className="flex-row bg-gray-100 p-1.5 rounded-xl mb-5">
               <Pressable
                 testID="edit-mode-day-button"
@@ -91,7 +93,7 @@ export function EditRecordsModal({
                 className={`flex-1 py-2.5 rounded-lg items-center ${editMode === "Day" ? "bg-slate-900 shadow-xs" : ""}`}
               >
                 <Text className={`text-xs font-bold ${editMode === "Day" ? "text-white" : "text-gray-600"}`}>
-                  Edit Day Record
+                  {t("modals.editRecords.editDayRecord")}
                 </Text>
               </Pressable>
 
@@ -104,7 +106,7 @@ export function EditRecordsModal({
                 className={`flex-1 py-2.5 rounded-lg items-center ${editMode === "Month" ? "bg-red-600 shadow-xs" : ""}`}
               >
                 <Text className={`text-xs font-bold ${editMode === "Month" ? "text-white" : "text-gray-600"}`}>
-                  Delete Month
+                  {t("modals.editRecords.deleteMonth")}
                 </Text>
               </Pressable>
             </View>
@@ -112,7 +114,7 @@ export function EditRecordsModal({
             {editMode === "Day" ? (
               /* Edit by Day Section */
               <View>
-                <Text className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Select Target Date</Text>
+                <Text className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t("modals.editRecords.selectTargetDate")}</Text>
                 <DatePickerGrid
                   viewDate={editCalendarViewDate}
                   setViewDate={setEditCalendarViewDate}
@@ -133,20 +135,20 @@ export function EditRecordsModal({
                 {/* Current record & update input */}
                 <View className="bg-gray-50 border border-gray-200 rounded-2xl p-4 mb-5">
                   <View className="flex-row justify-between items-center mb-4">
-                    <Text className="text-xs font-semibold text-gray-600">Current Consumption:</Text>
+                    <Text className="text-xs font-semibold text-gray-600">{t("modals.editRecords.currentConsumption")}</Text>
                     <Text className="text-sm font-black text-gray-900">
                       {(records[`${recordKey}:${formatDateKey(editSelectedDate)}`] || 0).toFixed(1)} m³
                     </Text>
                   </View>
 
-                  <Text className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">New Consumption Value (m³)</Text>
+                  <Text className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t("modals.editRecords.newConsumptionValue")}</Text>
                   <View className="flex-row items-center border border-gray-200 bg-white rounded-xl px-3.5 py-2.5">
                     <Feather name="edit-3" size={16} color="#9CA3AF" />
                     <TextInput
                       testID="edit-consumption-amount-input"
                       value={editAmountInput}
                       onChangeText={setEditAmountInput}
-                      placeholder="Enter updated value in m³"
+                      placeholder={t("modals.editRecords.amountPlaceholder")}
                       keyboardType="decimal-pad"
                       className="flex-1 ml-2 text-sm text-gray-900 font-semibold"
                     />
@@ -171,7 +173,7 @@ export function EditRecordsModal({
                     }}
                     className="flex-1 bg-red-50 border border-red-200 py-3 rounded-xl items-center active:bg-red-100"
                   >
-                    <Text className="text-red-700 text-xs font-bold">Delete Day</Text>
+                    <Text className="text-red-700 text-xs font-bold">{t("modals.editRecords.deleteDay")}</Text>
                   </Pressable>
 
                   <Pressable
@@ -197,14 +199,14 @@ export function EditRecordsModal({
                     }}
                     className="flex-1 bg-sky-600 py-3 rounded-xl items-center active:bg-sky-700 shadow-sm"
                   >
-                    <Text className="text-white text-xs font-bold">Save Changes</Text>
+                    <Text className="text-white text-xs font-bold">{t("modals.editRecords.saveChanges")}</Text>
                   </Pressable>
                 </View>
               </View>
             ) : (
               /* Delete by Month Section */
               <View>
-                <Text className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Select Month to Clear</Text>
+                <Text className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t("modals.editRecords.selectMonthToClear")}</Text>
                 <MonthPickerGrid
                   viewDate={editCalendarViewDate}
                   setViewDate={setEditCalendarViewDate}
@@ -223,13 +225,14 @@ export function EditRecordsModal({
                 <View className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-5 flex-row items-start gap-3">
                   <Feather name="alert-triangle" size={20} color="#DC2626" className="mt-0.5" />
                   <View className="flex-1">
-                    <Text className="text-xs font-bold text-red-900 mb-1">Warning: Irreversible Action</Text>
+                    <Text className="text-xs font-bold text-red-900 mb-1">{t("modals.editRecords.warningTitle")}</Text>
                     <Text className="text-xs text-red-700 leading-relaxed">
-                      This action will permanently delete all water consumption records for{" "}
+                      {t("modals.editRecords.warningTextPrefix")}
                       <Text className="font-bold">
                         {SHORT_MONTH_NAMES[editSelectedDate.getMonth()]} {editSelectedDate.getFullYear()}
-                      </Text>{" "}
-                      in <Text className="font-bold">{buildingName}</Text>.
+                      </Text>
+                      {t("modals.editRecords.warningTextIn")}
+                      <Text className="font-bold">{buildingName}</Text>.
                     </Text>
                   </View>
                 </View>
@@ -242,12 +245,15 @@ export function EditRecordsModal({
                     className="w-full bg-red-600 py-3.5 rounded-xl items-center active:bg-red-700 shadow-sm flex-row justify-center gap-2"
                   >
                     <Feather name="trash-2" size={16} color="white" />
-                    <Text className="text-white text-xs font-bold">Delete Month Records</Text>
+                    <Text className="text-white text-xs font-bold">{t("modals.editRecords.deleteMonthRecords")}</Text>
                   </Pressable>
                 ) : (
                   <View className="bg-red-100 border border-red-300 p-4 rounded-2xl">
                     <Text className="text-xs font-bold text-red-950 text-center mb-3">
-                      Are you sure you want to delete all data for {SHORT_MONTH_NAMES[editSelectedDate.getMonth()]} {editSelectedDate.getFullYear()}?
+                      {t("modals.editRecords.confirmDeleteMonthQuestion", {
+                        month: SHORT_MONTH_NAMES[editSelectedDate.getMonth()],
+                        year: editSelectedDate.getFullYear(),
+                      })}
                     </Text>
                     <View className="flex-row gap-3">
                       <Pressable
@@ -255,7 +261,7 @@ export function EditRecordsModal({
                         onPress={() => setConfirmDeleteMonth(false)}
                         className="flex-1 bg-white border border-gray-300 py-2.5 rounded-xl items-center active:bg-gray-100"
                       >
-                        <Text className="text-gray-700 text-xs font-bold">Cancel</Text>
+                        <Text className="text-gray-700 text-xs font-bold">{t("modals.editRecords.cancel")}</Text>
                       </Pressable>
 
                       <Pressable
@@ -283,7 +289,7 @@ export function EditRecordsModal({
                         }}
                         className="flex-1 bg-red-600 py-2.5 rounded-xl items-center active:bg-red-700 shadow-sm"
                       >
-                        <Text className="text-white text-xs font-bold">Yes, Delete All</Text>
+                        <Text className="text-white text-xs font-bold">{t("modals.editRecords.confirmDeleteAll")}</Text>
                       </Pressable>
                     </View>
                   </View>

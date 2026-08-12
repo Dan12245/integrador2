@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { SHORT_MONTH_NAMES } from "./ConsumptionHelpers";
 
 export interface MonthPickerGridProps {
@@ -24,6 +25,7 @@ export function MonthPickerGrid({
   testIDPrefix = "calendar",
   activeColor = "blue",
 }: MonthPickerGridProps) {
+  const { t } = useTranslation();
   const viewYear = viewDate.getFullYear();
 
   const prevYear = () => setViewDate(new Date(viewYear - 1, viewDate.getMonth(), 1));
@@ -87,7 +89,7 @@ export function MonthPickerGrid({
                     : "text-gray-800"
                 }`}
               >
-                {mName}
+                {t(`pickers.monthsShort.${mIdx}`)}
               </Text>
             </Pressable>
           );
@@ -96,9 +98,9 @@ export function MonthPickerGrid({
 
       {/* Selected month indicator */}
       <View className="mt-4 pt-3 border-t border-gray-200 flex-row items-center justify-between">
-        <Text className="text-xs text-gray-500 font-medium">Selected Month:</Text>
+        <Text className="text-xs text-gray-500 font-medium">{t("pickers.selectedMonth")}</Text>
         <Text className="text-xs font-bold text-blue-600">
-          {SHORT_MONTH_NAMES[selectedDate.getMonth()]} {selectedDate.getFullYear()}
+          {t(`pickers.monthsShort.${selectedDate.getMonth()}`)} {selectedDate.getFullYear()}
         </Text>
       </View>
     </View>

@@ -1,8 +1,10 @@
 import { View } from "react-native";
 import { Image } from "expo-image";
 import ResetPasswordForm from "../../components/ResetPasswordForm";
+import { useTranslation } from "react-i18next";
 
 export default function ResetPassword() {
+  const { t } = useTranslation();
   return (
     <View className="flex-1 items-center justify-center bg-white">
       {/* IMAGEN DE FONDO

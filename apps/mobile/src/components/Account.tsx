@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { supabase } from "../lib/supabase";
 import Avatar from "./Avatar";
 import { usePostHog } from "../lib/posthog";
@@ -12,6 +13,7 @@ export default function Account({
   userId: string;
   email?: string;
 }) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState("");
   const [website, setWebsite] = useState("");
@@ -99,7 +101,7 @@ export default function Account({
         />
       </View>
       <View className="py-1 self-stretch mt-5">
-        <Text className="text-base font-semibold text-[#86939e] mb-1.5">Email</Text>
+        <Text className="text-base font-semibold text-[#86939e] mb-1.5">{t("account.emailLabel")}</Text>
         <TextInput
           testID="account_email_field"
           value={email ?? ""}
@@ -109,7 +111,7 @@ export default function Account({
         />
       </View>
       <View className="py-1 self-stretch">
-        <Text className="text-base font-semibold text-[#86939e] mb-1.5">Username</Text>
+        <Text className="text-base font-semibold text-[#86939e] mb-1.5">{t("account.usernameLabel")}</Text>
         <TextInput
           testID="account_username_field"
           value={username || ""}
@@ -118,7 +120,7 @@ export default function Account({
         />
       </View>
       <View className="py-1 self-stretch">
-        <Text className="text-base font-semibold text-[#86939e] mb-1.5">Website</Text>
+        <Text className="text-base font-semibold text-[#86939e] mb-1.5">{t("account.websiteLabel")}</Text>
         <TextInput
           testID="account_website_field"
           value={website || ""}
@@ -137,7 +139,7 @@ export default function Account({
           disabled={loading}
         >
           <Text className="text-white text-base font-semibold">
-            {loading ? "Loading ..." : "Update"}
+            {loading ? t("account.loading") : t("account.updateButton")}
           </Text>
         </TouchableOpacity>
       </View>
@@ -152,7 +154,7 @@ export default function Account({
               supabase.auth.signOut();
             }}
         >
-          <Text className="text-white text-base font-semibold">Sign Out</Text>
+          <Text className="text-white text-base font-semibold">{t("account.signOutButton")}</Text>
         </TouchableOpacity>
       </View>
     </View>
