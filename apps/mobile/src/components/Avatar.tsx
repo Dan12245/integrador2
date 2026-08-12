@@ -22,6 +22,7 @@ export default function Avatar({
   shape = "square",
   fallbackText,
 }: Props) {
+  const { t } = useTranslation()
   const [uploading, setUploading] = useState(false)
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const avatarSize = { height: size, width: size }
@@ -131,7 +132,9 @@ export default function Avatar({
             onPress={uploadAvatar}
             disabled={uploading}
           >
-            <Text className="text-white text-sm font-semibold">{uploading ? 'Uploading ...' : 'Upload'}</Text>
+            <Text className="text-white text-sm font-semibold">
+              {uploading ? t("account.uploading") : t("account.upload")}
+            </Text>
           </TouchableOpacity>
         </View>
       )}

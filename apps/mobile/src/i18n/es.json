@@ -361,6 +361,14 @@
         "settingsDescription": "Preferencias, configuración de idioma, ajustes de privacidad y protocolos de seguridad para su cuenta.",
         "userProfileTitle": "Perfil de Usuario",
         "connectedNetworksContent": "Dispositivos de telemetría activos: 3 medidores inteligentes en línea. Protocolo de red: MQTT/HTTP. Todos los sistemas operacionales.",
-        "settingsContent": "Preferencias del sistema: Idioma (EN/ES), modo oscuro y preferencias de notificaciones."
+        "settingsContent": "Preferencias del sistema: Idioma (EN/ES), modo oscuro y preferencias de notificaciones.",
+        "networksShort": "Redes",
+        "telemetryProtocol": "Protocolo de Telemetría",
+        "mqttOnline": "MQTT / HTTP En línea",
+        "activeDevicesText": "Dispositivos de telemetría activos: 3 medidores inteligentes transmitiendo datos actualmente.",
+        "languageLabel": "Idioma",
+        "languageValue": "Español (ES) / Inglés (EN)",
+        "notificationsLabel": "Notificaciones",
+        "notificationsValue": "Activadas"
     }
 }

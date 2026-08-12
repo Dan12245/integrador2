@@ -121,27 +121,24 @@ export default function UserProfile() {
   const cards = [
     {
       id: "Details",
-      title: "Details",
-      shortTitle: "Details",
+      title: t("profile.detailsTitle"),
+      shortTitle: t("profile.detailsTitle"),
       icon: "user" as const,
-      description:
-        "Manage your personal information, update avatar, view account details, and edit profile settings.",
+      description: t("profile.detailsDescription"),
     },
     {
       id: "Connected Networks",
-      title: "Connected Networks",
-      shortTitle: "Networks",
+      title: t("profile.connectedNetworksTitle"),
+      shortTitle: t("profile.networksShort"),
       icon: "wifi" as const,
-      description:
-        "Overview of connected smart meters, IoT devices, building management systems, and network status.",
+      description: t("profile.connectedNetworksDescription"),
     },
     {
       id: "Settings",
-      title: "Settings",
-      shortTitle: "Settings",
+      title: t("profile.settingsTitle"),
+      shortTitle: t("profile.settingsTitle"),
       icon: "settings" as const,
-      description:
-        "Preferences, language configuration, privacy settings, and security protocols for your account.",
+      description: t("profile.settingsDescription"),
     },
   ];
 
@@ -302,10 +299,10 @@ export default function UserProfile() {
               }}
             >
               <Text className="text-xl sm:text-3xl font-black text-[#0d1b2e] text-center mb-1">
-                User Profile
+                {t("profile.userProfileTitle")}
               </Text>
               <Text className="text-xs sm:text-sm text-gray-500 text-center mb-3">
-                Manage your personal information, update avatar, and edit account settings.
+                {t("profile.detailsDescription")}
               </Text>
               <View className="h-[2.5px] bg-[#2089dc] mb-2 mx-auto w-16" />
 
@@ -332,22 +329,26 @@ export default function UserProfile() {
               }}
             >
               <Text className="text-xl sm:text-2xl font-bold text-[#0d1b2e] text-center mb-2">
-                Connected Networks
+                {t("profile.connectedNetworksTitle")}
               </Text>
               <View className="h-[2px] bg-[#2089dc] mb-4 mx-auto w-16" />
               <Text className="text-xs sm:text-sm text-gray-600 text-center leading-5 sm:leading-6 mb-6">
-                Overview of connected smart meters, IoT devices, building management systems, and network status.
+                {t("profile.connectedNetworksContent")}
               </Text>
 
               <View className="bg-[#f0f4f8] rounded-2xl p-4 sm:p-6 border border-gray-200">
                 <View className="flex-row items-center justify-between mb-3">
-                  <Text className="text-sm sm:text-base font-bold text-[#0d1b2e]">Telemetry Protocol</Text>
+                  <Text className="text-sm sm:text-base font-bold text-[#0d1b2e]">
+                    {t("profile.telemetryProtocol")}
+                  </Text>
                   <View className="bg-green-100 px-3 py-1 rounded-full">
-                    <Text className="text-xs font-semibold text-green-700">MQTT / HTTP Online</Text>
+                    <Text className="text-xs font-semibold text-green-700">
+                      {t("profile.mqttOnline")}
+                    </Text>
                   </View>
                 </View>
                 <Text className="text-xs sm:text-sm text-gray-600">
-                  Active telemetry devices: 3 smart meters currently transmitting data.
+                  {t("profile.activeDevicesText")}
                 </Text>
               </View>
             </Animated.View>
@@ -372,22 +373,30 @@ export default function UserProfile() {
               }}
             >
               <Text className="text-xl sm:text-2xl font-bold text-[#0d1b2e] text-center mb-2">
-                Settings
+                {t("profile.settingsTitle")}
               </Text>
               <View className="h-[2px] bg-[#2089dc] mb-4 mx-auto w-16" />
               <Text className="text-xs sm:text-sm text-gray-600 text-center leading-5 sm:leading-6 mb-6">
-                Preferences, language configuration, privacy settings, and security protocols for your account.
+                {t("profile.settingsContent")}
               </Text>
 
               <View className="bg-[#f0f4f8] rounded-2xl p-4 sm:p-6 border border-gray-200 gap-4">
                 <View className="flex-row items-center justify-between">
-                  <Text className="text-sm font-semibold text-[#0d1b2e]">Language</Text>
-                  <Text className="text-xs font-bold text-[#2089dc]">English (EN)</Text>
+                  <Text className="text-sm font-semibold text-[#0d1b2e]">
+                    {t("profile.languageLabel")}
+                  </Text>
+                  <Text className="text-xs font-bold text-[#2089dc]">
+                    {t("profile.languageValue")}
+                  </Text>
                 </View>
                 <View className="h-px bg-gray-200" />
                 <View className="flex-row items-center justify-between">
-                  <Text className="text-sm font-semibold text-[#0d1b2e]">Notifications</Text>
-                  <Text className="text-xs font-bold text-green-600">Enabled</Text>
+                  <Text className="text-sm font-semibold text-[#0d1b2e]">
+                    {t("profile.notificationsLabel")}
+                  </Text>
+                  <Text className="text-xs font-bold text-green-600">
+                    {t("profile.notificationsValue")}
+                  </Text>
                 </View>
               </View>
             </Animated.View>

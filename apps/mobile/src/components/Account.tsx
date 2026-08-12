@@ -103,7 +103,7 @@ export default function Account({
         />
       </View>
       <View className="py-1 self-stretch mt-4">
-        <Text className="text-sm sm:text-base font-semibold text-[#86939e] mb-1.5">Email</Text>
+        <Text className="text-sm sm:text-base font-semibold text-[#86939e] mb-1.5">{t("account.emailLabel")}</Text>
         <TextInput
           testID="account_email_field"
           value={email ?? ""}
@@ -113,7 +113,7 @@ export default function Account({
         />
       </View>
       <View className="py-1 self-stretch">
-        <Text className="text-sm sm:text-base font-semibold text-[#86939e] mb-1.5">Username</Text>
+        <Text className="text-sm sm:text-base font-semibold text-[#86939e] mb-1.5">{t("account.usernameLabel")}</Text>
         <TextInput
           testID="account_username_field"
           value={username || ""}
@@ -122,7 +122,7 @@ export default function Account({
         />
       </View>
       <View className="py-1 self-stretch">
-        <Text className="text-sm sm:text-base font-semibold text-[#86939e] mb-1.5">Website</Text>
+        <Text className="text-sm sm:text-base font-semibold text-[#86939e] mb-1.5">{t("account.websiteLabel")}</Text>
         <TextInput
           testID="account_website_field"
           value={website || ""}

@@ -361,6 +361,14 @@
         "settingsDescription": "Preferences, language configuration, privacy settings, and security protocols for your account.",
         "userProfileTitle": "User Profile",
         "connectedNetworksContent": "Active telemetry devices: 3 smart meters online. Network protocol: MQTT/HTTP. All systems operational.",
-        "settingsContent": "System preferences: Language (EN/ES), dark mode toggles, and notification preferences."
+        "settingsContent": "System preferences: Language (EN/ES), dark mode toggles, and notification preferences.",
+        "networksShort": "Networks",
+        "telemetryProtocol": "Telemetry Protocol",
+        "mqttOnline": "MQTT / HTTP Online",
+        "activeDevicesText": "Active telemetry devices: 3 smart meters currently transmitting data.",
+        "languageLabel": "Language",
+        "languageValue": "English (EN) / Spanish (ES)",
+        "notificationsLabel": "Notifications",
+        "notificationsValue": "Enabled"
     }
 }
