@@ -327,74 +327,77 @@ export default function Home() {
 
   const GlobalConsumptionCard = (
     <Animated.View entering={FadeInDown.delay(50).springify()} style={cardBase}>
-      <View>
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
-          <View>
-            <Text style={{ fontSize: 14, fontWeight: "700", color: "#0f172a" }}>
-              {t("home.globalConsumption")}
+      <View style={{ flex: 1, justifyContent: "space-between" }}>
+        <View>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16, gap: 12 }}>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 14, fontWeight: "700", color: "#0f172a", lineHeight: 20 }}>
+                {t("home.globalConsumption")}
+              </Text>
+              <Text style={{ fontSize: 11, color: "#94a3b8", marginTop: 2, lineHeight: 15 }}>
+                {t("home.currentMonthAcross", { count: buildings.length })}
+              </Text>
+            </View>
+            <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: "#eff6ff", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <Ionicons name="water" size={20} color="#3B82F6" />
+            </View>
+          </View>
+
+          <View style={{ flexDirection: "row", alignItems: "baseline", marginBottom: 16 }}>
+            <Text style={{ fontSize: 36, fontWeight: "800", color: "#0f172a", letterSpacing: -1 }}>
+              {globalCurrentMonthTotal.toLocaleString(undefined, { maximumFractionDigits: 1 })}
             </Text>
-            <Text style={{ fontSize: 11, color: "#94a3b8", marginTop: 1 }}>
-              {t("home.currentMonthAcross", { count: buildings.length })}
+            <Text style={{ fontSize: 18, fontWeight: "700", color: "#64748b", marginLeft: 4 }}>
+              m³
             </Text>
           </View>
-          <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: "#eff6ff", alignItems: "center", justifyContent: "center" }}>
-            <Ionicons name="water" size={20} color="#3B82F6" />
+
+          <Text style={{ fontSize: 10, fontWeight: "600", color: "#94a3b8", letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 6 }}>
+            {t("home.globalUsageVsTarget")}
+          </Text>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            <View style={{ flex: 1 }}>
+              <ProgressBar progress={globalTarget > 0 ? globalCurrentMonthTotal / globalTarget : 0} />
+            </View>
+            <Text style={{ fontSize: 11, color: "#64748b", fontWeight: "600", flexShrink: 0 }}>
+              {globalCurrentMonthTotal.toLocaleString(undefined, { maximumFractionDigits: 1 })} / {globalTarget} m³
+            </Text>
           </View>
         </View>
 
-        <View style={{ flexDirection: "row", alignItems: "baseline", marginBottom: 20 }}>
-          <Text style={{ fontSize: 40, fontWeight: "800", color: "#0f172a", letterSpacing: -1 }}>
-            {globalCurrentMonthTotal.toLocaleString(undefined, { maximumFractionDigits: 1 })}
-          </Text>
-          <Text style={{ fontSize: 20, fontWeight: "700", color: "#64748b", marginLeft: 4 }}>
-            m³
-          </Text>
-        </View>
-
-        <Text style={{ fontSize: 10, fontWeight: "600", color: "#94a3b8", letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 6 }}>
-          {t("home.globalUsageVsTarget")}
-        </Text>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-          <View style={{ flex: 1 }}>
-            <ProgressBar progress={globalTarget > 0 ? globalCurrentMonthTotal / globalTarget : 0} />
-          </View>
-          <Text style={{ fontSize: 11, color: "#64748b", fontWeight: "600", flexShrink: 0 }}>
-            {globalCurrentMonthTotal.toLocaleString(undefined, { maximumFractionDigits: 1 })} / {globalTarget} m³
-          </Text>
-        </View>
-      </View>
-
-      <View>
-        <View style={{ height: 1, backgroundColor: "#f1f5f9", marginVertical: 14 }} />
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-          <Text style={{ fontSize: 12, fontWeight: "700", color: "#64748b" }}>
-            {t("home.totalRegistered", { count: buildings.length })}
-          </Text>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 4,
-              backgroundColor: percentVsLastMonth <= 0 ? "#f0fdf4" : "#fff1f2",
-              paddingHorizontal: 10,
-              paddingVertical: 4,
-              borderRadius: 999,
-            }}
-          >
-            <Feather
-              name={percentVsLastMonth <= 0 ? "arrow-down" : "arrow-up"}
-              size={11}
-              color={percentVsLastMonth <= 0 ? "#16A34A" : "#EF4444"}
-            />
-            <Text
+        <View>
+          <View style={{ height: 1, backgroundColor: "#f1f5f9", marginVertical: 14 }} />
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+            <Text style={{ fontSize: 12, fontWeight: "700", color: "#64748b", flexShrink: 1 }}>
+              {t("home.totalRegistered", { count: buildings.length })}
+            </Text>
+            <View
               style={{
-                fontSize: 11,
-                color: percentVsLastMonth <= 0 ? "#15803d" : "#dc2626",
-                fontWeight: "700",
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 4,
+                backgroundColor: percentVsLastMonth <= 0 ? "#f0fdf4" : "#fff1f2",
+                paddingHorizontal: 10,
+                paddingVertical: 4,
+                borderRadius: 999,
+                flexShrink: 0,
               }}
             >
-              {t("home.vsLastMonth", { percent: Math.abs(percentVsLastMonth) })}
-            </Text>
+              <Feather
+                name={percentVsLastMonth <= 0 ? "arrow-down" : "arrow-up"}
+                size={11}
+                color={percentVsLastMonth <= 0 ? "#16A34A" : "#EF4444"}
+              />
+              <Text
+                style={{
+                  fontSize: 11,
+                  color: percentVsLastMonth <= 0 ? "#15803d" : "#dc2626",
+                  fontWeight: "700",
+                }}
+              >
+                {t("home.vsLastMonth", { percent: Math.abs(percentVsLastMonth) })}
+              </Text>
+            </View>
           </View>
         </View>
       </View>
@@ -403,11 +406,11 @@ export default function Home() {
 
   const AlertsCard = (
     <Animated.View entering={FadeInDown.delay(100).springify()} style={cardBase}>
-      <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 14 }}>
-        <Text style={{ fontSize: 14, fontWeight: "700", color: alertsList.length > 0 ? "#dc2626" : "#0f172a", flex: 1 }}>
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 14, gap: 8 }}>
+        <Text style={{ fontSize: 14, fontWeight: "700", color: alertsList.length > 0 ? "#dc2626" : "#0f172a", flex: 1, flexShrink: 1, lineHeight: 20 }}>
           {t("home.activeAlerts", { count: alertsList.length })}
         </Text>
-        <Ionicons name="warning" size={18} color={alertsList.length > 0 ? "#EF4444" : "#10B981"} />
+        <Ionicons name="warning" size={18} color={alertsList.length > 0 ? "#EF4444" : "#10B981"} style={{ flexShrink: 0 }} />
       </View>
 
       <View style={{ gap: 10, flex: 1 }}>
@@ -425,7 +428,7 @@ export default function Home() {
             }}
           >
             <Ionicons name="checkmark-circle-outline" size={24} color="#16A34A" />
-            <Text style={{ fontSize: 13, fontWeight: "700", color: "#15803d", marginTop: 4 }}>
+            <Text style={{ fontSize: 13, fontWeight: "700", color: "#15803d", marginTop: 4, textAlign: "center" }}>
               {t("home.allSystemsNormal")}
             </Text>
             <Text style={{ fontSize: 11, color: "#16a34a", textAlign: "center", marginTop: 2 }}>
@@ -433,7 +436,7 @@ export default function Home() {
             </Text>
           </View>
         ) : (
-          <ScrollView nestedScrollEnabled style={{ maxHeight: 180 }} showsVerticalScrollIndicator={false}>
+          <ScrollView nestedScrollEnabled style={{ flex: 1, maxHeight: 200 }} showsVerticalScrollIndicator={false}>
             <View style={{ gap: 8 }}>
               {alertsList.map((alert) => {
                 const isRed = alert.severity === "red";
@@ -450,14 +453,14 @@ export default function Home() {
                   >
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 4 }}>
                       <Ionicons name={alert.icon} size={13} color={isRed ? "#EF4444" : "#D97706"} />
-                      <Text style={{ fontSize: 12, fontWeight: "700", color: isRed ? "#dc2626" : "#b45309" }}>
+                      <Text style={{ fontSize: 12, fontWeight: "700", color: isRed ? "#dc2626" : "#b45309", flexShrink: 1 }}>
                         {alert.label}
                       </Text>
                     </View>
                     <Text style={{ fontSize: 13, fontWeight: "700", color: "#1e293b", marginBottom: 2 }}>
                       {alert.location}
                     </Text>
-                    <Text style={{ fontSize: 11, color: "#64748b" }}>{alert.detail}</Text>
+                    <Text style={{ fontSize: 11, color: "#64748b", lineHeight: 15 }}>{alert.detail}</Text>
                   </View>
                 );
               })}
@@ -470,9 +473,9 @@ export default function Home() {
 
   const QuickActionsCard = (
     <Animated.View entering={FadeInDown.delay(150).springify()} style={cardBase}>
-      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-        <Text style={{ fontSize: 14, fontWeight: "700", color: "#0f172a" }}>{t("home.quickActions")}</Text>
-        <Feather name="zap" size={16} color="#6B7280" />
+      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 14, gap: 8 }}>
+        <Text style={{ fontSize: 14, fontWeight: "700", color: "#0f172a", flex: 1, flexShrink: 1, lineHeight: 20 }}>{t("home.quickActions")}</Text>
+        <Feather name="zap" size={16} color="#6B7280" style={{ flexShrink: 0 }} />
       </View>
 
       <View style={{ gap: 10, flex: 1, justifyContent: "center" }}>
@@ -481,7 +484,9 @@ export default function Home() {
           style={{
             backgroundColor: "#2563EB",
             borderRadius: 12,
-            paddingVertical: 13,
+            paddingVertical: 12,
+            paddingHorizontal: 14,
+            minHeight: 48,
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "center",
@@ -489,8 +494,8 @@ export default function Home() {
           }}
           activeOpacity={0.85}
         >
-          <MaterialCommunityIcons name="line-scan" size={16} color="white" />
-          <Text style={{ color: "white", fontSize: 13, fontWeight: "700" }}>
+          <MaterialCommunityIcons name="line-scan" size={16} color="white" style={{ flexShrink: 0 }} />
+          <Text style={{ color: "white", fontSize: 13, fontWeight: "700", textAlign: "center", flexShrink: 1, lineHeight: 18 }}>
             {t("home.scanReceiptOrAddBuilding")}
           </Text>
         </TouchableOpacity>
@@ -501,7 +506,9 @@ export default function Home() {
             borderWidth: 1.5,
             borderColor: "#e2e8f0",
             borderRadius: 12,
-            paddingVertical: 13,
+            paddingVertical: 12,
+            paddingHorizontal: 14,
+            minHeight: 48,
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "center",
@@ -509,8 +516,8 @@ export default function Home() {
           }}
           activeOpacity={0.8}
         >
-          <Feather name="edit-2" size={14} color="#374151" />
-          <Text style={{ color: "#374151", fontSize: 13, fontWeight: "600" }}>
+          <Feather name="edit-2" size={14} color="#374151" style={{ flexShrink: 0 }} />
+          <Text style={{ color: "#374151", fontSize: 13, fontWeight: "600", textAlign: "center", flexShrink: 1, lineHeight: 18 }}>
             {t("home.logManualWaterReading")}
           </Text>
         </TouchableOpacity>
@@ -520,11 +527,11 @@ export default function Home() {
 
   const FacilityCard = (
     <Animated.View entering={FadeInDown.delay(200).springify()} style={cardBase}>
-      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-        <Text style={{ fontSize: 14, fontWeight: "700", color: "#0f172a" }}>
+      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 14, gap: 8 }}>
+        <Text style={{ fontSize: 14, fontWeight: "700", color: "#0f172a", flex: 1, flexShrink: 1, lineHeight: 20 }}>
           {t("home.facilityStatusOverview")}
         </Text>
-        <TouchableOpacity onPress={() => router.push("/myBuildings" as any)}>
+        <TouchableOpacity onPress={() => router.push("/myBuildings" as any)} style={{ flexShrink: 0 }}>
           <Text style={{ fontSize: 11, fontWeight: "700", color: "#2563EB" }}>{t("home.manage", { count: buildings.length })}</Text>
         </TouchableOpacity>
       </View>
@@ -532,7 +539,7 @@ export default function Home() {
       {facilityItems.length === 0 ? (
         <View style={{ padding: 16, alignItems: "center", justifyContent: "center", flex: 1, backgroundColor: "#f8fafc", borderRadius: 12, borderWidth: 1, borderColor: "#e2e8f0" }}>
           <Feather name="home" size={24} color="#9CA3AF" />
-          <Text style={{ fontSize: 13, fontWeight: "600", color: "#64748b", marginTop: 4 }}>{t("home.noFacilitiesRegistered")}</Text>
+          <Text style={{ fontSize: 13, fontWeight: "600", color: "#64748b", marginTop: 4, textAlign: "center" }}>{t("home.noFacilitiesRegistered")}</Text>
           <TouchableOpacity
             onPress={() => router.push("/myBuildings" as any)}
             style={{ marginTop: 8, backgroundColor: "#2563EB", paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 }}
@@ -547,17 +554,19 @@ export default function Home() {
             return (
               <View
                 key={facility.name}
-                style={{ flex: 1, minWidth: 110, borderWidth: 1, borderColor: "#e2e8f0", borderRadius: 12, padding: 12 }}
+                style={{ flex: 1, minWidth: 120, borderWidth: 1, borderColor: "#e2e8f0", borderRadius: 12, padding: 12, justifyContent: "space-between" }}
               >
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 5, marginBottom: 2 }}>
-                  <Ionicons name={facility.icon} size={13} color="#374151" />
-                  <Text style={{ fontSize: 13, fontWeight: "700", color: "#1e293b", flexShrink: 1 }} numberOfLines={1}>
-                    {facility.name}
+                <View>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 5, marginBottom: 2 }}>
+                    <Ionicons name={facility.icon} size={13} color="#374151" style={{ flexShrink: 0 }} />
+                    <Text style={{ fontSize: 13, fontWeight: "700", color: "#1e293b", flexShrink: 1 }} numberOfLines={1}>
+                      {facility.name}
+                    </Text>
+                  </View>
+                  <Text style={{ fontSize: 11, color: "#94a3b8", marginBottom: 10 }} numberOfLines={1}>
+                    {facility.type}
                   </Text>
                 </View>
-                <Text style={{ fontSize: 11, color: "#94a3b8", marginBottom: 10 }} numberOfLines={1}>
-                  {facility.type}
-                </Text>
                 <View
                   style={{
                     flexDirection: "row",
@@ -575,7 +584,7 @@ export default function Home() {
                   ) : (
                     <Ionicons name="warning-outline" size={11} color="#EF4444" />
                   )}
-                  <Text style={{ fontSize: 10, fontWeight: "700", color: isNormal ? "#15803d" : "#dc2626" }}>
+                  <Text style={{ fontSize: 10, fontWeight: "700", color: isNormal ? "#15803d" : "#dc2626", flexShrink: 1 }}>
                     {isNormal ? t("home.normalUsage") : t("home.highUsage")}
                   </Text>
                 </View>
@@ -589,7 +598,7 @@ export default function Home() {
 
   const DistributionCard = (
     <Animated.View entering={FadeInDown.delay(250).springify()} style={cardBase}>
-      <Text style={{ fontSize: 14, fontWeight: "700", color: "#0f172a", marginBottom: 16 }}>
+      <Text style={{ fontSize: 14, fontWeight: "700", color: "#0f172a", marginBottom: 16, lineHeight: 20 }}>
         {t("home.consumptionDistribution")}
       </Text>
       {distributionItems.length === 0 ? (
@@ -597,17 +606,21 @@ export default function Home() {
           <Text style={{ fontSize: 12, color: "#94a3b8" }}>{t("home.noBuildingsToDisplay")}</Text>
         </View>
       ) : (
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 16, flex: 1 }}>
-          <DonutChart data={distributionItems} />
-          <ScrollView nestedScrollEnabled style={{ flex: 1, maxHeight: 110 }} showsVerticalScrollIndicator={false}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 12, flex: 1, flexWrap: "nowrap" }}>
+          <View style={{ flexShrink: 0 }}>
+            <DonutChart data={distributionItems} />
+          </View>
+          <ScrollView nestedScrollEnabled style={{ flex: 1, maxHeight: 120 }} showsVerticalScrollIndicator={false}>
             <View style={{ gap: 8 }}>
               {distributionItems.map((item) => (
-                <View key={item.label} style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6, flex: 1, marginRight: 8 }}>
-                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: item.color }} />
-                    <Text style={{ fontSize: 12, color: "#475569" }} numberOfLines={1}>{item.label}</Text>
+                <View key={item.label} style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6, flex: 1, flexShrink: 1 }}>
+                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: item.color, flexShrink: 0 }} />
+                    <Text style={{ fontSize: 12, color: "#475569", flexShrink: 1 }} numberOfLines={1} ellipsizeMode="tail">
+                      {item.label}
+                    </Text>
                   </View>
-                  <Text style={{ fontSize: 12, fontWeight: "700", color: "#1e293b" }}>
+                  <Text style={{ fontSize: 12, fontWeight: "700", color: "#1e293b", flexShrink: 0 }}>
                     {item.percentage}%
                   </Text>
                 </View>
@@ -628,12 +641,12 @@ export default function Home() {
         if (measured > 0) setTrendCardWidth(measured);
       }}
     >
-      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-        <Text style={{ fontSize: 14, fontWeight: "700", color: "#0f172a" }}>{t("home.usageTrend7Days")}</Text>
+      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12, gap: 8 }}>
+        <Text style={{ fontSize: 14, fontWeight: "700", color: "#0f172a", flex: 1, flexShrink: 1, lineHeight: 20 }}>{t("home.usageTrend7Days")}</Text>
         <TouchableOpacity
           onPress={() => router.push("/consumptions" as any)}
           activeOpacity={0.7}
-          style={{ flexDirection: "row", alignItems: "center", gap: 3 }}
+          style={{ flexDirection: "row", alignItems: "center", gap: 3, flexShrink: 0 }}
         >
           <Text style={{ fontSize: 12, fontWeight: "600", color: "#2563EB" }}>{t("home.viewDetailedAnalytics")}</Text>
           <Feather name="arrow-right" size={12} color="#2563EB" />
@@ -643,7 +656,7 @@ export default function Home() {
       <View style={{ marginLeft: -8, overflow: "hidden" }}>
         <LineChart
           data={trendData}
-          width={trendCardWidth + 8}
+          width={Math.max(180, trendCardWidth + 8)}
           height={130}
           yAxisSuffix=""
           yAxisInterval={1}
@@ -697,18 +710,18 @@ export default function Home() {
             </View>
           ) : isLarge ? (
             <>
-              {/* Row 1: Global (flex 2) | Alerts (flex 1.5) | Quick Actions (flex 1) */}
+              {/* Row 1: Global (flex 1) | Alerts (flex 1) | Quick Actions (flex 1) */}
               <Row>
-                <View style={{ flex: 2 }}>{GlobalConsumptionCard}</View>
-                <View style={{ flex: 1.5 }}>{AlertsCard}</View>
+                <View style={{ flex: 1 }}>{GlobalConsumptionCard}</View>
+                <View style={{ flex: 1 }}>{AlertsCard}</View>
                 <View style={{ flex: 1 }}>{QuickActionsCard}</View>
               </Row>
 
-              {/* Row 2: Facility (flex 2) | Distribution (flex 1) | Trend (flex 2) */}
+              {/* Row 2: Facility (flex 1.2) | Distribution (flex 1) | Trend (flex 1.4) */}
               <Row>
-                <View style={{ flex: 2 }}>{FacilityCard}</View>
+                <View style={{ flex: 1.2 }}>{FacilityCard}</View>
                 <View style={{ flex: 1 }}>{DistributionCard}</View>
-                <View style={{ flex: 2 }}>{TrendCard}</View>
+                <View style={{ flex: 1.4 }}>{TrendCard}</View>
               </Row>
             </>
           ) : isMedium ? (
@@ -721,17 +734,17 @@ export default function Home() {
               {FacilityCard}
               <Row>
                 <View style={{ flex: 1 }}>{DistributionCard}</View>
-                <View style={{ flex: 2 }}>{TrendCard}</View>
+                <View style={{ flex: 1 }}>{TrendCard}</View>
               </Row>
             </>
           ) : (
             <>
-              {GlobalConsumptionCard}
-              {AlertsCard}
-              {QuickActionsCard}
-              {FacilityCard}
-              {DistributionCard}
-              {TrendCard}
+              <View>{GlobalConsumptionCard}</View>
+              <View>{AlertsCard}</View>
+              <View>{QuickActionsCard}</View>
+              <View>{FacilityCard}</View>
+              <View>{DistributionCard}</View>
+              <View>{TrendCard}</View>
             </>
           )}
         </View>
@@ -739,3 +752,4 @@ export default function Home() {
     </SafeAreaView>
   );
 }
+
