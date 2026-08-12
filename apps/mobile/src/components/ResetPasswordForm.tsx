@@ -10,8 +10,10 @@ import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import { Image } from "expo-image";
 import { supabase } from "../lib/supabase";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 
 export default function ResetPasswordForm() {
+  const { t } = useTranslation();
   const [password, setPassword]               = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading]                 = useState(false);
@@ -19,21 +21,21 @@ export default function ResetPasswordForm() {
 
   async function handleUpdatePassword() {
     if (!password || !confirmPassword) {
-      Alert.alert("Error", "Please fill in all fields");
+      Alert.alert(t('resetPassword.error_title'), t('resetPassword.error_fill_fields'));
       return;
     }
     if (password !== confirmPassword) {
-      Alert.alert("Error", "Passwords do not match");
+      Alert.alert(t('resetPassword.error_title'), t('resetPassword.error_password_mismatch'));
       return;
     }
     setLoading(true);
     const { error } = await supabase.auth.updateUser({ password });
     
     if (error) {
-      Alert.alert("Error", error.message);
+      Alert.alert(t('resetPassword.error_title'), error.message);
     } else {
       await supabase.auth.signOut();
-      Alert.alert("Success", "Your password has been updated successfully! Please log in.");
+      Alert.alert(t('resetPassword.success_title'), t('resetPassword.success_message'));
       router.replace("/login" as any);
     }
     setLoading(false);
@@ -80,12 +82,12 @@ export default function ResetPasswordForm() {
           {/*TITULO*/}
           <Animated.View entering={FadeInDown.delay(80).duration(350)}>
             <Text className="text-4xl font-black text-[#0d1b2e] text-center mb-2">
-              New Password
+              {t('resetPassword.title')}
             </Text>
           </Animated.View>
           <Animated.View entering={FadeInDown.delay(140).duration(350)}>
             <Text className="text-xl text-gray-500 text-center mb-8 leading-7">
-              Enter your new password below.
+              {t('resetPassword.description')}
             </Text>
           </Animated.View>
 
@@ -96,7 +98,7 @@ export default function ResetPasswordForm() {
               <TextInput
                 onChangeText={setPassword}
                 value={password}
-                placeholder="New Password"
+                placeholder={t('resetPassword.new_password_placeholder')}
                 secureTextEntry
                 placeholderTextColor="#9ca3af"
                 className="flex-1 text-2xl text-gray-800"
@@ -111,7 +113,7 @@ export default function ResetPasswordForm() {
               <TextInput
                 onChangeText={setConfirmPassword}
                 value={confirmPassword}
-                placeholder="Confirm Password"
+                placeholder={t('resetPassword.confirm_password_placeholder')}
                 secureTextEntry
                 placeholderTextColor="#9ca3af"
                 className="flex-1 text-2xl text-gray-800"
@@ -128,7 +130,7 @@ export default function ResetPasswordForm() {
               style={{ backgroundColor: "#0d1b2e" }}
             >
               <Text className="text-white text-2xl font-bold">
-                {loading ? "Updating..." : "Update Password"}
+                {loading ? t('resetPassword.updating') : t('resetPassword.update_button')}
               </Text>
             </TouchableOpacity>
           </Animated.View>

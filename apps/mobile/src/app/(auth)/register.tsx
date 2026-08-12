@@ -1,8 +1,10 @@
 import { View } from "react-native";
 import { Image } from "expo-image";
 import SignUpForm from "../../components/SignUpForm";
+import { useTranslation } from "react-i18next";
 
 export default function Register() {
+  const { t } = useTranslation();
   return (
     <View className="flex-1 items-center justify-center bg-white">
       {/* IMAGEN DE FONDO

@@ -4,6 +4,7 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useFocusEffect } from "expo-router";
+import { useTranslation } from "react-i18next";
 import AppNavbar from "../../components/AppNavbar";
 import ConsumptionCards from "../../components/ConsumptionCards";
 import ConsumptionGraph from "../../components/ConsumptionGraph";
@@ -12,6 +13,7 @@ import { getBuildings, BuildingRecord } from "@/src/lib/edificios";
 import { fetchConsumptions, consumptionsToRecords } from "@/src/lib/consumptions";
 
 export default function ConsumptionsScreen() {
+  const { t } = useTranslation();
   const [buildings, setBuildings] = useState<BuildingRecord[]>([]);
   const [selectedBuilding, setSelectedBuilding] = useState<BuildingRecord | null>(null);
   const [loadingBuildings, setLoadingBuildings] = useState(true);
@@ -87,7 +89,7 @@ export default function ConsumptionsScreen() {
             {loadingBuildings ? (
               <View className="bg-white p-8 rounded-3xl border border-gray-100 mt-4 items-center justify-center">
                 <ActivityIndicator size="large" color="#3B82F6" />
-                <Text className="text-gray-400 text-sm mt-3">Loading buildings...</Text>
+                <Text className="text-gray-400 text-sm mt-3">{t("consumptions.loadingBuildings")}</Text>
               </View>
             ) : (
               <ConsumptionGraph

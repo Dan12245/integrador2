@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, Text, ScrollView } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTranslation } from "react-i18next";
 
 export interface HistoricalRecordsProps {
   buildingId?: number | null;
@@ -16,6 +17,7 @@ export default function HistoricalRecords({
   records = {},
   abnormalThreshold: propThreshold,
 }: HistoricalRecordsProps) {
+  const { t, i18n } = useTranslation();
   const [localThreshold, setLocalThreshold] = useState<number>(30);
 
   // Load custom threshold from AsyncStorage if not provided as prop
@@ -68,11 +70,11 @@ export default function HistoricalRecords({
       <View className="flex-row items-center justify-between mb-4">
         <View className="flex-row items-center">
           <View className="w-1.5 h-6 bg-blue-600 rounded-full mr-3" />
-          <Text className="text-xl font-extrabold text-gray-900">Historical records</Text>
+          <Text className="text-xl font-extrabold text-gray-900">{t("records.title")}</Text>
         </View>
         {entries.length > 0 && (
           <View className="bg-gray-100 px-3 py-1 rounded-full border border-gray-200">
-            <Text className="text-xs font-bold text-gray-600">{entries.length} records</Text>
+            <Text className="text-xs font-bold text-gray-600">{t("records.recordsCount", { count: entries.length })}</Text>
           </View>
         )}
       </View>
@@ -83,20 +85,20 @@ export default function HistoricalRecords({
           <View className="items-center justify-center py-8">
             <Feather name="home" size={32} color="#9CA3AF" className="mb-2" />
             <Text className="text-gray-600 text-sm font-semibold text-center">
-              Select a building to view history
+              {t("records.selectBuildingToView")}
             </Text>
             <Text className="text-gray-400 text-xs text-center mt-1">
-              Choose a building from the dropdown above.
+              {t("records.chooseBuildingFromDropdown")}
             </Text>
           </View>
         ) : entries.length === 0 ? (
           <View className="items-center justify-center py-8">
             <Feather name="inbox" size={32} color="#9CA3AF" className="mb-2" />
             <Text className="text-gray-600 text-sm font-semibold text-center">
-              No consumption records registered yet
+              {t("records.noRecordsRegistered")}
             </Text>
             <Text className="text-gray-400 text-xs text-center mt-1">
-              Add consumption data above for {buildingName} to view history.
+              {t("records.addConsumptionForBuilding", { buildingName })}
             </Text>
           </View>
         ) : (
@@ -107,7 +109,7 @@ export default function HistoricalRecords({
             contentContainerStyle={{ gap: 12, paddingRight: 4 }}
           >
             {entries.map((item) => {
-              const formattedDate = item.dateObj.toLocaleDateString(undefined, {
+              const formattedDate = item.dateObj.toLocaleDateString(i18n.language || undefined, {
                 month: "short",
                 day: "numeric",
                 year: "numeric",
@@ -135,13 +137,13 @@ export default function HistoricalRecords({
                     <View className="flex-row items-center bg-red-50 border border-red-200 px-3.5 py-1.5 rounded-full gap-1">
                       <Feather name="alert-triangle" size={12} color="#B91C1C" />
                       <Text className="text-red-700 text-xs font-bold">
-                        High usage (&gt;{activeThreshold}m³)
+                        {t("records.highUsage", { threshold: activeThreshold })}
                       </Text>
                     </View>
                   ) : (
                     <View className="flex-row items-center bg-green-50 border border-green-200 px-3.5 py-1.5 rounded-full gap-1">
                       <Feather name="check" size={12} color="#15803D" />
-                      <Text className="text-green-700 text-xs font-bold">Normal usage</Text>
+                      <Text className="text-green-700 text-xs font-bold">{t("records.normalUsage")}</Text>
                     </View>
                   )}
                 </View>

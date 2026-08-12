@@ -13,6 +13,7 @@ import {
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { getApiUrl } from "@/src/lib/api";
+import { useTranslation } from "react-i18next";
 
 export interface Message {
     id: string;
@@ -21,13 +22,14 @@ export interface Message {
 }
 
 export default function AIChatBubble() {
+    const { t } = useTranslation();
     const [isOpen, setIsOpen] = useState(false);
     const [input, setInput] = useState("");
     const [messages, setMessages] = useState<Message[]>([
         {
             id: "initial-welcome",
             role: "model",
-            content: "Hello! I'm your AI Assistant. How can I help you with the app today?",
+            content: "",
         },
     ]);
     const [isStreaming, setIsStreaming] = useState(false);
@@ -38,7 +40,7 @@ export default function AIChatBubble() {
             {
                 id: `welcome-${Date.now()}`,
                 role: "model",
-                content: "Chat reset. What would you like to ask?",
+                content: "",
             },
         ]);
     };
@@ -126,8 +128,8 @@ export default function AIChatBubble() {
                     msg.id === botMessageId
                         ? {
                               ...msg,
-                              content:
-                                  "Sorry, I couldn't process your request right now. Please try again.",
+                              id: `error-${msg.id}`,
+                              content: "",
                           }
                         : msg,
                 ),
@@ -180,7 +182,7 @@ export default function AIChatBubble() {
                                     </View>
                                     <View>
                                         <Text className="text-white font-bold text-base">
-                                            AI Assistant
+                                            {t('chatbot.title')}
                                         </Text>
                                     </View>
                                 </View>
@@ -234,10 +236,16 @@ export default function AIChatBubble() {
                                                             : "text-gray-800 font-normal"
                                                     }`}
                                                 >
-                                                    {msg.content ||
-                                                        (isStreaming && !isUser
-                                                            ? "Thinking..."
-                                                            : "")}
+                                                    {msg.id === "initial-welcome"
+                                                        ? t('chatbot.initial')
+                                                        : msg.id.startsWith("welcome-")
+                                                            ? t('chatbot.reset')
+                                                            : msg.id.startsWith("error-")
+                                                                ? t('chatbot.error')
+                                                                : msg.content ||
+                                                                  (isStreaming && !isUser
+                                                                      ? t('chatbot.thinking')
+                                                                      : "")}
                                                 </Text>
                                             </View>
                                         </View>
@@ -248,7 +256,7 @@ export default function AIChatBubble() {
                                     <View className="flex-row items-center space-x-2 my-2 bg-gray-100 p-2.5 rounded-xl self-start">
                                         <ActivityIndicator size="small" color="#0284c7" />
                                         <Text className="text-xs text-gray-500 font-medium ml-1">
-                                            AI is responding...
+                                            {t('chatbot.responding')}
                                         </Text>
                                     </View>
                                 )}
@@ -260,7 +268,7 @@ export default function AIChatBubble() {
                                     testID="ai-chat-input"
                                     value={input}
                                     onChangeText={setInput}
-                                    placeholder="Ask something about the app..."
+                                    placeholder={t('chatbot.placeholder')}
                                     placeholderTextColor="#9CA3AF"
                                     onSubmitEditing={handleSendMessage}
                                     returnKeyType="send"

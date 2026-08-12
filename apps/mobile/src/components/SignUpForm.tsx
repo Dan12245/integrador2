@@ -18,8 +18,10 @@ import { usePostHog } from "../lib/posthog";
 import { performGoogleSignIn } from "../lib/auth";
 import GoogleIcon from "./GoogleIcon";
 import * as Linking from "expo-linking";
+import { useTranslation } from "react-i18next";
 
 export default function SignUpForm() {
+  const { t } = useTranslation();
   const [email, setEmail]                     = useState("");
   const [username, setUsername]               = useState("");
   const [password, setPassword]               = useState("");
@@ -33,11 +35,11 @@ export default function SignUpForm() {
 
   async function signUpWithEmail() {
     if (!email || !password || !username) {
-      Alert.alert("Error", "Please fill in all fields");
+      Alert.alert(t('signup.error_title'), t('signup.error_fill_fields'));
       return;
     }
     if (password !== confirmPassword) {
-      Alert.alert("Error", "Passwords do not match");
+      Alert.alert(t('signup.error_title'), t('signup.error_password_mismatch'));
       return;
     }
     setLoading(true);
@@ -49,7 +51,7 @@ export default function SignUpForm() {
       }
     });
     if (error) {
-      Alert.alert("Error", error.message);
+      Alert.alert(t('signup.error_title'), error.message);
       posthog.capture("registration_failed", { error_message: error.message });
     } else {
       posthog.identify(email, {
@@ -57,7 +59,7 @@ export default function SignUpForm() {
         $set_once: { registration_date: new Date().toISOString() },
       });
       posthog.capture("user_registered");
-      Alert.alert("Success", "Check your inbox for email verification!");
+      Alert.alert(t('signup.success_title'), t('signup.success_message'));
       router.push("/login" as any);
     }
     setLoading(false);
@@ -80,7 +82,7 @@ export default function SignUpForm() {
       }
     } catch (error: any) {
       if (error?.message && !error.message.includes("cancel")) {
-        Alert.alert("Google Sign-Up Error", error.message);
+        Alert.alert(t('signup.google_error_title'), error.message);
       }
       posthog.capture("google_sign_up_failed", { error_message: error?.message });
     } finally {
@@ -135,7 +137,7 @@ export default function SignUpForm() {
               testID="signup_email_field"
               onChangeText={setEmail}
               value={email}
-              placeholder="Email"
+              placeholder={t('signup.email_placeholder')}
               autoCapitalize="none"
               keyboardType="email-address"
               placeholderTextColor="#9ca3af"
@@ -154,7 +156,7 @@ export default function SignUpForm() {
               testID="signup_username_field"
               onChangeText={setUsername}
               value={username}
-              placeholder="Username"
+              placeholder={t('signup.username_placeholder')}
               autoCapitalize="none"
               placeholderTextColor="#9ca3af"
               className="flex-1 text-lg text-gray-800"
@@ -171,7 +173,7 @@ export default function SignUpForm() {
               onChangeText={setPassword}
               value={password}
               secureTextEntry={!showPassword}
-              placeholder="Password"
+              placeholder={t('signup.password_placeholder')}
               autoCapitalize="none"
               placeholderTextColor="#9ca3af"
               className="flex-1 text-lg text-gray-800"
@@ -192,7 +194,7 @@ export default function SignUpForm() {
               onChangeText={setConfirmPassword}
               value={confirmPassword}
               secureTextEntry={!showConfirm}
-              placeholder="Confirm password"
+              placeholder={t('signup.confirm_password_placeholder')}
               autoCapitalize="none"
               placeholderTextColor="#9ca3af"
               className="flex-1 text-lg text-gray-800"
@@ -213,7 +215,7 @@ export default function SignUpForm() {
             style={{ backgroundColor: "#0d1b2e" }}
           >
             <Text className="text-white text-lg font-bold">
-              {loading ? "Creating account..." : "Register"}
+              {loading ? t('signup.creating_account') : t('signup.register_button')}
             </Text>
           </TouchableOpacity>
         </Animated.View>
@@ -229,7 +231,7 @@ export default function SignUpForm() {
           >
             <GoogleIcon size={26} />
             <Text className="text-[#0d1b2e] text-lg font-bold ml-2">
-              {googleLoading ? "Connecting..." : "Continue with Google"}
+              {googleLoading ? t('signup.connecting') : t('signup.continue_with_google')}
             </Text>
           </TouchableOpacity>
         </Animated.View>
@@ -248,7 +250,7 @@ export default function SignUpForm() {
               className="text-base text-[#0d1b2e]"
               style={{ textDecorationLine: "underline" }}
             >
-              I have an account already
+              {t('signup.already_have_account')}
             </Text>
           </TouchableOpacity>
         </Animated.View>

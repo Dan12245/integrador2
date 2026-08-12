@@ -5,8 +5,10 @@ import { supabase } from "../lib/supabase";
 import { Session } from "@supabase/supabase-js";
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
 import { usePostHog } from "../lib/posthog";
+import { useTranslation } from "react-i18next";
 
 export default function LandingScreen() {
+    const { t } = useTranslation();
     const [session, setSession] = useState<Session | null>(null);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
@@ -58,9 +60,9 @@ export default function LandingScreen() {
         <View className="flex-1 bg-gray-50 p-6 justify-between">
             <View className="mt-[60px] items-center">
                 <Text className="text-[32px] font-extrabold text-gray-900 text-center mb-6">
-                    Hello, tilin
+                    {t('landing.greeting')}
                 </Text>
-                <Text className="text-red-500 text-center"> Puro CRA </Text>
+                <Text className="text-red-500 text-center"> {t('landing.subtitle')} </Text>
             </View>
 
             {/* Reanimated test button */}
@@ -71,7 +73,7 @@ export default function LandingScreen() {
                         className="bg-indigo-600 px-6 py-4 rounded-xl items-center shadow-lg shadow-indigo-600/30"
                         onPress={handleAnimate}
                     >
-                        <Text className="text-white text-base font-semibold">Test Reanimated</Text>
+                        <Text className="text-white text-base font-semibold">{t('landing.test_reanimated')}</Text>
                     </TouchableOpacity>
                 </Animated.View>
             </View>
@@ -85,7 +87,7 @@ export default function LandingScreen() {
                         router.push("/login" as any);
                     }}
                 >
-                    <Text className="text-white text-base font-semibold">Get Started</Text>
+                    <Text className="text-white text-base font-semibold">{t('landing.get_started')}</Text>
                 </TouchableOpacity>
             </View>
         </View>

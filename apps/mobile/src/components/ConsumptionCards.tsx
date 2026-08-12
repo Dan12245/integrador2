@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { View, Text, Pressable, useWindowDimensions, Modal, TextInput, ScrollView } from "react-native";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTranslation } from "react-i18next";
 import ReportConfigModal from "./ReportConfigModal";
 import { BuildingRecord } from "@/src/lib/edificios";
 
@@ -26,6 +27,7 @@ export default function ConsumptionCards({
   setAbnormalThreshold: externalSetThreshold,
   buildings = [],
 }: ConsumptionCardsProps) {
+  const { t } = useTranslation();
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 1024;
 
@@ -144,7 +146,7 @@ export default function ConsumptionCards({
   const CardTotalPeriod = (
     <View className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex-1 min-w-0 justify-center">
       <View className="flex-row justify-between items-start mb-3">
-        <Text className="text-gray-400 text-[10px] font-bold uppercase tracking-wider">This Month Total</Text>
+        <Text className="text-gray-400 text-[10px] font-bold uppercase tracking-wider">{t("cards.thisMonthTotal")}</Text>
         <Ionicons name="water" size={18} color="#3B82F6" />
       </View>
       <View className="flex-row items-baseline mt-auto">
@@ -159,7 +161,7 @@ export default function ConsumptionCards({
   const CardDailyAverage = (
     <View className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex-1 min-w-0 justify-center">
       <View className="flex-row justify-between items-start mb-3">
-        <Text className="text-gray-400 text-[10px] font-bold uppercase tracking-wider">Daily Average</Text>
+        <Text className="text-gray-400 text-[10px] font-bold uppercase tracking-wider">{t("cards.dailyAverage")}</Text>
         <Feather name="trending-up" size={18} color="#1F2937" />
       </View>
       <View className="flex-row items-baseline mt-auto">
@@ -175,7 +177,7 @@ export default function ConsumptionCards({
     <View className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex-1 justify-center">
       <View className="flex-row justify-between items-start mb-3">
         <View className="flex-row items-center gap-1">
-          <Text className="text-gray-400 text-[10px] font-bold uppercase tracking-wider">Alerts</Text>
+          <Text className="text-gray-400 text-[10px] font-bold uppercase tracking-wider">{t("cards.alerts")}</Text>
           <Pressable onPress={() => setIsSettingsOpen(true)} className="p-0.5">
             <Feather name="settings" size={12} color="#9CA3AF" />
           </Pressable>
@@ -187,7 +189,7 @@ export default function ConsumptionCards({
           {activeAlertsCount}
         </Text>
         <Text className={`text-[10px] ml-1 font-bold ${activeAlertsCount > 0 ? "text-red-500" : "text-emerald-500"}`}>
-          {activeAlertsCount === 1 ? "alert" : "alerts"} (&gt;{abnormalThreshold}m³)
+          {activeAlertsCount === 1 ? t("cards.alert") : t("cards.alertsPlural")} (&gt;{abnormalThreshold}m³)
         </Text>
       </View>
     </View>
@@ -197,7 +199,7 @@ export default function ConsumptionCards({
     <View className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex-1 min-w-0 justify-center">
       <View className="flex-row justify-between items-start mb-2">
         <View className="flex-row items-center gap-1">
-          <Text className="text-gray-400 text-[10px] font-bold uppercase tracking-wider">Target vs. Actual</Text>
+          <Text className="text-gray-400 text-[10px] font-bold uppercase tracking-wider">{t("cards.targetVsActual")}</Text>
           <Pressable onPress={() => setIsSettingsOpen(true)} className="p-0.5">
             <Feather name="edit-2" size={11} color="#9CA3AF" />
           </Pressable>
@@ -208,7 +210,7 @@ export default function ConsumptionCards({
         <Text className={`text-2xl font-extrabold ${targetPercentage > 100 ? "text-red-600" : "text-gray-900"}`}>
           {targetPercentage}%
         </Text>
-        <Text className="text-gray-400 text-[12px] ml-1 font-semibold">used</Text>
+        <Text className="text-gray-400 text-[12px] ml-1 font-semibold">{t("cards.used")}</Text>
       </View>
       <View className="w-full h-2 bg-gray-100 rounded-full overflow-hidden mb-1">
         <View
@@ -229,7 +231,7 @@ export default function ConsumptionCards({
       <View className="flex-row justify-between items-center mb-4">
         <View className="flex-row items-center gap-1.5">
           <Feather name="file-text" size={18} color="#3B82F6" />
-          <Text className="text-gray-900 text-sm font-bold">Reports</Text>
+          <Text className="text-gray-900 text-sm font-bold">{t("cards.reports")}</Text>
         </View>
         <View className="flex-row bg-gray-100 p-0.5 rounded-lg">
           <Pressable
@@ -237,14 +239,14 @@ export default function ConsumptionCards({
             onPress={() => setReportType("Monthly")}
             className={`px-3 py-1.5 rounded-md ${reportType === "Monthly" ? "bg-white" : ""}`}
           >
-            <Text className={`text-xs font-bold ${reportType === "Monthly" ? "text-gray-900" : "text-gray-400"}`}>Monthly</Text>
+            <Text className={`text-xs font-bold ${reportType === "Monthly" ? "text-gray-900" : "text-gray-400"}`}>{t("cards.monthly")}</Text>
           </Pressable>
           <Pressable
             testID="report-type-yearly-button"
             onPress={() => setReportType("Yearly")}
             className={`px-3 py-1.5 rounded-md ${reportType === "Yearly" ? "bg-white" : ""}`}
           >
-            <Text className={`text-xs font-bold ${reportType === "Yearly" ? "text-gray-900" : "text-gray-400"}`}>Yearly</Text>
+            <Text className={`text-xs font-bold ${reportType === "Yearly" ? "text-gray-900" : "text-gray-400"}`}>{t("cards.yearly")}</Text>
           </Pressable>
         </View>
       </View>
@@ -254,7 +256,7 @@ export default function ConsumptionCards({
         className="bg-slate-900 py-3.5 rounded-xl flex-row justify-center items-center gap-2 active:bg-slate-800 mt-auto"
       >
         <Feather name="download" size={15} color="white" />
-        <Text className="text-white text-xs font-bold">Download (.PDF)</Text>
+        <Text className="text-white text-xs font-bold">{t("cards.downloadPdf")}</Text>
       </Pressable>
     </View>
   );
@@ -301,7 +303,7 @@ export default function ConsumptionCards({
                 <View className="w-8 h-8 rounded-full bg-blue-50 justify-center items-center">
                   <Feather name="sliders" size={18} color="#0284C7" />
                 </View>
-                <Text className="text-lg font-bold text-gray-900">Configure Targets & Alerts</Text>
+                <Text className="text-lg font-bold text-gray-900">{t("cards.configureTargetsAlerts")}</Text>
               </View>
               <Pressable onPress={() => setIsSettingsOpen(false)} className="p-1 rounded-full active:bg-gray-100">
                 <Feather name="x" size={20} color="#6B7280" />
@@ -310,31 +312,31 @@ export default function ConsumptionCards({
 
             <ScrollView showsVerticalScrollIndicator={false}>
               <Text className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                Monthly Water Target (m³)
+                {t("cards.monthlyWaterTarget")}
               </Text>
               <View className="flex-row items-center border border-gray-200 bg-gray-50 rounded-xl px-3.5 py-2.5 mb-5">
                 <Feather name="target" size={16} color="#9CA3AF" />
                 <TextInput
                   value={targetInput}
                   onChangeText={setTargetInput}
-                  placeholder="Enter target e.g. 100"
+                  placeholder={t("cards.enterTargetPlaceholder")}
                   keyboardType="decimal-pad"
                   className="flex-1 ml-2 text-sm text-gray-900 font-semibold"
                 />
               </View>
 
               <Text className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                Abnormal Daily Threshold (m³/day)
+                {t("cards.abnormalDailyThreshold")}
               </Text>
               <Text className="text-[11px] text-gray-400 mb-2">
-                Days with consumption higher than this value trigger an abnormal usage alert.
+                {t("cards.abnormalThresholdHelp")}
               </Text>
               <View className="flex-row items-center border border-gray-200 bg-gray-50 rounded-xl px-3.5 py-2.5 mb-6">
                 <Feather name="alert-triangle" size={16} color="#9CA3AF" />
                 <TextInput
                   value={thresholdInput}
                   onChangeText={setThresholdInput}
-                  placeholder="Enter alert threshold e.g. 30"
+                  placeholder={t("cards.enterThresholdPlaceholder")}
                   keyboardType="decimal-pad"
                   className="flex-1 ml-2 text-sm text-gray-900 font-semibold"
                 />
@@ -346,13 +348,13 @@ export default function ConsumptionCards({
                   onPress={() => setIsSettingsOpen(false)}
                   className="flex-1 bg-gray-100 py-3 rounded-xl items-center active:bg-gray-200"
                 >
-                  <Text className="text-gray-700 text-xs font-bold">Cancel</Text>
+                  <Text className="text-gray-700 text-xs font-bold">{t("cards.cancel")}</Text>
                 </Pressable>
                 <Pressable
                   onPress={handleSaveSettings}
                   className="flex-1 bg-blue-600 py-3 rounded-xl items-center active:bg-blue-700 shadow-sm"
                 >
-                  <Text className="text-white text-xs font-bold">Save Settings</Text>
+                  <Text className="text-white text-xs font-bold">{t("cards.saveSettings")}</Text>
                 </Pressable>
               </View>
             </ScrollView>

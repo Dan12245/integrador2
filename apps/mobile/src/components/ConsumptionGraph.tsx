@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { View, Text, Pressable, useWindowDimensions, Modal, FlatList } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import ConsumptionsChart from "./ConsumptionsChart";
 import AddConsumptionModal from "./AddConsumptionModal";
 import EditRecordsModal from "./EditRecordsModal";
@@ -29,6 +30,7 @@ export default function ConsumptionGraph({
   records: externalRecords,
   setRecords: externalSetRecords,
 }: ConsumptionGraphProps) {
+  const { t } = useTranslation();
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 1024;
   const chartWidth = isLargeScreen ? Math.min(width - 96, 1150) : width - 64;
@@ -130,19 +132,25 @@ export default function ConsumptionGraph({
     setIsEditModalOpen(true);
   };
 
+  const periodOptions = [
+    { key: "Week", label: t("charts.periods.week") },
+    { key: "Month", label: t("charts.periods.month") },
+    { key: "Year", label: t("charts.periods.year") },
+  ];
+
   return (
     <View className="bg-white p-5 md:p-6 rounded-3xl border border-gray-100 mt-4">
       {/* Top Header & Building Selector */}
       <View className="flex-row flex-wrap justify-between items-center">
         <View>
-          <Text className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-3">Selected Building</Text>
+          <Text className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-3">{t("charts.selectedBuilding")}</Text>
           <Pressable
             testID="select-building-button"
             onPress={() => setShowBuildingPicker(true)}
             className="flex-row items-center justify-between border border-gray-200 rounded-xl px-3 py-3 bg-gray-50 min-w-[200px]"
           >
             <Text className="text-gray-900 text-sm font-semibold" numberOfLines={1}>
-              {buildingId !== null ? buildingName : "Select a building..."}
+              {buildingId !== null ? buildingName : t("charts.selectBuildingPlaceholder")}
             </Text>
             <Feather name="chevron-down" size={16} color="#6B7280" />
           </Pressable>
@@ -150,15 +158,15 @@ export default function ConsumptionGraph({
 
         {/* Timeframe group */}
         <View className="flex-row bg-gray-100 p-2 mt-8 rounded-xl">
-          {["Week", "Month", "Year"].map((period) => (
+          {periodOptions.map(({ key, label }) => (
             <Pressable
-              testID={`select-period-${period.toLowerCase()}-button`}
-              key={period}
-              onPress={() => setSelectedPeriod(period)}
-              className={`px-4 py-2.5 rounded-lg ${selectedPeriod === period ? "bg-white" : ""}`}
+              testID={`select-period-${key.toLowerCase()}-button`}
+              key={key}
+              onPress={() => setSelectedPeriod(key)}
+              className={`px-4 py-2.5 rounded-lg ${selectedPeriod === key ? "bg-white" : ""}`}
             >
-              <Text className={`text-xs font-bold ${selectedPeriod === period ? "text-gray-900" : "text-gray-400"}`}>
-                {period}
+              <Text className={`text-xs font-bold ${selectedPeriod === key ? "text-gray-900" : "text-gray-400"}`}>
+                {label}
               </Text>
             </Pressable>
           ))}
@@ -173,7 +181,7 @@ export default function ConsumptionGraph({
           <View className="items-center justify-center py-12">
             <Feather name="bar-chart-2" size={40} color="#D1D5DB" />
             <Text className="text-gray-400 text-sm font-semibold mt-3">
-              Select a building to view consumption data
+              {t("charts.noBuildingSelected")}
             </Text>
           </View>
         )}
@@ -188,7 +196,7 @@ export default function ConsumptionGraph({
           disabled={buildingId === null}
         >
           <Feather name="plus" size={16} color="white" />
-          <Text className="text-white text-xs font-bold">Add consumption</Text>
+          <Text className="text-white text-xs font-bold">{t("charts.addConsumption")}</Text>
         </Pressable>
         <Pressable
           testID="edit-records-button"
@@ -197,7 +205,7 @@ export default function ConsumptionGraph({
           disabled={buildingId === null}
         >
           <Feather name="edit-2" size={14} color={buildingId !== null ? "#0284C7" : "#9CA3AF"} />
-          <Text className={`text-xs font-bold ${buildingId !== null ? "text-sky-800" : "text-gray-400"}`}>Edit records</Text>
+          <Text className={`text-xs font-bold ${buildingId !== null ? "text-sky-800" : "text-gray-400"}`}>{t("charts.editRecords")}</Text>
         </Pressable>
       </View>
 
@@ -214,7 +222,7 @@ export default function ConsumptionGraph({
         >
           <Pressable className="bg-white w-full max-w-sm rounded-2xl p-5 shadow-2xl border border-gray-100">
             <View className="flex-row justify-between items-center mb-4">
-              <Text className="text-lg font-bold text-gray-900">Select Building</Text>
+              <Text className="text-lg font-bold text-gray-900">{t("charts.selectBuildingTitle")}</Text>
               <Pressable onPress={() => setShowBuildingPicker(false)} className="p-1">
                 <Feather name="x" size={20} color="#6B7280" />
               </Pressable>
@@ -223,8 +231,8 @@ export default function ConsumptionGraph({
             {buildings.length === 0 ? (
               <View className="items-center py-8">
                 <Feather name="home" size={32} color="#D1D5DB" />
-                <Text className="text-gray-500 text-sm font-semibold mt-3">No buildings found</Text>
-                <Text className="text-gray-400 text-xs mt-1">Add buildings first in My Buildings</Text>
+                <Text className="text-gray-500 text-sm font-semibold mt-3">{t("charts.noBuildingsFound")}</Text>
+                <Text className="text-gray-400 text-xs mt-1">{t("charts.addBuildingsFirst")}</Text>
               </View>
             ) : (
               <FlatList
@@ -246,7 +254,7 @@ export default function ConsumptionGraph({
                     <View className="flex-1 mr-3">
                       <Text className="text-gray-900 text-sm font-bold">{item.alias}</Text>
                       <Text className="text-gray-500 text-xs mt-0.5" numberOfLines={1}>
-                        {item.address || "No address"}
+                        {item.address || t("charts.noAddress")}
                       </Text>
                     </View>
                     {buildingId === item.id && (
