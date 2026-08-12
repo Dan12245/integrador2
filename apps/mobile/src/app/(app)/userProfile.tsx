@@ -10,8 +10,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import Animated, { FadeInDown, FadeInUp, FadeOutUp } from "react-native-reanimated";
-import { Feather } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
+import { Feather } from "@expo/vector-icons";
 import AppNavbar from "../../components/AppNavbar";
 import Account from "../../components/Account";
 import { supabase } from "../../lib/supabase";
@@ -121,24 +121,27 @@ export default function UserProfile() {
   const cards = [
     {
       id: "Details",
-      title: t("profile.detailsTitle"),
-      shortTitle: t("profile.detailsTitle"),
+      title: "Details",
+      shortTitle: "Details",
       icon: "user" as const,
-      description: t("profile.detailsDescription"),
+      description:
+        "Manage your personal information, update avatar, view account details, and edit profile settings.",
     },
     {
       id: "Connected Networks",
-      title: t("profile.connectedNetworksTitle"),
-      shortTitle: t("profile.connectedNetworksTitle"),
+      title: "Connected Networks",
+      shortTitle: "Networks",
       icon: "wifi" as const,
-      description: t("profile.connectedNetworksDescription"),
+      description:
+        "Overview of connected smart meters, IoT devices, building management systems, and network status.",
     },
     {
       id: "Settings",
-      title: t("profile.settingsTitle"),
-      shortTitle: t("profile.settingsTitle"),
+      title: "Settings",
+      shortTitle: "Settings",
       icon: "settings" as const,
-      description: t("profile.settingsDescription"),
+      description:
+        "Preferences, language configuration, privacy settings, and security protocols for your account.",
     },
   ];
 
@@ -299,10 +302,10 @@ export default function UserProfile() {
               }}
             >
               <Text className="text-xl sm:text-3xl font-black text-[#0d1b2e] text-center mb-1">
-                {t("profile.userProfileTitle")}
+                User Profile
               </Text>
               <Text className="text-xs sm:text-sm text-gray-500 text-center mb-3">
-                {t("profile.detailsDescription")}
+                Manage your personal information, update avatar, and edit account settings.
               </Text>
               <View className="h-[2.5px] bg-[#2089dc] mb-2 mx-auto w-16" />
 
@@ -329,11 +332,11 @@ export default function UserProfile() {
               }}
             >
               <Text className="text-xl sm:text-2xl font-bold text-[#0d1b2e] text-center mb-2">
-                {t("profile.connectedNetworksTitle")}
+                Connected Networks
               </Text>
               <View className="h-[2px] bg-[#2089dc] mb-4 mx-auto w-16" />
               <Text className="text-xs sm:text-sm text-gray-600 text-center leading-5 sm:leading-6 mb-6">
-                {t("profile.connectedNetworksContent")}
+                Overview of connected smart meters, IoT devices, building management systems, and network status.
               </Text>
 
               <View className="bg-[#f0f4f8] rounded-2xl p-4 sm:p-6 border border-gray-200">
@@ -369,17 +372,17 @@ export default function UserProfile() {
               }}
             >
               <Text className="text-xl sm:text-2xl font-bold text-[#0d1b2e] text-center mb-2">
-                {t("profile.settingsTitle")}
+                Settings
               </Text>
               <View className="h-[2px] bg-[#2089dc] mb-4 mx-auto w-16" />
               <Text className="text-xs sm:text-sm text-gray-600 text-center leading-5 sm:leading-6 mb-6">
-                {t("profile.settingsContent")}
+                Preferences, language configuration, privacy settings, and security protocols for your account.
               </Text>
 
               <View className="bg-[#f0f4f8] rounded-2xl p-4 sm:p-6 border border-gray-200 gap-4">
                 <View className="flex-row items-center justify-between">
                   <Text className="text-sm font-semibold text-[#0d1b2e]">Language</Text>
-                  <Text className="text-xs font-bold text-[#2089dc]">English / Español</Text>
+                  <Text className="text-xs font-bold text-[#2089dc]">English (EN)</Text>
                 </View>
                 <View className="h-px bg-gray-200" />
                 <View className="flex-row items-center justify-between">
@@ -394,7 +397,6 @@ export default function UserProfile() {
     </SafeAreaView>
   );
 }
-
 
 
 

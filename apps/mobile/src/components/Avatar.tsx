@@ -6,12 +6,12 @@ import { usePostHog } from "../lib/posthog";
 import { useTranslation } from "react-i18next";
 
 interface Props {
-  size: number;
-  url: string | null;
-  onUpload?: (filePath: string) => void;
-  showUpload?: boolean;
-  shape?: "square" | "circle";
-  fallbackText?: string;
+  size: number
+  url: string | null
+  onUpload?: (filePath: string) => void
+  showUpload?: boolean
+  shape?: "square" | "circle"
+  fallbackText?: string
 }
 
 export default function Avatar({
@@ -22,88 +22,87 @@ export default function Avatar({
   shape = "square",
   fallbackText,
 }: Props) {
-  const { t } = useTranslation();
-  const [uploading, setUploading] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const avatarSize = { height: size, width: size };
-  const posthog = usePostHog();
+  const [uploading, setUploading] = useState(false)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const avatarSize = { height: size, width: size }
+  const posthog = usePostHog()
 
-  useEffect(() => {
-    if (url) downloadImage(url);
-  }, [url]);
+    useEffect(() => {
+        if (url) downloadImage(url);
+    }, [url]);
 
-  async function downloadImage(path: string) {
-    try {
-      const { data, error } = await supabase.storage.from("avatars").download(path);
+    async function downloadImage(path: string) {
+        try {
+            const { data, error } = await supabase.storage.from("avatars").download(path);
 
-      if (error) {
-        throw error;
-      }
+            if (error) {
+                throw error;
+            }
 
-      const fr = new FileReader();
-      fr.readAsDataURL(data);
-      fr.onload = () => {
-        setAvatarUrl(fr.result as string);
-      };
-    } catch (error: any) {
-      console.log("Error downloading image: ", error.message);
+            const fr = new FileReader();
+            fr.readAsDataURL(data);
+            fr.onload = () => {
+                setAvatarUrl(fr.result as string);
+            };
+        } catch (error: any) {
+            console.log("Error downloading image: ", error.message);
+        }
     }
-  }
 
   async function uploadAvatar() {
-    if (!onUpload) return;
+    if (!onUpload) return
     try {
-      setUploading(true);
+      setUploading(true)
 
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsMultipleSelection: false,
-        allowsEditing: true,
-        quality: 1,
-        exif: false,
-      });
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images, // Restrict to only images
+                allowsMultipleSelection: false, // Can only select one image
+                allowsEditing: true, // Allows the user to crop / rotate their photo before uploading it
+                quality: 1,
+                exif: false, // We don't want nor need that data.
+            });
 
-      if (result.canceled || !result.assets || result.assets.length === 0) {
-        console.log("User cancelled image picker.");
-        return;
-      }
+            if (result.canceled || !result.assets || result.assets.length === 0) {
+                console.log("User cancelled image picker.");
+                return;
+            }
 
-      const image = result.assets[0];
-      console.log("Got image", image);
+            const image = result.assets[0];
+            console.log("Got image", image);
 
-      if (!image.uri) {
-        throw new Error("No image uri!");
-      }
+            if (!image.uri) {
+                throw new Error("No image uri!"); // Realistically, this should never happen, but just in case...
+            }
 
-      const arraybuffer = await fetch(image.uri).then((res) => res.arrayBuffer());
+            const arraybuffer = await fetch(image.uri).then((res) => res.arrayBuffer());
 
-      const fileExt = image.uri?.split(".").pop()?.toLowerCase() ?? "jpeg";
-      const path = `${Date.now()}.${fileExt}`;
-      const { data, error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(path, arraybuffer, {
-          contentType: image.mimeType ?? "image/jpeg",
-        });
+            const fileExt = image.uri?.split(".").pop()?.toLowerCase() ?? "jpeg";
+            const path = `${Date.now()}.${fileExt}`;
+            const { data, error: uploadError } = await supabase.storage
+                .from("avatars")
+                .upload(path, arraybuffer, {
+                    contentType: image.mimeType ?? "image/jpeg",
+                });
 
-      if (uploadError) {
-        throw uploadError;
-      }
+            if (uploadError) {
+                throw uploadError;
+            }
 
-      posthog.capture("avatar_uploaded", { file_extension: fileExt });
-      onUpload(data.path);
-    } catch (error: any) {
-      if (error) {
-        Alert.alert(error.message);
-      } else {
-        throw error;
-      }
-    } finally {
-      setUploading(false);
+            posthog.capture("avatar_uploaded", { file_extension: fileExt });
+            onUpload(data.path);
+        } catch (error: any) {
+            if (error) {
+                Alert.alert(error.message);
+            } else {
+                throw error;
+            }
+        } finally {
+            setUploading(false);
+        }
     }
-  }
 
-  const isCircle = shape === "circle";
-  const roundedClass = isCircle ? "rounded-full" : "rounded-[8px]";
+  const isCircle = shape === "circle"
+  const roundedClass = isCircle ? "rounded-full" : "rounded-[8px]"
 
   return (
     <View className="items-center justify-center">
@@ -128,17 +127,14 @@ export default function Avatar({
         <View className="mt-3">
           <TouchableOpacity
             testID="avatar_upload_button"
-            className={`bg-[#2089dc] rounded-xl px-4 py-2.5 items-center ${uploading ? "opacity-50" : ""}`}
+            className={`bg-[#2089dc] rounded-xl px-4 py-2.5 items-center ${uploading ? 'opacity-50' : ''}`}
             onPress={uploadAvatar}
             disabled={uploading}
           >
-            <Text className="text-white text-sm font-semibold">
-              {uploading ? t("account.uploading") : t("account.upload")}
-            </Text>
+            <Text className="text-white text-sm font-semibold">{uploading ? 'Uploading ...' : 'Upload'}</Text>
           </TouchableOpacity>
         </View>
       )}
     </View>
-  );
+  )
 }
-
