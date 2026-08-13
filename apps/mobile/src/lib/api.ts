@@ -13,16 +13,5 @@ export const getApiUrl = (): string => {
         return process.env.EXPO_PUBLIC_API_URL;
     }
 
-    const hostUri = Constants.expoConfig?.hostUri;
-    const hostIp = hostUri ? hostUri.split(":")[0] : null;
-
-    if (hostIp) {
-        return `http://${hostIp}:8787`;
-    }
-
-    if (Platform.OS === "android") {
-        return "http://10.0.2.2:8787";
-    }
-
-    return "http://localhost:8787";
+    return "https://api.alexitrix.workers.dev";
 };

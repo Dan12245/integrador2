@@ -1,4 +1,5 @@
 import { getApiUrl } from "./api";
+import { supabase } from "./supabase";
 
 export type DailyConsumption = {
   id: number;
@@ -17,18 +18,32 @@ export const fetchConsumptions = async (
 ): Promise<DailyConsumption[] | null> => {
   try {
     const res = await fetch(`${getApiUrl()}/consumptions/${buildingId}`);
-    if (!res.ok) {
-      console.log("Error fetching consumptions:", res.status);
-      return null;
+    if (res.ok) {
+      const json = await res.json();
+      if (json.ok && Array.isArray(json.data)) {
+        return json.data as DailyConsumption[];
+      }
     }
-    const json = await res.json();
-    if (!json.ok) {
-      console.log("Backend error:", json.message);
-      return null;
-    }
-    return json.data as DailyConsumption[];
   } catch (error) {
-    console.log("Connection error fetching consumptions:", error);
+    console.log("Connection error fetching consumptions via API, trying direct Supabase fallback:", error);
+  }
+
+  // Direct Supabase query fallback
+  try {
+    const { data, error } = await supabase
+      .from("daily_consumptions")
+      .select()
+      .eq("building_id", buildingId)
+      .order("log_date", { ascending: true });
+
+    if (error) {
+      console.error("Supabase fallback error fetching consumptions:", error);
+      return null;
+    }
+
+    return data as DailyConsumption[];
+  } catch (err) {
+    console.error("Failed to fetch consumptions from Supabase:", err);
     return null;
   }
 };

@@ -10,8 +10,14 @@ type Bindings = {
 const consumptionsRouter = new Hono<{ Bindings: Bindings }>();
 
 const getSupabaseClient = (c: any) => {
-  const key = c.env.SUPABASE_SERVICE_ROLE_KEY || c.env.SUPABASE_KEY;
-  return createClient(c.env.SUPABASE_URL, key);
+  const url = (c.env.SUPABASE_URL || '').trim().replace(/^["']|["']$/g, '');
+  const key = (c.env.SUPABASE_SERVICE_ROLE_KEY || c.env.SUPABASE_KEY || '').trim().replace(/^["']|["']$/g, '');
+  return createClient(url, key, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  });
 };
 
 // GET /consumptions/:buildingId — fetch all daily_consumptions for a building

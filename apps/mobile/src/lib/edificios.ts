@@ -87,7 +87,7 @@ export const getBuildings = async (): Promise<BuildingRecord[] | null> => {
     const userId = session?.user?.id;
 
     if (!userId) {
-        console.log("Error: You are not loged");
+        console.log("Error: You are not logged in");
         return null;
     }
 
@@ -96,28 +96,32 @@ export const getBuildings = async (): Promise<BuildingRecord[] | null> => {
             `${getApiUrl()}/myBuildings?profile_id=${userId}`
         );
 
-        if (!answer.ok) {
+        if (answer.ok) {
             const answerData = await answer.json();
-            console.log(
-                "Couldn't fetch buildings, status:",
-                answer.status,
-                "Reasson: ",
-                answerData,
-            );
-            return null;
+            if (answerData.ok && Array.isArray(answerData.data)) {
+                return answerData.data as BuildingRecord[];
+            }
         }
-
-        const answerData = await answer.json();
-
-        if (!answerData.ok) {
-            console.log("Backend returned an error:", answerData.message);
-            return null;
-        }
-
-        //console.log("Buildings fetched correctly:", answerData.data);
-        return answerData.data as BuildingRecord[];
     } catch (error) {
-        console.log("Connection error", error);
+        console.log("API Fetch error for myBuildings, trying direct Supabase fallback:", error);
+    }
+
+    // Direct Supabase fallback query
+    try {
+        const { data, error } = await supabase
+            .from("buildings")
+            .select()
+            .eq("profile_id", userId)
+            .order("created_at", { ascending: false });
+
+        if (error) {
+            console.error("Supabase fallback error fetching buildings:", error);
+            return null;
+        }
+
+        return data as BuildingRecord[];
+    } catch (err) {
+        console.error("Failed to fetch buildings from Supabase:", err);
         return null;
     }
 };

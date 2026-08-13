@@ -13,8 +13,14 @@ type Bindings = {
 const routerBuilding = new Hono<{Bindings: Bindings}> ();
 
 const getSupabaseClient = (c: any) => {
-  const key = c.env.SUPABASE_SERVICE_ROLE_KEY || c.env.SUPABASE_KEY;
-  return createClient(c.env.SUPABASE_URL, key);
+  const url = (c.env.SUPABASE_URL || '').trim().replace(/^["']|["']$/g, '');
+  const key = (c.env.SUPABASE_SERVICE_ROLE_KEY || c.env.SUPABASE_KEY || '').trim().replace(/^["']|["']$/g, '');
+  return createClient(url, key, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  });
 };
 
 //aca hacemos la ruta de la api para que se ponga a chambear la desgraciada

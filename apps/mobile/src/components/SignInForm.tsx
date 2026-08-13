@@ -178,7 +178,7 @@ export default function SignInForm() {
             style={{ backgroundColor: "#0d1b2e" }}
           >
             <Text className="text-white text-2xl font-bold">
-              {loading ? "Signing in..." : "Log in"}
+              {loading ? t('login.signing_in') : t('login.log_in')}
             </Text>
           </TouchableOpacity>
         </Animated.View>
@@ -197,7 +197,7 @@ export default function SignInForm() {
             className="rounded-full py-4 items-center mb-3"
             style={{ backgroundColor: "#c8e6f7" }}
           >
-            <Text className="text-[#0d1b2e] text-2xl font-bold">Register</Text>
+            <Text className="text-[#0d1b2e] text-2xl font-bold">{t('login.register')}</Text>
           </TouchableOpacity>
         </Animated.View>
 
@@ -212,7 +212,7 @@ export default function SignInForm() {
           >
             <GoogleIcon size={36} />
             <Text className="text-[#0d1b2e] text-2xl font-bold ml-3">
-              {googleLoading ? "Connecting..." : "Continue with Google"}
+              {googleLoading ? t('login.connecting') : t('login.continue_with_google')}
             </Text>
           </TouchableOpacity>
         </Animated.View>
