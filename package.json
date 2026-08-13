@@ -14,8 +14,8 @@
   "author": "",
   "license": "ISC",
   "type": "commonjs",
-  "dependencies": {
-    "expo-blur": "~15.0.8",
-    "react-native-gesture-handler": "~2.28.0"
+  "overrides": {
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
   }
 }

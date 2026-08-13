@@ -13,19 +13,12 @@ import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-na
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 
-const features = [
-    {
-        text: "A more dynamic and visual way to read your water bill with a graphic and stats.",
-        image: require("../assets/Graphic Example.png"),
-    },
-    {
-        text: "A system for saving and recording multiple addresses using a map.",
-        image: require("../assets/Map Example.png"),
-    },
-    {
-        text: "A scanner to collect data directly from your water bills to make everything faster and more secure.",
-        image: require("../assets/Bill-example.png"),
-    },
+import { useTranslation } from "react-i18next";
+
+const featureImages = [
+    require("../assets/Graphic Example.png"),
+    require("../assets/Map Example.png"),
+    require("../assets/Bill-example.png"),
 ];
 
 function ZoomableImage({ source }: { source: any }) {
@@ -37,7 +30,6 @@ function ZoomableImage({ source }: { source: any }) {
     const savedTranslateX = useSharedValue(0);
     const savedTranslateY = useSharedValue(0);
 
-    // Punto donde ocurrió el pellizco, para hacer zoom "hacia ahí"
     const focalX = useSharedValue(0);
     const focalY = useSharedValue(0);
 
@@ -67,7 +59,6 @@ function ZoomableImage({ source }: { source: any }) {
 
     const panGesture = Gesture.Pan()
         .onUpdate((event) => {
-            // solo permite arrastrar si ya hay zoom aplicado
             if (savedScale.value > 1) {
                 translateX.value = savedTranslateX.value + event.translationX;
                 translateY.value = savedTranslateY.value + event.translationY;
@@ -78,7 +69,6 @@ function ZoomableImage({ source }: { source: any }) {
             savedTranslateY.value = translateY.value;
         });
 
-    // Doble tap para resetear el zoom rápidamente
     const doubleTapGesture = Gesture.Tap()
         .numberOfTaps(2)
         .onEnd(() => {
@@ -113,6 +103,7 @@ function ZoomableImage({ source }: { source: any }) {
 }
 
 export default function Index_Start_Message() {
+    const { t } = useTranslation();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
@@ -120,52 +111,59 @@ export default function Index_Start_Message() {
     const router = useRouter();
     const posthog = usePostHog();
     const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useWindowDimensions();
-    const scale = Math.min(Math.max(SCREEN_WIDTH / 1440, 0.55), 1);
-    const isAndroid = Platform.OS !== "web";
+    const isMobile = SCREEN_WIDTH < 768;
+    const scale = isMobile ? Math.min(Math.max(SCREEN_WIDTH / 440, 0.75), 1) : Math.min(Math.max(SCREEN_WIDTH / 1440, 0.55), 1);
+
+    const features = [
+        {
+            text: t("landing.feature_1", "A more dynamic and visual way to read your water bill with a graphic and stats."),
+            image: featureImages[0],
+        },
+        {
+            text: t("landing.feature_2", "A system for saving and recording multiple addresses using a map."),
+            image: featureImages[1],
+        },
+        {
+            text: t("landing.feature_3", "A scanner to collect data directly from your water bills to make everything faster and more secure."),
+            image: featureImages[2],
+        },
+    ];
 
     return (
-        <View style={{right: isAndroid ? 10 : 0, position: "relative", alignItems: "center", justifyContent: "center", top: isAndroid ? -65 : SCREEN_HEIGHT * 0.02}}>
-
-                <View className="flex flex-col gap-4 mb-8">
-                    
-                    <Text className="font-semibold text-[#051b32] text-center mb-2" style={{ fontSize: isAndroid ? 90 * scale : 60 * scale }}>
-                        Features
-                    </Text>
-                    
-                <Text className="text-[#051b32] font-semibold gap-4" style={{ width: "100%", textAlign: "center", fontSize: isAndroid ? 30 * scale : 18 * scale }}>
-                    {isAndroid ? "Click on the images to zoom in on them." : ""}
+        <View style={{ width: "100%", alignItems: "center", justifyContent: "center", marginTop: isMobile ? 10 : SCREEN_HEIGHT * 0.02 }}>
+            <View className="flex flex-col gap-2 mb-4">
+                <Text className="font-semibold text-[#051b32] text-center" style={{ fontSize: isMobile ? 32 : 48 * scale }}>
+                    {t("landing.features_title", "Features")}
                 </Text>
-                <Text className="text-[#051b32] font-semibold" style={{ width: "100%", textAlign: "center", fontSize: isAndroid ? 30 * scale : 18 * scale }}>
-                    {isAndroid ? "Swipe from left to right to switch screens" : "Click the arrows to switch screens"}   
+                <Text className="text-[#051b32] font-semibold" style={{ width: "100%", textAlign: "center", fontSize: isMobile ? 14 : 16 * scale }}>
+                    {isMobile ? t("landing.features_sub_mobile", "Tap an image to inspect details.") : t("landing.features_sub_desktop", "Click on the images to view them.")}
                 </Text>
-                </View>
+            </View>
             <BlurView
                 intensity={50}
                 tint="light"
-                className="justify-between bg-white rounded-2xl"
+                className="bg-white rounded-2xl"
                 style={{
                     overflow: "hidden",
-                    width: isAndroid ? "90%" : "75%",
-                    height: isAndroid ? "75%" : "75%",
-                    right: isAndroid ? 10 : 0,
-                    flexDirection: isAndroid ? "column" : "row",
-                    padding: isAndroid ? 16 : 24,
+                    width: isMobile ? "92%" : "85%",
+                    height: isMobile ? SCREEN_HEIGHT * 0.6 : SCREEN_HEIGHT * 0.65,
+                    flexDirection: isMobile ? "column" : "row",
+                    padding: isMobile ? 12 : 24,
                     gap: 16,
                 }}
             >
-
-                {isAndroid ? (
+                {isMobile ? (
                     <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled={true} style={{ width: "100%" }}>
                         {features.map((feature, index) => (
-                            <View key={index} className="bg-white rounded-2xl p-6" style={{ marginBottom: 16 }}>
-                                <Text className="font-semibold text-center" style={{ fontSize: 30 * scale, color: "#051b32", marginBottom: 12 }}>
+                            <View key={index} className="bg-white rounded-2xl p-4" style={{ marginBottom: 16 }}>
+                                <Text className="font-semibold text-center" style={{ fontSize: 15, color: "#051b32", marginBottom: 10 }}>
                                     {feature.text}
                                 </Text>
                                 <Pressable onPress={() => setSelectedIndex(index)} style={{ zIndex: 10 }}>
                                     <Image
                                         source={feature.image}
                                         resizeMode="contain"
-                                        style={{ width: "100%", height: SCREEN_HEIGHT * 0.22 }}
+                                        style={{ width: "100%", height: 160 }}
                                     />
                                 </Pressable>
                             </View>
@@ -187,7 +185,6 @@ export default function Index_Start_Message() {
                         </View>
                     ))
                 )}
-
             </BlurView>
 
             {/* 👇 AQUÍ VA EL MODAL, reemplazando el overlay anterior */}
@@ -207,7 +204,7 @@ export default function Index_Start_Message() {
                         }}
                     >
                         {selectedIndex !== null && (
-                            isAndroid ? (
+                            Platform.OS !== "web" ? (
                                 <>
                                     <ZoomableImage source={features[selectedIndex].image} />
 

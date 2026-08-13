@@ -7,10 +7,10 @@ import { supabase } from "../lib/supabase";
 import { handleAuthRedirectUrl } from "../lib/auth";
 import * as Linking from "expo-linking";
 import { Session, AuthChangeEvent } from "@supabase/supabase-js";
-import { ActivityIndicator, View, Platform } from "react-native";
+import { ActivityIndicator, View, Platform, useWindowDimensions } from "react-native";
 import { posthog, PostHogProvider } from "../lib/posthog";
 import { KeyboardProvider } from "react-native-keyboard-controller";
-import { DarkTheme } from "@react-navigation/native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 export default function RootLayout() {
     const [session, setSession] = useState<Session | null>(null);
@@ -18,11 +18,14 @@ export default function RootLayout() {
     const segments = useSegments();
     const router = useRouter();
     const pathname = usePathname();
+    const { width } = useWindowDimensions();
+
+    const isWebWideScreen = Platform.OS === "web" && width >= 768;
 
     useEffect(() => {
         if (pathname && posthog) {
-            if (typeof posthog.screen === "function") {
-                posthog.screen(pathname);
+            if (typeof (posthog as any).screen === "function") {
+                (posthog as any).screen(pathname);
             } else if (typeof posthog.capture === "function") {
                 posthog.capture("$pageview", { $current_url: pathname });
             }
@@ -96,30 +99,38 @@ export default function RootLayout() {
 
     if (loading) {
         return (
-            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-                <ActivityIndicator size="large" color="#4F46E5" />
-            </View>
+            <SafeAreaProvider>
+                <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#f8fafc" }}>
+                    <ActivityIndicator size="large" color="#4F46E5" />
+                </View>
+            </SafeAreaProvider>
         );
     }
 
-    // 3. Render layouts
+    // 4. Render layouts with Safe Area Provider and flexible responsive container
     return (
-        <PostHogProvider
-            client={posthog}
-            autocapture={{
-                captureScreens: false,
-                captureTouches: false,
-                propsToCapture: ["testID"],
-            }}
-        >
-            <KeyboardProvider statusBarTranslucent>
-                <StatusBar style="dark" />
-                <Stack screenOptions={{ headerShown: false }}>
-                    <Stack.Screen name="index" />
-                    <Stack.Screen name="(auth)" />
-                    <Stack.Screen name="(app)" />
-                </Stack>
-            </KeyboardProvider>
-        </PostHogProvider>
+        <SafeAreaProvider>
+            <PostHogProvider client={posthog}>
+                <KeyboardProvider statusBarTranslucent>
+                    <StatusBar style="dark" />
+                    <View
+                        style={{
+                            flex: 1,
+                            width: "100%",
+                            height: "100%",
+                            backgroundColor: "#051b32",
+                        }}
+                    >
+                        <Stack screenOptions={{ headerShown: false }}>
+                            <Stack.Screen name="index" />
+                            <Stack.Screen name="(auth)" />
+                            <Stack.Screen name="(app)" />
+                        </Stack>
+                    </View>
+                </KeyboardProvider>
+            </PostHogProvider>
+        </SafeAreaProvider>
     );
 }
+
+

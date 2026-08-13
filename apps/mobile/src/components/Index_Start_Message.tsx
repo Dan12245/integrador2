@@ -1,47 +1,47 @@
-import React, { useState } from "react";
-import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { supabase } from "../lib/supabase";
+import React from "react";
+import { Text, TouchableOpacity, View, useWindowDimensions } from "react-native";
 import { useRouter } from "expo-router";
-import { usePostHog } from "../lib/posthog";
-
-import { BlurView } from "expo-blur";
-
-import { Image } from "expo-image";
-import { Platform } from "react-native";
-
-
+import { useTranslation } from "react-i18next";
 
 export default function Index_Start_Message() {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [loading, setLoading] = useState(false);
+    const { t } = useTranslation();
     const router = useRouter();
-    const posthog = usePostHog();
-    // dentro del componente
-    const isAndroid = Platform.OS === "android";
+    const { width: SCREEN_WIDTH } = useWindowDimensions();
+    const isMobile = SCREEN_WIDTH < 768;
 
     return (
-        <View style={{ position: "relative", alignItems: "center", justifyContent: "center", top:isAndroid ? 0:200 }}>
-
-                <View className="flex flex-col  mb-8">
-                    
-                    <Text className="text-6xl font-semibold text-[#1e90ff] text-center mb-2">
-                        Improve the world
-                    </Text>
-                    <Text className="text-6xl font-semibold text-[#1e90ff] text-center mb-2">
-                        with awareness.
-                    </Text>
-                    
-                </View>
+        <View style={{ width: "100%", alignItems: "center", justifyContent: "center", paddingHorizontal: 16 }}>
+            <View className="flex flex-col mb-6">
+                <Text
+                    className="font-semibold text-[#1e90ff] text-center mb-1"
+                    style={{ fontSize: isMobile ? 32 : 56 }}
+                >
+                    {t("landing.improve_world", "Improve the world")}
+                </Text>
+                <Text
+                    className="font-semibold text-[#1e90ff] text-center mb-2"
+                    style={{ fontSize: isMobile ? 32 : 56 }}
+                >
+                    {t("landing.with_awareness", "with awareness.")}
+                </Text>
+            </View>
 
             <TouchableOpacity
                 className="rounded-xl items-center"
-                style={{ backgroundColor: "#1e90ff", paddingVertical: 30, paddingHorizontal: 50 }}
+                style={{
+                    backgroundColor: "#1e90ff",
+                    paddingVertical: isMobile ? 14 : 24,
+                    paddingHorizontal: isMobile ? 36 : 48,
+                }}
                 onPress={() => router.push("/login" as any)}
             >
-                <Text className="text-[#051b32] text-3xl font-semibold">Start now</Text>
+                <Text
+                    className="text-[#051b32] font-semibold"
+                    style={{ fontSize: isMobile ? 20 : 28 }}
+                >
+                    {t("landing.start_now", "Start now")}
+                </Text>
             </TouchableOpacity>
-
         </View>
     );
 }

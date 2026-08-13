@@ -4,12 +4,14 @@ import { useRouter } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { Session } from "@supabase/supabase-js";
 import { usePostHog } from "../lib/posthog";
+import { useTranslation } from "react-i18next";
 
 import { Image } from "expo-image";
 
 import { Modal } from "react-native";
 
 import { Platform } from "react-native";
+import { Feather } from "@expo/vector-icons";
 
 import Index_CRA_Blur from "../components/Index_CRA_Blur";
 import Index_Start_Message from "../components/Index_Start_Message";
@@ -23,9 +25,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 const carouselSlides = [Index_Page1, Index_Page2, Index_Page3];
 
 export default function LandingScreen() {
+    const { t, i18n } = useTranslation();
     const [session, setSession] = useState<Session | null>(null);
     const [loading, setLoading] = useState(true);
     const [slideIndex, setSlideIndex] = useState(0);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const fadeAnim = useRef(new Animated.Value(1)).current;
     const scrollY = useRef(new Animated.Value(0)).current;
     const scrollViewRef = useRef<ScrollView>(null);
@@ -33,16 +37,24 @@ export default function LandingScreen() {
     const posthog = usePostHog();
     const insets = useSafeAreaInsets();
 
+    const changeLanguage = (lang: string) => {
+        i18n.changeLanguage(lang);
+    };
+
+    const currentLang = i18n.language || "es";
+
     const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useWindowDimensions();
 
-    // Constantes ahora relativas al tamaño real de pantalla
-    const BAR_HEIGHT_FULL = SCREEN_HEIGHT * 0.08;      // antes: 60
-    const BAR_HEIGHT_COMPACT = SCREEN_HEIGHT * 0.075;  // antes: 50
-    const BAR_WIDTH_COMPACT = SCREEN_WIDTH * 0.55;     // antes: 700 fijo
-    const SCROLL_RANGE = SCREEN_HEIGHT * 0.1;          // antes: 80
-    const SECTION_HEIGHT = SCREEN_HEIGHT * 0.9;        // antes: 700 fijo
-    const SECTION_OVERLAP = SCREEN_HEIGHT * 0.08;      // antes: bottom: 60
+    const isCompactScreen = SCREEN_WIDTH < 768;
+    const isAndroid = Platform.OS !== "web";
 
+    // Constantes adaptadas al tamaño de pantalla móvil y desktop
+    const BAR_HEIGHT_FULL = isCompactScreen ? 56 : SCREEN_HEIGHT * 0.08;
+    const BAR_HEIGHT_COMPACT = isCompactScreen ? 52 : SCREEN_HEIGHT * 0.075;
+    const BAR_WIDTH_COMPACT = isCompactScreen ? SCREEN_WIDTH * 0.94 : SCREEN_WIDTH * 0.55;
+    const SCROLL_RANGE = SCREEN_HEIGHT * 0.1;
+    const SECTION_HEIGHT = SCREEN_HEIGHT * 0.9;
+    const SECTION_OVERLAP = SCREEN_HEIGHT * 0.08;
 
     
     const sectionPositions = useRef<{ [key: string]: number }>({});
@@ -116,12 +128,9 @@ export default function LandingScreen() {
 
     const sideElementsOpacity = scrollY.interpolate({
         inputRange: [0, SCROLL_RANGE * 0.6],
-        outputRange: [1, 0],
+        outputRange: [1, isCompactScreen ? 0.95 : 0],
         extrapolate: "clamp",
     });
-
-   const isCompactScreen = SCREEN_WIDTH < 768;
-    const isAndroid = Platform.OS !== "web";
 
     const qnaBackgroundSource = isAndroid
         ? require("../assets/bg_movile.png")
@@ -143,15 +152,13 @@ export default function LandingScreen() {
                     top: 0,
                     left: 0,
                     right: 0,
-                    zIndex: 20,
+                    zIndex: 50,
                     alignItems: "center",
                     paddingTop: insets.top,
                     transform: [{ translateY: barTranslateY }],
                 }}
             >
                 <Animated.View
-
-                
                     style={{
                         width: barWidth,
                         height: barHeight,
@@ -160,53 +167,132 @@ export default function LandingScreen() {
                         flexDirection: "row",
                         alignItems: "center",
                         justifyContent: "space-between",
-                        paddingHorizontal: SCREEN_WIDTH * 0.02,
+                        paddingHorizontal: isCompactScreen ? 16 : SCREEN_WIDTH * 0.02,
                         overflow: "hidden",
                     }}
                 >
                     <Animated.View style={{ opacity: sideElementsOpacity }}>
-                        <Image
-                            source={require("../assets/logo-blank.png")}
-                            style={{ width: isAndroid ? SCREEN_WIDTH * 0.15 : SCREEN_WIDTH * 0.04, height: isAndroid ? SCREEN_WIDTH * 0.2 : SCREEN_HEIGHT * 0.045 }}
-                            resizeMode="contain"
-                        />
+                        <TouchableOpacity onPress={() => scrollToSection("howItWorks")} className="flex-row items-center">
+                            <Image
+                                source={require("../assets/logo-blank.png")}
+                                style={{ width: isCompactScreen ? 32 : 40, height: isCompactScreen ? 32 : 40 }}
+                                contentFit="contain"
+                            />
+                        </TouchableOpacity>
                     </Animated.View>
 
-                    {/* Estos 3 botones solo se muestran si NO es Android */}
-                    {!(isAndroid && isCompactScreen) && (
-                        <>
+                    {/* Desktop navbar links */}
+                    {!isCompactScreen && (
+                        <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
                             <TouchableOpacity onPress={() => scrollToSection("howItWorks")}>
-                                <Text className="text-white font-semibold text-xs">Index</Text>
+                                <Text className="text-white font-semibold text-xs">{t("landing.nav_cra", "CRA")}</Text>
                             </TouchableOpacity>
 
-                            <Text className="text-white font-semibold">|</Text>
+                            <Text className="text-white/40 font-semibold">|</Text>
 
                             <TouchableOpacity onPress={() => scrollToSection("qna", 0.03)}>
-                                <Text className="text-white font-semibold text-xs">Features, How does it work, FAQ</Text>
+                                <Text className="text-white font-semibold text-xs">{t("landing.nav_features", "Features, How does it work, FAQ")}</Text>
                             </TouchableOpacity>
 
-                            <Text className="text-white font-semibold">|</Text>
+                            <Text className="text-white/40 font-semibold">|</Text>
 
                             <TouchableOpacity onPress={() => scrollToSection("startNow")}>
-                                <Text className="text-white font-semibold text-xs">Start now!</Text>
+                                <Text className="text-white font-semibold text-xs">{t("landing.nav_start_now", "Start now!")}</Text>
                             </TouchableOpacity>
-                        </>
+                        </View>
                     )}
 
-                    <Animated.View style={{ opacity: sideElementsOpacity }}>
+                    {/* Right side: Language selector + LogIn and Mobile Menu Toggle */}
+                    <Animated.View style={{ opacity: sideElementsOpacity, flexDirection: "row", alignItems: "center", gap: 10 }}>
+                        {/* Language Selector Pill */}
+                        <View className="flex-row items-center gap-1 bg-white/10 px-2 py-1 rounded-full">
+                            <TouchableOpacity onPress={() => changeLanguage("en")}>
+                                <Text className={`text-xs ${currentLang.startsWith("en") ? "text-white font-semibold" : "text-white/50"}`}>
+                                    EN
+                                </Text>
+                            </TouchableOpacity>
+                            <Text className="text-white/40 text-xs">|</Text>
+                            <TouchableOpacity onPress={() => changeLanguage("es")}>
+                                <Text className={`text-xs ${currentLang.startsWith("es") ? "text-white font-semibold" : "text-white/50"}`}>
+                                    ES
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+
                         <TouchableOpacity
                             onPress={() => router.push("/login" as any)}
                             className="flex-row items-center"
                         >
-                            <Text className={isAndroid ? "text-white font-semibold mr-2 text-xl" : "text-white font-semibold mr-2 text-xs"}>LogIn</Text>
+                            <Text className="text-white font-semibold mr-1.5 text-xs">{t("landing.login", "LogIn")}</Text>
                             <Image
                                 source={require("../assets/user-icon.png")}
-                                style={{ width: isAndroid ? SCREEN_WIDTH * 0.2 : SCREEN_WIDTH * 0.04, height: isAndroid ? SCREEN_WIDTH * 0.2 : SCREEN_WIDTH * 0.04 }}
-                                resizeMode="contain"
+                                style={{ width: isCompactScreen ? 22 : 28, height: isCompactScreen ? 22 : 28 }}
+                                contentFit="contain"
                             />
                         </TouchableOpacity>
+
+                        {isCompactScreen && (
+                            <TouchableOpacity
+                                onPress={() => setMobileMenuOpen((prev) => !prev)}
+                                className="p-1.5 rounded-lg bg-white/10"
+                                activeOpacity={0.7}
+                            >
+                                <Feather name={mobileMenuOpen ? "x" : "menu"} size={20} color="white" />
+                            </TouchableOpacity>
+                        )}
                     </Animated.View>
                 </Animated.View>
+
+                {/* Mobile Dropdown Menu */}
+                {isCompactScreen && mobileMenuOpen && (
+                    <View
+                        style={{
+                            width: "92%",
+                            backgroundColor: "#082444",
+                            borderRadius: 16,
+                            marginTop: 8,
+                            paddingVertical: 12,
+                            paddingHorizontal: 16,
+                            borderWidth: 1,
+                            borderColor: "rgba(255, 255, 255, 0.12)",
+                            shadowColor: "#000",
+                            shadowOffset: { width: 0, height: 10 },
+                            shadowOpacity: 0.3,
+                            shadowRadius: 15,
+                            elevation: 10,
+                        }}
+                    >
+                        <TouchableOpacity
+                            onPress={() => {
+                                setMobileMenuOpen(false);
+                                scrollToSection("howItWorks");
+                            }}
+                            style={{ paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "rgba(255, 255, 255, 0.08)" }}
+                        >
+                            <Text style={{ color: "white", fontWeight: "600", fontSize: 14 }}>{t("landing.nav_cra", "CRA")}</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            onPress={() => {
+                                setMobileMenuOpen(false);
+                                scrollToSection("qna", 0.03);
+                            }}
+                            style={{ paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "rgba(255, 255, 255, 0.08)" }}
+                        >
+                            <Text style={{ color: "white", fontWeight: "600", fontSize: 14 }}>{t("landing.nav_features", "Features, How does it work, FAQ")}</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            onPress={() => {
+                                setMobileMenuOpen(false);
+                                scrollToSection("startNow");
+                            }}
+                            style={{ paddingVertical: 10 }}
+                        >
+                            <Text style={{ color: "white", fontWeight: "600", fontSize: 14 }}>{t("landing.nav_start_now", "Start now!")}</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
            </Animated.View>
 
             <Animated.ScrollView
@@ -230,7 +316,7 @@ export default function LandingScreen() {
                 <ImageBackground
                     source={require("../assets/index_bg.gif")}
                     resizeMode="cover"
-                    style={{ width: "100%", height: SCREEN_HEIGHT * 1.1, bottom: SECTION_OVERLAP, padding: isAndroid ? 0 : SCREEN_WIDTH * 0.03, justifyContent: "space-between" }}
+                    style={{ width: "100%", height: SCREEN_HEIGHT * 1.1, bottom: SECTION_OVERLAP, padding: isAndroid ? 0 : SCREEN_WIDTH * 0.03, justifyContent: "center", alignItems: "center" }}
                 >
                     <Image
                         source={require("../assets/WhiteFade.png")}

@@ -61,7 +61,7 @@ export default function AppNavbar() {
         {/* Logo */}
         <TouchableOpacity onPress={() => navigateTo("/home")} className="flex-row items-center">
           <Image
-            source={require("../assets/images/splash-icon.png")}
+            source={require("../assets/logo-blank.png")}
             style={{ width: 36, height: 36 }}
             resizeMode="contain"
           />

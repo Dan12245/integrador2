@@ -1,61 +1,85 @@
-import React, { useState } from "react";
-import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { supabase } from "../lib/supabase";
-import { useRouter } from "expo-router";
-import { usePostHog } from "../lib/posthog";
-
+import React from "react";
+import { Text, View, useWindowDimensions } from "react-native";
 import { BlurView } from "expo-blur";
-
 import { Image } from "expo-image";
-import { Platform } from "react-native";
+import { useTranslation } from "react-i18next";
 
 export default function Index_CRA_Blur() {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [loading, setLoading] = useState(false);
-    const router = useRouter();
-    const posthog = usePostHog();
-    const isAndroid = Platform.OS === "android";
+    const { t } = useTranslation();
+    const { width: SCREEN_WIDTH } = useWindowDimensions();
+    const isMobile = SCREEN_WIDTH < 768;
+
+    const sphereSize = isMobile ? 95 : 190;
 
     return (
-        <View style={{flex: isAndroid ? 1 : -1, position: "relative",top: isAndroid ? 120 : 120, alignItems: "center" }}>
-
+        <View style={{ width: "100%", alignItems: "center", justifyContent: "center", marginVertical: 20 }}>
             <BlurView
                 intensity={50}
                 tint="light"
-                className= {isAndroid ? "justify-center p-6 bg-white rounded-2xl" : "flex-1 justify-center p-6 bg-white rounded-2xl"}
                 style={{
-                    width: isAndroid ? "90%" : "75%",
-                    height: isAndroid ? "60%" : "75%",
+                    width: isMobile ? "90%" : "75%",
+                    maxWidth: 900,
+                    borderRadius: 28,
+                    paddingVertical: isMobile ? 32 : 52,
+                    paddingHorizontal: isMobile ? 20 : 44,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    position: "relative",
+                    overflow: "hidden",
+                    backgroundColor: "rgba(255, 255, 255, 0.45)",
                 }}
-            >                
-                
-                <View className="flex flex-col gap-4 mb-8" style = {{ alignItems: "center", top: isAndroid ? -100 : 0 }}>
-                    
-                    <Text style={{ fontSize: isAndroid ? 90 : 128, fontWeight: "bold", color: "#051b32", textAlign: "center", right: isAndroid ? 0 : 120 }}>
-                        C.R.A
+            >
+                <View style={{ alignItems: "center", width: "100%", zIndex: 3 }}>
+                    <Text
+                        style={{
+                            fontSize: isMobile ? 48 : 100,
+                            fontWeight: "bold",
+                            color: "#051b32",
+                            textAlign: "center",
+                            marginBottom: 8,
+                            letterSpacing: isMobile ? 1 : 2,
+                        }}
+                    >
+                        {t("landing.cra_title", "C.R.A")}
                     </Text>
 
-                    <Text style={{ fontSize: isAndroid ? 30 : 36, fontWeight: "600", color: "#051b32", textAlign: "center", marginBottom: 8, right: isAndroid ? 0 : 120 }}>
-                        Helping you conserve water
+                    <Text
+                        style={{
+                            fontSize: isMobile ? 20 : 32,
+                            fontWeight: "600",
+                            color: "#051b32",
+                            textAlign: "center",
+                            marginBottom: 6,
+                        }}
+                    >
+                        {t("landing.cra_sub1", "Helping you conserve water")}
                     </Text>
 
-                    <Text style={{ fontSize: isAndroid ? 30 : 36, fontWeight: "600", color: "#051b32", textAlign: "center", marginBottom: 8, right: isAndroid ? 0 : 120 }}>
-                        One day at a time
+                    <Text
+                        style={{
+                            fontSize: isMobile ? 16 : 24,
+                            fontWeight: "600",
+                            color: "#051b32",
+                            textAlign: "center",
+                        }}
+                    >
+                        {t("landing.cra_sub2", "One day at a time")}
                     </Text>
                 </View>
+
                 <Image
                     source={require("../assets/water_sphere.png")}
                     style={{
-                        position: isAndroid ? "absolute" : "absolute",
-                        left: isAndroid ? "32%" : "70%",
-                        width: isAndroid ? 150 : 250,
-                        height: isAndroid ? 150 : 250,
-                        top: isAndroid ? 300 : 0,
-                        zIndex: 2,
-                        display: isAndroid ? "flex" : "flex",  // 👈 ocúltala temporalmente en Android
+                        position: "absolute",
+                        right: isMobile ? 10 : 24,
+                        top: "50%",
+                        transform: [{ translateY: -(sphereSize / 2) }],
+                        width: sphereSize,
+                        height: sphereSize,
+                        zIndex: 1,
+                        opacity: isMobile ? 0.35 : 0.85,
                     }}
-                    contentFit="cover"
+                    contentFit="contain"
                 />
             </BlurView>
         </View>

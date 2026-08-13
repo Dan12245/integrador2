@@ -14,7 +14,7 @@
     "@supabase/supabase-js": "^2.107.0",
     "hono": "^4.12.23",
     "pdf-lib": "^1.17.1",
-    "react": "^19.1.0"
+    "react": "19.1.0"
   },
   "devDependencies": {
     "wrangler": "^4.4.0"
