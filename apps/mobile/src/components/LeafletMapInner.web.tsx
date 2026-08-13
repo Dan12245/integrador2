@@ -18,7 +18,7 @@ type Props = {
   onLocationSelect?: (lat: number, long: number) => void;
 };
 
-const DEFAULT_CENTER: [number, number] = [28.6353, -106.0889]; // Chihuahua capital 🤠
+const DEFAULT_CENTER: [number, number] = [28.6353, -106.0889]; 
 const DEFAULT_ZOOM = 5;
 const SELECTED_ZOOM = 16;
 
@@ -43,7 +43,6 @@ function ClickHandler({ onLocationSelect }: { onLocationSelect?: (lat: number, l
 
 export default function BuildingMap({ lat, long, addressLabel, onLocationSelect }: Props) {
   
-  // ✅ Inyectamos el CSS de Leaflet directamente al navegador
   useEffect(() => {
     const link = document.createElement("link");
     link.rel = "stylesheet";
@@ -52,13 +51,11 @@ export default function BuildingMap({ lat, long, addressLabel, onLocationSelect 
     document.head.appendChild(link);
 
     return () => {
-      // Limpiamos el CSS si el componente se desmonta
       document.head.removeChild(link);
     };
   }, []);
 
   return (
-    // Antes: width/height fijos en px. Ahora llena al 100% del padre.
     <div style={{ width: "100%", height: "100%" }}>
       <MapContainer center={DEFAULT_CENTER} zoom={DEFAULT_ZOOM} style={{ width: "100%", height: "100%" }}>
         <TileLayer

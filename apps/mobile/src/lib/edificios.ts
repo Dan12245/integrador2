@@ -90,12 +90,10 @@ export const getBuildings = async (): Promise<BuildingRecord[] | null> => {
         console.log("Error: You are not loged");
         return null;
     }
-
     try {
         const answer = await fetch(
             `${getApiUrl()}/myBuildings?profile_id=${userId}`
         );
-
         if (!answer.ok) {
             const answerData = await answer.json();
             console.log(
@@ -106,14 +104,11 @@ export const getBuildings = async (): Promise<BuildingRecord[] | null> => {
             );
             return null;
         }
-
         const answerData = await answer.json();
-
         if (!answerData.ok) {
             console.log("Backend returned an error:", answerData.message);
             return null;
         }
-
         //console.log("Buildings fetched correctly:", answerData.data);
         return answerData.data as BuildingRecord[];
     } catch (error) {
@@ -137,7 +132,6 @@ export const deleteBuilding = async (id:number) => {
         throw new Error(`Error while deleting. Status: ${response.status}`);
         }
 
-        // 4. Si todo salió bien, sacas la respuesta
         const data = await response.json();
         console.log('Building deleted:', data);
         
@@ -148,18 +142,29 @@ export const deleteBuilding = async (id:number) => {
     }
 }
 
+// Editamos un edificio. Ahora tambien manda la direccion + coordenadas,
+// ademas del alias y la descripcion que ya tenias.
+// OJO: la ruta PUT del backend hace un supabase.update(body) directo, sin
+// transformar nombres -- por eso aca mandamos "longitude" (asi se llama la
+// columna real), no "long" como en addBuilding.
 export const editBuilding = async (
-    id:number,
-    alias:string,
-    description:string
-    ) => {
+    id: number,
+    alias: string,
+    description: string,
+    address: string,
+    lat: number,
+    long: number
+) => {
         try{
             const response = await fetch(`${getApiUrl()}/${id}`, {
                 method: 'PUT', // Le decimos que es actualización
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({    
                     alias: alias,
-                    description: description    
+                    description: description,
+                    address: address,
+                    lat: lat,
+                    longitude: long,
                 })    
             });    
             if (!response.ok) {
@@ -170,7 +175,7 @@ export const editBuilding = async (
             console.log('Building edited:', data);                    
             return true;  
         }catch (error){
-            console.error('Error at deleteBuilding:', error);
+            console.error('Error at editBuilding:', error);
             return false;
         }   
-}
+    }

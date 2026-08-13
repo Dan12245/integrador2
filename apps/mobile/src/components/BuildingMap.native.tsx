@@ -16,8 +16,6 @@ const DEFAULT_LONG = -106.0889;
 const DEFAULT_ZOOM = 5;
 const SELECTED_ZOOM = 16;
 
-// HTML autocontenido con Leaflet + OpenStreetMap. Nada de esto requiere
-// API key ni cuenta de Google -- las tiles de OSM son gratis y publicas.
 function buildHtml(initialLat: number | null, initialLong: number | null) {
   const hasInitial = initialLat != null && initialLong != null;
   const startLat = hasInitial ? initialLat : DEFAULT_LAT;
@@ -54,7 +52,7 @@ function buildHtml(initialLat: number | null, initialLong: number | null) {
       }
     }
 
-    // El usuario toca el mapa -> le avisamos a React Native las coordenadas
+   
     map.on('click', function (e) {
       var lat = e.latlng.lat;
       var lng = e.latlng.lng;
@@ -66,8 +64,7 @@ function buildHtml(initialLat: number | null, initialLong: number | null) {
       postToRN({ type: 'locationSelected', lat: lat, long: lng });
     });
 
-    // Funcion global que React Native llama (via injectJavaScript) cuando
-    // las coordenadas cambian desde el lado de JS (ej. se eligio del autocomplete)
+    
     window.setMarkerFromRN = function (lat, lng) {
       if (marker) {
         marker.setLatLng([lat, lng]);

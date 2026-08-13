@@ -41,7 +41,7 @@ routerBuilding.post('/addBuilding', async (c) => {
 
     //y le mandamos toda la info, que en este caso está hardcodeada de momento, a la DB
     //olvidenlo ya no esta hardcodeada LET'S GOOOOOO
-    console.log("lo q le cae al hono pq mugre direccion nomas no aparece la maleducada\n",body)
+    //console.log("What Hono recives\n",body)
     const { data, error } = await supabase
     .from('buildings') 
     .insert([
