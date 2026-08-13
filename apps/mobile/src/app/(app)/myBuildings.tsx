@@ -1,34 +1,404 @@
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
-import { useRouter } from "expo-router";
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  FlatList,
+  Alert,
+  Platform,
+  Modal,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter, useFocusEffect } from "expo-router";
+import Animated, { FadeInLeft, FadeInRight, FadeInDown } from "react-native-reanimated";
+import AppNavbar from "../../components/AppNavbar";
 import ReceiptScannerButton, { ExtractedData } from "../../components/Camera";
+// ✅ Agregamos editBuilding aquí a tus importaciones
+import { addBuilding, getBuildings, BuildingRecord, deleteBuilding, editBuilding } from "@/src/lib/edificios";
+import BuildingMap from "../../components/BuildingMap";
 
 export default function MyBuildings() {
   const router = useRouter();
+  const [search, setSearch] = useState("");
+  const [buildings, setBuildings] = useState<BuildingRecord[]>([]);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [loadingBuildings, setLoadingBuildings] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Form state for adding new building
+  const [alias, setAlias] = useState("");
+  const [address, setAddress] = useState("");
+  const [contractNumber, setContractNumber] = useState("");
+  const [description, setDescription] = useState("");
   const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  
+  // Modo de seleccion de ubicacion: escribir la direccion, o tocar el mapa directamente
+  const [locationMode, setLocationMode] = useState<"address" | "map">("address");
+
+  // ✅ Estados para la ventana de EDITAR
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [editId, setEditId] = useState<number | null>(null);
+  const [editAlias, setEditAlias] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+
+  const loadBuildings = useCallback(async () => {
+    const data = await getBuildings();
+    setBuildings(data ?? []); 
+    setLoadingBuildings(false);
+    setRefreshing(false);
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      setLoadingBuildings(true);
+      loadBuildings();
+    }, [loadBuildings])
+  );
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadBuildings();
+  };
+
+  const filtered = buildings.filter((b) =>
+    b.alias.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const handleDelete = (id: number) => {
+    setBuildings((prev) => prev.filter((b) => b.id !== id));
+    if (selectedId === id) setSelectedId(null);
+  };
+
+  const handleSaveBuilding = async () => {
+    if (!alias || !contractNumber || !address || !description || !coordinates) {
+      if (Platform.OS === "web") {
+        window.alert("Failed\nComplete all the fields");
+      } else {
+        Alert.alert("Failed", "Complete all the fields");
+      }
+      return;
+    }
+
+    const answer = await addBuilding(
+      alias,
+      contractNumber,
+      address,
+      description,
+      coordinates.lat,
+      coordinates.long
+    );
+    if (!answer) {
+      if (Platform.OS === "web") {
+        window.alert("Failed\nThe building couldn't be stored correctly");
+      } else {
+        Alert.alert("Failed", "The building couldn't be stored correctly");
+      }
+      return;
+    }
+
+    if (Platform.OS === "web") {
+      window.alert("Success.\nThe building was stored correctly");
+    } else {
+      Alert.alert("Success", "The building was stored correctly");
+    }
+
+    loadBuildings();
+
+    // Reset fields & close modal window
+    setAlias("");
+    setAddress("");
+    setContractNumber("");
+    setDescription("");
+    setExtractedData(null);
+    setCoordinates(null);
+    setSuggestions([]);
+    setLocationMode("address");
+    setShowAddForm(false);
+  };
+
+  //esta wea es para las coordenadas y q jale el mapa
+  const [coordinates, setCoordinates] = useState<{ lat: number; long: number } | null>(null); 
+
+  // Estas weas nos sirven para autocompletar busquedas
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [showingSuggestions, setShowingSuggestions] = useState(false);
+
+  // Esto es para hacer un "debounce" y evitar que la api de photon nos banee por mandarle un monton de peticiones
+  useEffect(() => {
+    if (address.trim() === "" || !showingSuggestions) {
+      setSuggestions([]);
+      return;
+    }
+
+    const delayDebounce = setTimeout(async () => {
+      try {  
+        const res = await fetch(`http://192.168.0.15:8787/autocomplete?q=${encodeURIComponent(address)}`);
+        if (!res.ok) {
+          console.log("Backend error:", res.status);
+          return; 
+        }
+        const data = await res.json();
+        console.log("Features",JSON.stringify(data, null, 2))
+        setSuggestions(data || []);
+      } catch (error) {
+        console.error("Error while searching suggestions:", error);
+      }
+    }, 500); // Espera 500ms
+    return () => clearTimeout(delayDebounce);
+  }, [address, showingSuggestions]);
+  
+    // esta wea es para cuando el usuario seleccione una opcion
+    const selectAddress = (item: any) => {
+    const { name, street, housenumber, city } = item.properties;
+    const calleConNumero = `${street || ''} ${housenumber || ''}`.trim();
+    const RealAdress = [name, calleConNumero, city].filter(Boolean).join(', ');
+        
+    setAddress(RealAdress);
+    setShowingSuggestions(false); 
+    setSuggestions([]);
+
+    const [long, lat] = item.geometry.coordinates;
+    console.log("COORDS DATA:", { lat, long });
+    setCoordinates({ lat, long });
+  };
+
+  const handleMapLocationSelect = async (lat: number, long: number) => {
+    setCoordinates({ lat, long });
+
+    try {
+      const res = await fetch(`http://192.168.0.15:8787/reverseGeocode?lat=${lat}&lon=${long}`);
+      const data = await res.json();
+
+      if (data.address) {
+        setAddress(data.address);
+      }
+    } catch (error) {
+      console.error("Error Error while searching map location:", error);
+    }
+  };
+
+  const confirmarYBorrar = async (id: number) => {
+    const exito = await deleteBuilding(id); 
+    if (!exito) {
+      if (Platform.OS === "web") {
+        window.alert("Failed\nThe building couldn't be deleted correctly");
+      } else {
+        Alert.alert("Failed", "The building couldn't be deleted correctly");
+      }
+      return;
+    }
+    handleDelete(id);
+    if (Platform.OS === "web") {
+        window.alert("Succeed\nThe building was deleted correctly");
+      } else {
+        Alert.alert("Succeed", "The building was deleted correctly");
+      }
+  };
+  
+  const confirmarBorrado = (id: number, nombreEdificio: string) => {
+    if (Platform.OS === "web") {
+      const seguro = window.confirm(`Are you sure you want to delete "${nombreEdificio}"? This action can't be undone.`);  
+      if (seguro) {
+        console.log("Borrando desde la web el ID:", id);
+        confirmarYBorrar(id);
+      }
+    } else {
+      Alert.alert(
+        "Delete Building",
+        `Are you sure you want to delete "${nombreEdificio}"? This action can't be undone.`,
+        [
+          { text: "Cancel", style: "cancel" },
+          { 
+            text: "Delete", 
+            style: "destructive", 
+            onPress: () => confirmarYBorrar(id)
+          }
+        ]
+      );
+    }
+  };
+
+  // ✅ Abre la ventana y pre-carga los datos del edificio
+  const openEditModal = (item: BuildingRecord) => {
+    setEditId(item.id);
+    setEditAlias(item.alias);
+    setEditDescription(item.description || ""); 
+    setShowEditForm(true);
+  };
+
+  // ✅ Manda llamar a tu API y actualiza la lista
+  const handleUpdateBuilding = async () => {
+    if (!editId || !editAlias || !editDescription) {
+      if (Platform.OS === "web") {
+        window.alert("Failed\nComplete all the fields");
+      } else {
+        Alert.alert("Failed", "Complete all the fields");
+      }
+      return;
+    }
+
+    const success = await editBuilding(editId, editAlias, editDescription);
+    
+    if (success) {
+      setShowEditForm(false);
+      loadBuildings();
+      if (Platform.OS === "web") {
+        window.alert("Success\nThe building was updated correctly");
+      } else {
+        Alert.alert("Success", "The building was updated correctly");
+      }
+    } else {
+      if (Platform.OS === "web") {
+        window.alert("Failed\nThe building couldn't be updated");
+      } else {
+        Alert.alert("Failed", "The building couldn't be updated");
+      }
+    }
+  };
 
   return (
-    <ScrollView className="mt-10 p-3">
-      <View className="py-1 self-stretch items-center mb-5">
-        <Text className="text-2xl font-bold text-[#333]">myBuildings</Text>
-      </View>
+    <SafeAreaView className="flex-1 bg-[#f4f6f8]" edges={["top", "left", "right", "bottom"]}>
+      <AppNavbar />
 
-      <View className="mb-5">
-        <ReceiptScannerButton 
-          onDataExtracted={(data) => setExtractedData(data)}
-          onError={(error) => console.error(error)}
-        />
-      </View>
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="flex-1">
+        <View className="flex-1 flex-col md:flex-row p-4 gap-4">
+          
+          <Animated.View
+            entering={FadeInLeft.duration(400).springify()}
+            className="w-full md:w-80 gap-3"
+          >
+            <Text className="text-2xl font-bold text-[#0d1b2e] mb-1">My Buildings</Text>
 
-      {extractedData && (
-        <View className="mb-5 p-4 bg-gray-100 rounded-lg">
-          <Text className="text-lg font-bold mb-2 text-[#333]">Scanned Data:</Text>
-          <Text className="text-base text-gray-800">Contract: {extractedData.contract_number || 'N/A'}</Text>
-          <Text className="text-base text-gray-800">Name: {extractedData.name || 'N/A'}</Text>
-          <Text className="text-base text-gray-800">Address: {extractedData.address || 'N/A'}</Text>
-          <Text className="text-base text-gray-800">User Type: {extractedData.user_type || 'N/A'}</Text>
-          <Text className="text-base text-gray-800">Service Date: {extractedData.service_date || 'N/A'}</Text>
-          <Text className="text-base text-gray-800 font-bold mt-2">Consumption: {extractedData.consumption_reading || 'N/A'}</Text>
+            <View className="flex-row items-center bg-white rounded-2xl px-4 py-2 border border-gray-200 gap-2 mb-2">
+              <TextInput
+                className="flex-1 text-sm text-gray-700"
+                placeholder="Search"
+                placeholderTextColor="#9ca3af"
+                value={search}
+                onChangeText={setSearch}
+              />
+              <TouchableOpacity onPress={onRefresh} disabled={refreshing}>
+                <Text className="text-gray-400">{refreshing ? "⏳" : "🔄"}</Text>
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity
+              className="flex-row items-center justify-center bg-[#2089dc] rounded-2xl py-3.5 gap-2 mb-2 shadow-sm active:bg-[#1976d2]"
+              onPress={() => setShowAddForm(true)}
+            >
+              <Text className="text-white font-bold text-sm">+ Add new building</Text>
+            </TouchableOpacity>
+
+            {loadingBuildings ? (
+              <View className="items-center py-8">
+                <Text className="text-gray-400 text-sm">Loading your buildings...</Text>
+              </View>
+            ) : (
+              <FlatList
+                data={filtered}
+                keyExtractor={(b) => b.id.toString()}
+                scrollEnabled={false}
+                ItemSeparatorComponent={() => <View className="h-3" />}
+                ListEmptyComponent={
+                  <View className="items-center py-8">
+                    <Text className="text-gray-400 text-sm">
+                      You don't have any buildings yet.
+                    </Text>
+                  </View>
+                }
+                renderItem={({ item, index }) => (
+                  <Animated.View entering={FadeInDown.delay(index * 80).duration(350)}>
+                    <TouchableOpacity
+                      onPress={() => setSelectedId(item.id)}
+                      className={`flex-row items-center justify-between rounded-2xl px-4 py-4 border bg-white ${
+                        selectedId === item.id ? "border-[#2089dc]" : "border-gray-200"
+                      }`}
+                      style={{
+                        shadowColor: "#000",
+                        shadowOffset: { width: 0, height: 1 },
+                        shadowOpacity: 0.05,
+                        shadowRadius: 4,
+                        elevation: 2,
+                      }}
+                    >
+                      <View className="flex-row items-center gap-3 flex-shrink">
+                        <View className="w-9 h-9 rounded-xl bg-[#0d1b2e] items-center justify-center">
+                          <Text className="text-white text-base">🏢</Text>
+                        </View>
+                        <View className="flex-shrink">
+                          <Text className="text-sm font-semibold text-[#0d1b2e]" numberOfLines={1}>
+                            {item.alias}
+                          </Text>
+                          <Text className="text-xs text-gray-400" numberOfLines={1}>
+                            {item.address}
+                          </Text>
+                        </View>
+                      </View>
+
+                      <View className="flex-row items-center gap-3">
+                        {/* ✅ Aquí conectamos el botón de editar */}
+                        <TouchableOpacity onPress={() => openEditModal(item)}>
+                          <Text className="text-[#2089dc] text-base">✏️</Text>
+                        </TouchableOpacity>
+                        
+                        <TouchableOpacity onPress={() => confirmarBorrado(item.id, item.alias)}>
+                          <Text className="text-red-400 text-base">🗑️</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </TouchableOpacity>
+                  </Animated.View>
+                )}
+              />
+            )}
+          </Animated.View>
+
+          <View className="flex-1">
+            <Animated.View
+              entering={FadeInRight.duration(450).springify()}
+              className="w-full bg-[#c8dce8] rounded-3xl overflow-hidden relative"
+              style={{
+                height: 600,
+                minHeight: 520,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.08,
+                shadowRadius: 12,
+                elevation: 4,
+              }}
+            >
+              <View
+                className="absolute top-4 left-4 bg-white rounded-xl px-4 py-3 z-10"
+                style={{ shadowColor: "#000", shadowOpacity: 0.08, shadowRadius: 6, elevation: 3 }}
+              >
+                <Text className="text-sm font-bold text-[#0d1b2e]">Facility Locations</Text>
+                <Text className="text-xs text-gray-500">{buildings.length} active monitoring sites</Text>
+              </View>
+
+              <View
+                className="absolute top-4 right-4 bg-white rounded-xl overflow-hidden z-10"
+                style={{ shadowColor: "#000", shadowOpacity: 0.08, shadowRadius: 6, elevation: 3 }}
+              >
+                <TouchableOpacity className="px-3 py-2 border-b border-gray-100">
+                  <Text className="text-lg text-[#0d1b2e] font-bold">+</Text>
+                </TouchableOpacity>
+                <TouchableOpacity className="px-3 py-2">
+                  <Text className="text-lg text-[#0d1b2e] font-bold">−</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View className="flex-1">
+                <BuildingMap
+                  lat={coordinates?.lat ?? null}
+                  long={coordinates?.long ?? null}
+                  addressLabel={address}
+                  onLocationSelect={handleMapLocationSelect}
+                />
+              </View>
+            </Animated.View>
+          </View>
         </View>
       )}
 
@@ -37,36 +407,283 @@ export default function MyBuildings() {
           className="bg-[#2089dc] rounded p-3 items-center"
           onPress={() => router.push("/userProfile" as any)}
         >
-          <Text className="text-white text-base font-semibold">Go to User Profile</Text>
-        </TouchableOpacity>
-      </View>
+          <Animated.View
+            entering={FadeInDown.duration(300)}
+            style={{
+              width: "100%",
+              maxWidth: 520,
+              backgroundColor: "#ffffff",
+              borderRadius: 28,
+              padding: 24,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 8 },
+              shadowOpacity: 0.25,
+              shadowRadius: 24,
+              elevation: 12,
+              gap: 16,
+            }}
+          >
+            <View className="flex-row items-center justify-between border-b border-gray-100 pb-3">
+              <Text className="text-xl font-black text-[#0d1b2e]">Add New Building</Text>
+              <TouchableOpacity
+                onPress={() => setShowAddForm(false)}
+                className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center"
+              >
+                <Text className="text-gray-500 font-bold text-base">✕</Text>
+              </TouchableOpacity>
+            </View>
 
-      <View className="py-1 self-stretch">
-        <TouchableOpacity
-          className="bg-[#2089dc] rounded p-3 items-center"
-          onPress={() => router.push("/techSupport" as any)}
-        >
-          <Text className="text-white text-base font-semibold">Go to Tech Support</Text>
-        </TouchableOpacity>
-      </View>
+            {extractedData && (
+              <View className="p-3 bg-blue-50 border border-blue-200 rounded-xl">
+                <Text className="text-xs font-bold text-blue-900 mb-1">Scanned Receipt Data:</Text>
+                <Text className="text-xs text-blue-800">Contract: {extractedData.contract_number || "N/A"}</Text>
+                <Text className="text-xs text-blue-800">Address: {extractedData.address || "N/A"}</Text>
+                <Text className="text-xs text-blue-800 font-semibold mt-1">
+                  Reading: {extractedData.consumption_reading || "N/A"}
+                </Text>
+              </View>
+            )}
 
-      <View className="py-1 self-stretch">
-        <TouchableOpacity
-          className="bg-[#2089dc] rounded p-3 items-center"
-          onPress={() => router.push("/consumptions" as any)}
-        >
-          <Text className="text-white text-base font-semibold">Go to Consumptions</Text>
-        </TouchableOpacity>
-      </View>
+            <View className="gap-3">
+              <View>
+                <Text className="text-xs font-semibold text-gray-700 mb-1">Building Alias</Text>
+                <TextInput
+                  className="bg-gray-50 p-3 rounded-xl border border-gray-200 text-sm text-gray-800"
+                  style={{ backgroundColor: "#f8fafc" }}
+                  value={alias}
+                  onChangeText={setAlias}
+                  placeholder="e.g. Petco Center"
+                  placeholderTextColor="#9ca3af"
+                />
+              </View>
 
-      <View className="py-1 self-stretch mt-5">
-        <TouchableOpacity
-          className="bg-[#86939e] rounded p-3 items-center"
-          onPress={() => router.push("/home" as any)}
+              <View>
+                <Text className="text-xs font-semibold text-gray-700 mb-1">Contract Number</Text>
+                <TextInput
+                  className="bg-gray-50 p-3 rounded-xl border border-gray-200 text-sm text-gray-800"
+                  style={{ backgroundColor: "#f8fafc" }}
+                  value={contractNumber}
+                  onChangeText={setContractNumber}
+                  placeholder="Contract Number"
+                  placeholderTextColor="#9ca3af"
+                />
+              </View>
+
+              <View className="relative z-50">
+                <View className="flex-row items-center justify-between mb-1">
+                  <Text className="text-xs font-semibold text-gray-700">Address</Text>
+                  <View className="flex-row bg-gray-100 rounded-lg p-0.5">
+                    <TouchableOpacity
+                      onPress={() => {
+                        setLocationMode("address");
+                        setShowingSuggestions(false);
+                      }}
+                      className="px-2.5 py-1 rounded-md"
+                      style={{ backgroundColor: locationMode === "address" ? "#ffffff" : "transparent" }}
+                    >
+                      <Text
+                        className="text-[11px] font-semibold"
+                        style={{ color: locationMode === "address" ? "#0d1b2e" : "#9ca3af" }}
+                      >
+                         Type it
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setLocationMode("map");
+                        setShowingSuggestions(false);
+                        setSuggestions([]);
+                      }}
+                      className="px-2.5 py-1 rounded-md"
+                      style={{ backgroundColor: locationMode === "map" ? "#ffffff" : "transparent" }}
+                    >
+                      <Text
+                        className="text-[11px] font-semibold"
+                        style={{ color: locationMode === "map" ? "#0d1b2e" : "#9ca3af" }}
+                      >
+                         Pick on map
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {locationMode === "address" ? (
+                  <>
+                    <TextInput
+                      className="bg-gray-50 p-3 rounded-xl border border-gray-200 text-sm text-gray-800"
+                      style={{ backgroundColor: "#f8fafc" }}
+                      value={address}
+                      onChangeText={(text) => {
+                        setAddress(text);
+                        setShowingSuggestions(true);
+                      }}
+                      placeholder="Address"
+                      placeholderTextColor="#9ca3af"
+                    />
+                    {suggestions.length > 0 && showingSuggestions && (
+                      <View className="bg-white border border-gray-300 rounded-xl mt-1 shadow-sm absolute top-[100%] left-0 right-0 max-h-48 overflow-hidden z-50">
+                        {suggestions?.map((item, index) => (
+                          <TouchableOpacity
+                            key={item.properties.osm_id || index}
+                            className="p-3 border-b border-gray-100"
+                            onPress={() => selectAddress(item)}
+                          >
+                            <Text className="font-bold text-black text-sm">
+                              {item.properties.name || item.properties.street}
+                            </Text>
+                            <Text className="text-gray-500 text-xs">
+                              {item.properties.city} {item.properties.state}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    )}
+                  </>
+                ) : (
+                  <View>
+                    <View
+                      style={{
+                        height: 200,
+                        borderRadius: 12,
+                        overflow: "hidden",
+                        borderWidth: 1,
+                        borderColor: "#e5e7eb",
+                      }}
+                    >
+                      <BuildingMap
+                        lat={coordinates?.lat ?? null}
+                        long={coordinates?.long ?? null}
+                        addressLabel={address}
+                        onLocationSelect={handleMapLocationSelect}
+                      />
+                    </View>
+                    <Text className="text-[11px] text-gray-400 mt-1">
+                      Tap anywhere on the map to set the location.
+                    </Text>
+                    {address ? (
+                      <Text className="text-xs text-gray-600 mt-1" numberOfLines={2}>
+                         {address}
+                      </Text>
+                    ) : null}
+                  </View>
+                )}
+              </View>
+
+              <View>
+                <Text className="text-xs font-semibold text-gray-700 mb-1">Description</Text>
+                <TextInput
+                  className="bg-gray-50 p-3 rounded-xl border border-gray-200 text-sm text-gray-800"
+                  style={{ backgroundColor: "#f8fafc" }}
+                  value={description}
+                  onChangeText={setDescription}
+                  placeholder="Building description"
+                  placeholderTextColor="#9ca3af"
+                />
+              </View>
+            </View>
+
+            <View className="mt-2 gap-3">
+              <ReceiptScannerButton
+                onDataExtracted={(data) => {
+                  setExtractedData(data);
+                  if (data.contract_number) setContractNumber(data.contract_number);
+                  if (data.address) setAddress(data.address);
+                  if (data.name) setAlias(data.name);
+                }}
+              />
+
+              <TouchableOpacity
+                testID="mybuildings-save-building-button"
+                className="bg-[#2089dc] rounded-xl py-3.5 items-center shadow-sm active:bg-[#1976d2]"
+                onPress={handleSaveBuilding}
+              >
+                <Text className="text-white text-base font-semibold">Save building</Text>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        </View>
+      </Modal>
+
+      {/* ✅ VENTANA EMERGENTE (MODAL): Editar Edificio */}
+      <Modal
+        visible={showEditForm}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setShowEditForm(false)}
+      >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0, 0, 0, 0.65)",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 16,
+          }}
         >
-          <Text className="text-white text-base font-semibold">Back to Home</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+          <Animated.View
+            entering={FadeInDown.duration(300)}
+            style={{
+              width: "100%",
+              maxWidth: 520,
+              backgroundColor: "#ffffff",
+              borderRadius: 28,
+              padding: 24,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 8 },
+              shadowOpacity: 0.25,
+              shadowRadius: 24,
+              elevation: 12,
+              gap: 16,
+            }}
+          >
+            <View className="flex-row items-center justify-between border-b border-gray-100 pb-3">
+              <Text className="text-xl font-black text-[#0d1b2e]">Edit Building</Text>
+              <TouchableOpacity
+                onPress={() => setShowEditForm(false)}
+                className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center"
+              >
+                <Text className="text-gray-500 font-bold text-base">✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View className="gap-3">
+              <View>
+                <Text className="text-xs font-semibold text-gray-700 mb-1">Building Alias</Text>
+                <TextInput
+                  className="bg-gray-50 p-3 rounded-xl border border-gray-200 text-sm text-gray-800"
+                  style={{ backgroundColor: "#f8fafc" }}
+                  value={editAlias}
+                  onChangeText={setEditAlias}
+                  placeholder="e.g. Petco Center"
+                  placeholderTextColor="#9ca3af"
+                />
+              </View>
+
+              <View>
+                <Text className="text-xs font-semibold text-gray-700 mb-1">Description</Text>
+                <TextInput
+                  className="bg-gray-50 p-3 rounded-xl border border-gray-200 text-sm text-gray-800"
+                  style={{ backgroundColor: "#f8fafc" }}
+                  value={editDescription}
+                  onChangeText={setEditDescription}
+                  placeholder="Building description"
+                  placeholderTextColor="#9ca3af"
+                />
+              </View>
+            </View>
+
+            <View className="mt-2 gap-3">
+              <TouchableOpacity
+                className="bg-[#2089dc] rounded-xl py-3.5 items-center shadow-sm active:bg-[#1976d2]"
+                onPress={handleUpdateBuilding}
+              >
+                <Text className="text-white text-base font-semibold">Save changes</Text>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        </View>
+      </Modal>
+
+    </SafeAreaView>
   );
 }
