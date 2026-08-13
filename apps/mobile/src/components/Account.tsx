@@ -142,10 +142,50 @@ export default function Account({
         </TouchableOpacity>
       </View>
 
-      <View className="py-1 self-stretch mt-5">
+      <View className="py-1 self-stretch">
+        <TouchableOpacity
+          testID="account_consumptions_button"
+          className="bg-[#2089dc] rounded p-3 items-center"
+          onPress={() => router.push("/consumptions" as any)}
+        >
+          <Text className="text-white text-base font-semibold">Go to Consumptions</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View className="py-1 self-stretch">
+        <TouchableOpacity
+          testID="account_userprofile_button"
+          className="bg-[#2089dc] rounded p-3 items-center"
+          onPress={() => router.push("/userProfile" as any)}
+        >
+          <Text className="text-white text-base font-semibold">Go to User Profile</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View className="py-1 self-stretch">
+        <TouchableOpacity
+          testID="account_mybuildings_button"
+          className="bg-[#2089dc] rounded p-3 items-center"
+          onPress={() => router.push("/myBuildings" as any)}
+        >
+          <Text className="text-white text-base font-semibold">Go to My Buildings</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View className="py-1 self-stretch">
+        <TouchableOpacity
+          testID="account_techsupport_button"
+          className="bg-[#2089dc] rounded p-3 items-center"
+          onPress={() => router.push("/techSupport" as any)}
+        >
+          <Text className="text-white text-base font-semibold">Go to Tech Support</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View className="py-1 self-stretch">
         <TouchableOpacity
           testID="account_signout_button"
-          className="bg-[#2089dc] rounded-xl p-3.5 items-center"
+          className="bg-[#2089dc] rounded p-3 items-center"
           onPress={() => {
               posthog.capture("user_signed_out");
               posthog.reset();

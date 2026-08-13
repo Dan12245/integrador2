@@ -400,23 +400,12 @@ export default function MyBuildings() {
             </Animated.View>
           </View>
         </View>
-      </ScrollView>
+      )}
 
-      {/* VENTANA EMERGENTE (MODAL): Agregar Nuevo Edificio */}
-      <Modal
-        visible={showAddForm}
-        animationType="fade"
-        transparent
-        onRequestClose={() => setShowAddForm(false)}
-      >
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: "rgba(0, 0, 0, 0.65)",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: 16,
-          }}
+      <View className="py-1 self-stretch">
+        <TouchableOpacity
+          className="bg-[#2089dc] rounded p-3 items-center"
+          onPress={() => router.push("/userProfile" as any)}
         >
           <Animated.View
             entering={FadeInDown.duration(300)}
